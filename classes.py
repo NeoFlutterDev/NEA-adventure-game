@@ -15,7 +15,6 @@ class Human(Race):
     def __init__(self, exp):
         
 
-
 human = Race(25)
 print(human.hp)
 print(human.lvl)
