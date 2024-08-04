@@ -1,0 +1,6 @@
+The screen is divided into 5184 seperate sections called quadrants. Each quadrant is 1/54 of the height by 1/96 of the length. This makes each quadrant a 20x20 square.
+The first quadrant is the top left, and it works rightwards, once it hits the end of the screen the next quadrant is the row below, on the left side.
+The base sprite size will be based upon the standard 1920x1080 aspect ratio. A scaling factor is determined to alter the size of sprites if the size of the screen is not the same.
+
+Every time the mouse is clicked the game will determine what quadrant the mouse is in
+Each button will inhabit certain quadrants, and when the mouse presses in that quadrant, in a specific screen, it will be activated

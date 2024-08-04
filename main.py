@@ -1,18 +1,34 @@
 import pygame
 pygame.init()
 import sys
+import math
 
 infoObject = pygame.display.Info()
-#window = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+screenScale = [infoObject.current_w / 1920, infoObject.current_h / 1080]
+#this finds the size of the monitor, as well as making an array to scale the game sprites upon
 window = pygame.display.set_mode((infoObject.current_w, infoObject.current_h))
-#window = pygame.display.set_mode((800, 450))
+pygame.display.set_caption('Ancient Discovery')
 #initialises the window
 running = True
 #variable for checking if game is still running
-pygame.display.set_caption('Ancient Discovery')
-#Icon = pygame.image.load('sprites/other/logo.png')
-#pygame.display.set_icon(Icon)
 font = pygame.font.Font('spacefont.ttf', 30)
+
+def scale_sprite(image):
+    return pygame.transform.scale(image, (int(image.get_width() * screenScale[0]), int(image.get_height() * screenScale[1])))
+
+def coordinates_to_quadrant(coordinates):
+    quadrantX = coordinates[0] / (20 * screenScale[0])
+    quadrantY = coordinates[1] / (20 * screenScale[1])
+    return (math.trunc(quadrantY) * 96) + math.trunc(quadrantX) + 1
+    #this finds the quadrant in which the mouse is currently located, by finding which 20 pixels it is located in in both height and width
+    #it then adds these values together, after multiplying the Y quadrant by 96, as there is 96 quadrants per row
+    #the top left quadrant is 1, and the bottom right quadrant is 5184
+
+def quadrant_to_coordinates(quadrant):
+    quadrant -= 1
+    coordinateX = (quadrant % 96) * 20 * screenScale[0]
+    coordinateY = (quadrant // 96) * 20 * screenScale[1]
+    return [coordinateX, coordinateY]
 
 while running:
 
@@ -21,12 +37,13 @@ while running:
             running = False
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            mousePOS = pygame.mouse.get_pos()
-            if ((infoObject.current_w - 15) >= mousePOS[0] >= (infoObject.current_w - 35)) and (35 >= mousePOS[1] >= 15):
+            mouseQuadrant = coordinates_to_quadrant(pygame.mouse.get_pos())
+            if mouseQuadrant == 96:
                 pygame.quit()
 
     exitButton = pygame.image.load('sprites/other/exit button.png')
-    exitButton = pygame.transform.scale(exitButton, (20, 20))
-    window.blit(exitButton, (infoObject.current_w - 25, 20))
+    exitButton = scale_sprite(exitButton)
+    print(quadrant_to_coordinates(96))
+    window.blit(exitButton, (quadrant_to_coordinates(96)))
 
     pygame.display.update()

@@ -1,3 +1,6 @@
+import json
+import socket
+
 class SocketTest:
     def __init__(self, sock = None):
         if sock is None:
