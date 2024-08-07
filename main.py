@@ -13,6 +13,13 @@ running = True
 #variable for checking if game is still running
 font = pygame.font.Font('spacefont.ttf', 30)
 
+buttons = {'menu':[['name', True, [25, 36]]]}
+'''this stores the information for all buttons except the exit button, as that is the only button that appears on all screens
+the dictionary has the screen names as the keys for the buttons, with each value being an array off buttons
+each button stores the name of the button, whether it is on or off, the quadrants it appears in, and the definition for when it is activated
+the quadrants are the top left quadrant and bottom right, which the sorting algorithm can figure out what quadrants that button covers
+example: 'start menu':[['start button, True, [1, 106] start_game]'''
+
 def scale_sprite(image):
     return pygame.transform.scale(image, (int(image.get_width() * screenScale[0]), int(image.get_height() * screenScale[1])))
 
@@ -20,15 +27,30 @@ def coordinates_to_quadrant(coordinates):
     quadrantX = coordinates[0] / (20 * screenScale[0])
     quadrantY = coordinates[1] / (20 * screenScale[1])
     return (math.trunc(quadrantY) * 96) + math.trunc(quadrantX) + 1
-    #this finds the quadrant in which the mouse is currently located, by finding which 20 pixels it is located in in both height and width
-    #it then adds these values together, after multiplying the Y quadrant by 96, as there is 96 quadrants per row
-    #the top left quadrant is 1, and the bottom right quadrant is 5184
+'''this finds the quadrant in which the mouse is currently located, by finding which 20 pixels it is located in in both height and width
+it then adds these values together, after multiplying the Y quadrant by 96, as there is 96 quadrants per row
+the top left quadrant is 1, and the bottom right quadrant is 5184'''
 
 def quadrant_to_coordinates(quadrant):
     quadrant -= 1
     coordinateX = (quadrant % 96) * 20 * screenScale[0]
     coordinateY = (quadrant // 96) * 20 * screenScale[1]
     return [coordinateX, coordinateY]
+'''this reverses the quadrant maker, by finding the coordinates used to make the quadrant
+the X coordinate is found by the modulo of the quadrant, as the quadrants are counted left to right then down, then multiplied by 20 to find the exact coordinate
+the Y coordinate is found by the integer division of the quadrant, as each quadrant down is 96 higher than the previous, due to how it is counted'''
+
+def quadrant_checker(quadrant1, quadrant2, quadrant):
+    quadrantX = quadrant % 96
+    quadrantY = quadrant // 96
+    if quadrant
+
+def search_buttons(buttons, screen, quadrants, searchQuadrant):
+    buttonOptions = buttons[screen]
+    for button in buttonOptions:
+        if button[1] == True:  
+            for area in button[2]:
+                pass
 
 while running:
 
@@ -38,12 +60,14 @@ while running:
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouseQuadrant = coordinates_to_quadrant(pygame.mouse.get_pos())
-            if mouseQuadrant == 96:
+            #this finds what quadrant the mouse click happened in
+
+            if mouseQuadrant == 95 or mouseQuadrant == 96 or mouseQuadrant == 191 or mouseQuadrant == 192:
                 pygame.quit()
 
     exitButton = pygame.image.load('sprites/other/exit button.png')
     exitButton = scale_sprite(exitButton)
-    print(quadrant_to_coordinates(96))
-    window.blit(exitButton, (quadrant_to_coordinates(96)))
+    window.blit(exitButton, (quadrant_to_coordinates(95)))
+    #loads, scales and places the button upon the screen
 
     pygame.display.update()
