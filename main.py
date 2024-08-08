@@ -13,15 +13,14 @@ running = True
 #variable for checking if game is still running
 font = pygame.font.Font('spacefont.ttf', 30)
 
-buttons = {'menu':[['name', True, [25, 36]]]}
-'''this stores the information for all buttons except the exit button, as that is the only button that appears on all screens
-the dictionary has the screen names as the keys for the buttons, with each value being an array off buttons
-each button stores the name of the button, whether it is on or off, the quadrants it appears in, and the definition for when it is activated
-the quadrants are the top left quadrant and bottom right, which the sorting algorithm can figure out what quadrants that button covers
-example: 'start menu':[['start button, True, [1, 106] start_game]'''
-
 def scale_sprite(image):
     return pygame.transform.scale(image, (int(image.get_width() * screenScale[0]), int(image.get_height() * screenScale[1])))
+
+def start_game():
+    pass
+
+def empty_def():
+    pass
 
 def coordinates_to_quadrant(coordinates):
     quadrantX = coordinates[0] / (20 * screenScale[0])
@@ -43,14 +42,22 @@ the Y coordinate is found by the integer division of the quadrant, as each quadr
 def quadrant_checker(quadrant1, quadrant2, quadrant):
     quadrantX = quadrant % 96
     quadrantY = quadrant // 96
-    if quadrant
-
-def search_buttons(buttons, screen, quadrants, searchQuadrant):
+    if (quadrantY >= (quadrant1 // 96)) and (quadrantY <= (quadrant2 // 96)) and (quadrantX >= (quadrant1 % 96)) and (quadrantX <= (quadrant2 % 96)):
+        return True
+        
+def search_buttons(buttons, screen, searchQuadrant):
     buttonOptions = buttons[screen]
     for button in buttonOptions:
-        if button[1] == True:  
-            for area in button[2]:
-                pass
+        if button[1] and quadrant_checker(button[2][0], button[2][1], searchQuadrant):
+            return button[3]
+    return empty_def
+        
+buttons = {'menu':[['start game', True, [1, 306], start_game]]}
+'''this stores the information for all buttons except the exit button, as that is the only button that appears on all screens
+the dictionary has the screen names as the keys for the buttons, with each value being an array off buttons
+each button stores the name of the button, whether it is on or off, the quadrants it appears in, and the definition for when it is activated
+the quadrants are the top left quadrant and bottom right, which the sorting algorithm can figure out what quadrants that button covers
+example: 'start menu':[['start button, True, [1, 106] start_game]'''
 
 while running:
 
@@ -62,8 +69,14 @@ while running:
             mouseQuadrant = coordinates_to_quadrant(pygame.mouse.get_pos())
             #this finds what quadrant the mouse click happened in
 
+            print(mouseQuadrant)
+
             if mouseQuadrant == 95 or mouseQuadrant == 96 or mouseQuadrant == 191 or mouseQuadrant == 192:
                 pygame.quit()
+            
+            else: 
+                buttonPressed = search_buttons(buttons, 'menu', mouseQuadrant)
+                buttonPressed()
 
     exitButton = pygame.image.load('sprites/other/exit button.png')
     exitButton = scale_sprite(exitButton)
