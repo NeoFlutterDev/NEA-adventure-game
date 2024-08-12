@@ -24,6 +24,9 @@ class Race:
 
     def get_exp(self):
         return self.exp
+    
+    def get_lvl(self):
+        return self.lvl
 
     def set_armour(self, armour):
         self.armour = armour
@@ -85,10 +88,10 @@ class Race:
 class Human(Race):
     def __init__(self, exp):
         super().__init__(exp)
-        self.hp = self.hp * 1.5      
+        self.maxHp = self.maxHp * 1.5      
 
 human = Human(25)
-print(human.hp)
-print(human.lvl)
+print(human.get_maxHp())
+print(human.get_lvl())
 print(human.atk)
 print(human.stm)

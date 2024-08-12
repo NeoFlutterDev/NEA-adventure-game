@@ -19,6 +19,12 @@ def scale_sprite(image):
 def start_game():
     pass
 
+def options_start_menu():
+    pass
+
+def statistics_start_menu():
+    pass
+
 def empty_def():
     pass
 
@@ -48,16 +54,25 @@ def quadrant_checker(quadrant1, quadrant2, quadrant):
 def search_buttons(buttons, screen, searchQuadrant):
     buttonOptions = buttons[screen]
     for button in buttonOptions:
-        if button[1] and quadrant_checker(button[2][0], button[2][1], searchQuadrant):
-            return button[3]
+        if button[0] and quadrant_checker(button[1][0], button[1][1], searchQuadrant):
+            return button[2]
     return empty_def
         
-buttons = {'menu':[['start game', True, [1, 306], start_game]]}
+buttons = {'start menu':[[True, [1946, 2569], start_game, 'sprites/buttons/start button.png'], 
+                         [True, [2906, 3529], options_start_menu, 'sprites/buttons/options button start menu.png'], 
+                         [True, [3866, 4489], statistics_start_menu, 'sprites/buttons/statistics button start menu.png']]}
 '''this stores the information for all buttons except the exit button, as that is the only button that appears on all screens
 the dictionary has the screen names as the keys for the buttons, with each value being an array off buttons
-each button stores the name of the button, whether it is on or off, the quadrants it appears in, and the definition for when it is activated
+each button stores whether it is on or off, the quadrants it appears in, the definition for when it is activated and the name of the button file
 the quadrants are the top left quadrant and bottom right, which the sorting algorithm can figure out what quadrants that button covers
 example: 'start menu':[['start button, True, [1, 106] start_game]'''
+
+screen = 'start menu'
+
+def button_blitter(window, screen, buttons):
+    buttonOptions = buttons[screen]
+    for button in buttonOptions:
+        window.blit(pygame.image.load(button[3]), quadrant_to_coordinates(button[1][0]))
 
 while running:
 
@@ -69,18 +84,20 @@ while running:
             mouseQuadrant = coordinates_to_quadrant(pygame.mouse.get_pos())
             #this finds what quadrant the mouse click happened in
 
-            print(mouseQuadrant)
+            #print(mouseQuadrant)
 
             if mouseQuadrant == 95 or mouseQuadrant == 96 or mouseQuadrant == 191 or mouseQuadrant == 192:
                 pygame.quit()
             
             else: 
-                buttonPressed = search_buttons(buttons, 'menu', mouseQuadrant)
+                buttonPressed = search_buttons(buttons, screen, mouseQuadrant)
                 buttonPressed()
 
-    exitButton = pygame.image.load('sprites/other/exit button.png')
-    exitButton = scale_sprite(exitButton)
-    window.blit(exitButton, (quadrant_to_coordinates(95)))
+    if screen != 'travel':
+        window.blit(scale_sprite(pygame.image.load(f'sprites/backdrops/{screen}.png')), (0, 0))
+
+    button_blitter(window, 'start menu', buttons)
+    window.blit(scale_sprite(pygame.image.load('sprites/buttons/exit button.png')), (quadrant_to_coordinates(95)))
     #loads, scales and places the button upon the screen
 
     pygame.display.update()
