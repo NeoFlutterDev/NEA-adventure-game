@@ -88,10 +88,17 @@ class Race:
 class Human(Race):
     def __init__(self, exp):
         super().__init__(exp)
-        self.maxHp = self.maxHp * 1.5      
+        self.maxHp = self.maxHp * 1.5     
+
+class Elf(Race):
+    pass
+
+class Insectoid(Race):
+    pass
+
+class Warrior(Race):
+    pass
 
 human = Human(25)
 print(human.get_maxHp())
 print(human.get_lvl())
-print(human.atk)
-print(human.stm)

@@ -1,11 +1,22 @@
-import json
 import socket
 
-serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-serversocket.bind((socket.gethostname(), 7999))
-serversocket.listen(5)
+serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+serv.bind(('', 7999))
+serv.listen(5)
 
 while True:
-    (clientsocket, address) = serversocket.accept()
-    ct = client_thread(clientsocket)
-    ct.run()
+  
+  conn, addr = serv.accept()
+  from_client = ''
+
+  while True:
+
+    data = conn.recv(4096)
+    if not data: break
+    from_client += data.decode('utf8')
+    print (f'From client: {from_client}')
+    conn.send("I am SERVER\n".encode())
+
+  conn.close()
+
+print ('client disconnected and shutdown')
