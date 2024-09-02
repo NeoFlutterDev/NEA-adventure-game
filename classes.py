@@ -158,6 +158,12 @@ class Monster:
 
     def get_weaponModifier(self):
         return self.weaponModifier
+    
+    def get_bias(self):
+        return self.bias
+    
+    def set_bias(self, bias):
+        self.bias = bias
 
     def update_atk(self):
         self.atk = math.trunc(1.5 * self.lvl + 100)
