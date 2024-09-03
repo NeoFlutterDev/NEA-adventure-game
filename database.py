@@ -1,5 +1,7 @@
 import sqlite3
 import string
+import os
+import random
 
 def createDatabase():
     import sqlite3
@@ -45,15 +47,18 @@ con.commit()
 con.close()
 #this creates three seperate tables for the database
 
-def hashing_algorithm(string):
-    hashValue = hash_encryption(string)
-    for loop in range(5):
-        hashValue = hash_encryption(str(hashValue))
-    return base62_encode(hashValue)
+def generate_salt():
+    return os.urandom(16)
+
+def loop_length(string):
+    loopLength = 0
+    for char in string:
+        loopLength += ord(char)
+    return (loopLength % 50) + random.randint(len(string) % 5, 50 * len(string))
 
 def hash_encryption(string):
     hashValue = 0
-    primes = [37, 53, 61, 79, 97]
+    primes = [6221, 7433, 2203, 4817, 4241, 6449, 4549, 5717, 2861, 4507, 7607, 7549, 5209]
     for i in range(len(string)):
         hashValue = (hashValue << 3) ^ (hashValue >> 5)
         prime = primes[i % len(primes)]
@@ -61,16 +66,16 @@ def hash_encryption(string):
         hashValue = hashValue % (2**256 - 1)
     return hashValue
 
-def base62_encode(hashValue):
-    characterSet = string.digits + string.ascii_letters
-    base = 62
+def base64_encode(hashValue):
+    characterSet = string.digits + string.ascii_letters + '+' + '/'
+    base = 64
     encoded = []
     while hashValue > 0:
         hashValue, remainder = divmod(hashValue, base)
         encoded.append(characterSet[remainder])
 
     alphanumericString = ''.join(reversed(encoded))
-    length = 10
+    length = 16
 
     if len(alphanumericString) > length:
         alphanumericString = alphanumericString[:length]
@@ -78,5 +83,14 @@ def base62_encode(hashValue):
         alphanumericString = alphanumericString.zfill(length)
 
     return alphanumericString
+
+def hashing_algorithm(string):
+    salt = generate_salt().hex()
+    salted_input = string + salt
+    hashValue = hash_encryption(salted_input)
+    loopLength = loop_length(salted_input)
+    for i in range(loopLength):
+        hashValue = hash_encryption(str(hashValue)) + salt
+    return base64_encode(hashValue)
 
 createDatabase()
