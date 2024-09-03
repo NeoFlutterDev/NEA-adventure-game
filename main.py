@@ -84,8 +84,6 @@ while running:
             mouseQuadrant = coordinates_to_quadrant(pygame.mouse.get_pos())
             #this finds what quadrant the mouse click happened in
 
-            #print(mouseQuadrant)
-
             if mouseQuadrant == 95 or mouseQuadrant == 96 or mouseQuadrant == 191 or mouseQuadrant == 192:
                 pygame.quit()
             

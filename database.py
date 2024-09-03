@@ -2,34 +2,48 @@ import sqlite3
 import string
 
 def createDatabase():
-    questions = 10
-    con = sqlite3.connect('databases/storage.db')
-    cur = con.cursor()
-    cur.execute('''
-        CREATE TABLE accounts(
-        accountKey varchar(255) PRIMARY KEY, 
-        characterName varchar(255),
-        encryptedPassword varchar(255),
-        level varchar(255), 
-        money varchar(255), 
-        weapon varchar(255), 
-        armour varchar(255))
-    ''')
-    
-    cur.execute('''
-        CREATE TABLE questions(
-        questionKey varchar(255) PRIMARY KEY, 
-        question varchar(255),
-        answer varchar(255))
-    ''')
+    import sqlite3
 
-    cur.execute('''
-        CREATE TABLE weights(
-        questionKey varchar(255),
-        correct varchar(255), 
-        incorrect varchar(255), 
-        weight varchar(255))
-    ''')
+questions = 10
+con = sqlite3.connect('storage.db')
+con.execute("PRAGMA foreign_keys = 1")
+cur = con.cursor()
+
+# Create the 'accounts' table
+cur.execute('''
+    CREATE TABLE IF NOT EXISTS accounts(
+    accountKey INTEGER PRIMARY KEY AUTOINCREMENT, 
+    characterName varchar(255),
+    encryptedPassword varchar(255),
+    level varchar(255), 
+    money varchar(255), 
+    weapon varchar(255), 
+    armour varchar(255))
+''')
+
+# Create the 'questions' table
+cur.execute('''
+    CREATE TABLE IF NOT EXISTS questions(
+    questionKey INTEGER PRIMARY KEY AUTOINCREMENT, 
+    question varchar(255),
+    answer varchar(255))
+''')
+
+# Create the 'weights' table
+cur.execute('''
+    CREATE TABLE IF NOT EXISTS weights(
+    weightKey INTEGER PRIMARY KEY AUTOINCREMENT,
+    correct varchar(255), 
+    incorrect varchar(255), 
+    weight varchar(255), 
+    questionID INTEGER,
+    FOREIGN KEY (questionID) REFERENCES questions(questionKey)
+    )
+''')
+
+con.commit()
+con.close()
+#this creates three seperate tables for the database
 
 def hashing_algorithm(string):
     hashValue = hash_encryption(string)
@@ -64,3 +78,5 @@ def base62_encode(hashValue):
         alphanumericString = alphanumericString.zfill(length)
 
     return alphanumericString
+
+createDatabase()
