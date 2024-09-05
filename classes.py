@@ -22,6 +22,9 @@ class PlayableCharacter:
         curentLvl = math.trunc(2.5 * (math.sqrt(self.exp) - 5))
         if self.lvl < curentLvl:
             self.lvl = curentLvl
+            self.update_atk() 
+            self.update_maxHp() 
+            self.update_maxStm()
 
     def get_exp(self):
         return self.exp
