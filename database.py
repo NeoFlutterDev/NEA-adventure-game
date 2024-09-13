@@ -4,48 +4,52 @@ import os
 import random
 
 def createDatabase():
-    import sqlite3
+        con = sqlite3.connect('storage.db')
+        
+        # Enable foreign key constraints
+        con.execute("PRAGMA foreign_keys = ON")
+        
+        # Create a cursor object to execute SQL commands
+        cur = con.cursor()
+        
+        # Create the 'accounts' table
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS accounts(
+            accountKey INTEGER PRIMARY KEY AUTOINCREMENT, 
+            characterName TEXT,
+            encryptedPassword TEXT,
+            level TEXT, 
+            money TEXT, 
+            weapon TEXT, 
+            armour TEXT)
+        ''')
+        
+        # Create the 'questions' table
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS questions(
+            questionKey INTEGER PRIMARY KEY AUTOINCREMENT, 
+            question TEXT,
+            answer TEXT)
+        ''')
+        
+        # Create the 'weights' table
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS weights(
+            weightKey INTEGER PRIMARY KEY AUTOINCREMENT,
+            correct TEXT, 
+            incorrect TEXT, 
+            weight TEXT, 
+            questionID INTEGER,
+            FOREIGN KEY (questionID) REFERENCES questions(questionKey)
+            )
+        ''')
+        
+        # Commit changes and close the connection
+        con.commit()
 
-questions = 10
-con = sqlite3.connect('storage.db')
-con.execute("PRAGMA foreign_keys = 1")
-cur = con.cursor()
+        con.close()
 
-# Create the 'accounts' table
-cur.execute('''
-    CREATE TABLE IF NOT EXISTS accounts(
-    accountKey INTEGER PRIMARY KEY AUTOINCREMENT, 
-    characterName varchar(255),
-    encryptedPassword varchar(255),
-    level varchar(255), 
-    money varchar(255), 
-    weapon varchar(255), 
-    armour varchar(255))
-''')
-
-# Create the 'questions' table
-cur.execute('''
-    CREATE TABLE IF NOT EXISTS questions(
-    questionKey INTEGER PRIMARY KEY AUTOINCREMENT, 
-    question varchar(255),
-    answer varchar(255))
-''')
-
-# Create the 'weights' table
-cur.execute('''
-    CREATE TABLE IF NOT EXISTS weights(
-    weightKey INTEGER PRIMARY KEY AUTOINCREMENT,
-    correct varchar(255), 
-    incorrect varchar(255), 
-    weight varchar(255), 
-    questionID INTEGER,
-    FOREIGN KEY (questionID) REFERENCES questions(questionKey)
-    )
-''')
-
-con.commit()
-con.close()
-#this creates three seperate tables for the database
+createDatabase()
 
 def generate_salt():
     return os.urandom(16)
@@ -92,5 +96,3 @@ def hashing_algorithm(string):
     for i in range(loopLength):
         hashValue = hash_encryption(str(hashValue)) + salt
     return base64_encode(hashValue)
-
-createDatabase()
