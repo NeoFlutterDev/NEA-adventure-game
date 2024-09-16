@@ -5,6 +5,7 @@ class PlayableCharacter:
     def __init__(self, exp):
         self.exp = exp
         self.lvl = math.trunc(2.5 * (math.sqrt(self.exp) - 5))
+        self.money = 0
         self.armour = None
         self.armourModifier = 1
         self.weapon = None
@@ -31,6 +32,12 @@ class PlayableCharacter:
     
     def get_lvl(self):
         return self.lvl
+
+    def set_money(self, money):
+        self.money = money
+
+    def get_money(self):
+        return self.money
 
     def set_armour(self, armour):
         self.armour = armour
