@@ -147,22 +147,84 @@ def delete_account(accountKey):
 
 def calculate_weight(correct, incorrect):
     
-    weight_scale = 100
-    min_weight = 1
-    max_weight = 100
+    weightScale = 100
+    minWeight = 1
+    maxWeight = 100
     #the starting weight, the minimum and maximum weights (all constants)
 
-    total_answers = correct + incorrect
+    totalAnswers = correct + incorrect
     #times the question has been answered
 
-    if total_answers == 0:
+    if totalAnswers == 0:
 
         return 50
     #if the question hasn't been asked, the weight is 50 by default
 
-    return min(max_weight, max(min_weight, weight_scale * (incorrect / total_answers)))
+    return min(maxWeight, max(minWeight, weightScale * (incorrect / totalAnswers)))
     #calculates weight based upon the ratio of incorrect answers to the total answers, and ensures that it is is within the bounds of 1-100
 
+def update_question(answer, weightKey):
+    try:
+        # Connect to the database
+        con = sqlite3.connect('storage.db')
+        cur = con.cursor()
+        con.execute("PRAGMA foreign_keys = ON")
+
+        # Determine which column to update based on the answer
+        if answer == 'correct':
+            answerColumn = 'correct'
+            option = 0
+        elif answer == 'incorrect':
+            answerColumn = 'incorrect'
+            option = 1
+        else:
+            raise ValueError("Answer must be either 'correct' or 'incorrect'.")
+
+        # Fetch the current correct and incorrect counts
+        cur.execute('''
+            SELECT correct, incorrect
+            FROM weights
+            WHERE weightKey = ?
+        ''', (weightKey,))
+        result = cur.fetchone()
+
+        if result is None:
+            raise ValueError(f"No data found for weightKey {weightKey}")
+
+        # Get current values for correct and incorrect answers
+        correct, incorrect = result
+
+        # Increment either the correct or incorrect count based on the answer
+        if option == 0:
+            correct += 1
+        else:
+            incorrect += 1
+
+        # Recalculate the weight
+        newWeight = calculate_weight(correct, incorrect)
+
+        # Update the database with the new values
+        cur.execute(f'''
+            UPDATE weights
+            SET {answerColumn} = ?, weight = ?
+            WHERE weightKey = ?
+        ''', (correct if option == 0 else incorrect, newWeight, weightKey))
+
+        # Commit the changes
+        con.commit()
+
+    except sqlite3.Error as e:
+        print('Database Error:', e)
+
+    except ValueError as ve:
+        print('Value Error:', ve)
+
+    finally:
+        # Close the connection and cursor
+        if cur:
+            cur.close()
+        if con:
+            con.close()
 
 def loop_length(string):
     loopLength = 0
