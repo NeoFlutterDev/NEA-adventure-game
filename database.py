@@ -1,7 +1,5 @@
 import sqlite3
 import string
-import os
-import random
 
 def createDatabase():
     try:
