@@ -2,7 +2,8 @@ import math
 import random
 
 class PlayableCharacter:
-    def __init__(self, exp):
+    def __init__(self, name, exp):
+        self.name = name
         self.exp = exp
         self.lvl = math.trunc(2.5 * (math.sqrt(self.exp) - 5))
         self.money = 0
