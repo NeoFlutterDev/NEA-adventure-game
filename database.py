@@ -15,12 +15,14 @@ def createDatabase():
         cur.execute('''
             CREATE TABLE IF NOT EXISTS accounts(
             accountKey INTEGER PRIMARY KEY AUTOINCREMENT, 
-            characterName TEXT NOT NULL,
             encryptedPassword TEXT NOT NULL,
+            characterName TEXT NOT NULL,
             level INTEGER NOT NULL, 
             money INTEGER NOT NULL, 
+            armour TEXT,
+            armourModifier REAL,
             weapon TEXT,
-            armour TEXT)
+            weaponModifier REAL,)
         ''')
         
         # Create the 'questions' table
@@ -39,7 +41,9 @@ def createDatabase():
             incorrect INTEGER NOT NULL, 
             weight REAL NOT NULL, 
             questionKey INTEGER NOT NULL,
-            FOREIGN KEY (questionKey) REFERENCES questions(questionKey)
+            accountKey INTEGER NOT NULL,
+            FOREIGN KEY (questionKey) REFERENCES questions(questionKey) ON DELETE CASCADE,
+            FOREIGN KEY (accountKey) REFERENCES accounts(accountKey) ON DELETE CASCADE
             )
         ''')
         
@@ -55,11 +59,13 @@ def createDatabase():
         #close the connection
 
 def table_accounts_insertion(name, password, lvl, money, weapon, armour):
-
     try:
         con = sqlite3.connect('storage.db')
         cur = con.cursor()
         #connect to the database
+
+        # Enable foreign key constraints
+        con.execute("PRAGMA foreign_keys = ON")
 
         query = '''
         INSERT INTO accounts (characterName, encryptedPassword, level, money, weapon, armour)
@@ -84,11 +90,13 @@ def table_accounts_insertion(name, password, lvl, money, weapon, armour):
         #close the connection
 
 def update_account_info(lvl, money, weapon, armour, accountKey):
-
     try:
         con = sqlite3.connect('storage.db')
         cur = con.cursor()
         #connect to the database
+
+        # Enable foreign key constraints
+        con.execute("PRAGMA foreign_keys = ON")
 
         query = '''
         UPDATE accounts
@@ -114,12 +122,14 @@ def update_account_info(lvl, money, weapon, armour, accountKey):
         #close the connection
 
 def delete_account(accountKey):
-    
     try:
         con = sqlite3.connect('storage.db')
         cur = con.cursor()
         #connect to the database
 
+        # Enable foreign key constraints
+        con.execute("PRAGMA foreign_keys = ON")
+        
         cur.execute('''
             DELETE FROM accounts where accountKey = ?
         ''', (accountKey,))
@@ -161,7 +171,7 @@ def calculate_weight(correct, incorrect):
     return min(maxWeight, max(minWeight, weightScale * (incorrect / totalAnswers)))
     #calculates weight based upon the ratio of incorrect answers to the total answers, and ensures that it is is within the bounds of 1-100
 
-def update_question(answer, weightKey):
+def update_question(answer, weightKey, accountKey):
     try:
         # Connect to the database
         con = sqlite3.connect('storage.db')
@@ -182,8 +192,8 @@ def update_question(answer, weightKey):
         cur.execute('''
             SELECT correct, incorrect
             FROM weights
-            WHERE weightKey = ?
-        ''', (weightKey,))
+            WHERE weightKey = ? and accountKey = ?
+        ''', (weightKey, accountKey))
         result = cur.fetchone()
 
         if result is None:
@@ -205,8 +215,8 @@ def update_question(answer, weightKey):
         cur.execute(f'''
             UPDATE weights
             SET {answerColumn} = ?, weight = ?
-            WHERE weightKey = ?
-        ''', (correct if option == 0 else incorrect, newWeight, weightKey))
+            WHERE weightKey = ? and accountKey = ?
+        ''', (correct if option == 0 else incorrect, newWeight, weightKey, accountKey))
 
         # Commit the changes
         con.commit()
@@ -224,21 +234,27 @@ def update_question(answer, weightKey):
         if con:
             con.close()
 
-def loop_length(string):
+def loop_length(text):
     loopLength = 0
-    for char in string:
+    for char in text:
         loopLength += ord(char)
     return ((loopLength % 50) + 1) * 37
+    '''converts each character in the string to their ascii code
+    sums the ascii codes, then mods them by 50, adds 1, then multiplies by 37'''
 
-def hash_encryption(string):
+def hash_encryption(text):
     hashValue = 0
     primes = [6221, 7433, 2203, 4817, 4241, 6449, 4549, 5717, 2861, 4507, 7607, 7549, 5209]
-    for i in range(len(string)):
+    for i in range(len(text)):
         hashValue = (hashValue << 3) ^ (hashValue >> 5)
         prime = primes[i % len(primes)]
-        hashValue += ord(string[i]) * prime
+        hashValue += ord(text[i]) * prime
         hashValue = hashValue % (2**256 - 1)
     return hashValue
+    '''loops this code by the length of the string
+    it XORs the string which is shifted by 3, by the string shifted by 5
+    it then adds on the ascii code of the selected character and multiplies it by a prime number
+    then it mods the string to keep it within a certain range'''
 
 def base64_encode(hashValue):
     characterSet = string.digits + string.ascii_letters + '+' + '/'
@@ -247,7 +263,7 @@ def base64_encode(hashValue):
     while hashValue > 0:
         hashValue, remainder = divmod(hashValue, base)
         encoded.append(characterSet[remainder])
-
+    
     alphanumericString = ''.join(reversed(encoded))
     length = 16
 
@@ -257,10 +273,19 @@ def base64_encode(hashValue):
         alphanumericString = alphanumericString.zfill(length)
 
     return alphanumericString
+    '''creates a base64 character set, and divides the hashValue by 64 every time, using the remainder as the next base64 character.
+    it then reverses the hash and cuts off digits to ensure a 16 digit hash.
+    in the case of a hash being less than 16 digits (no cases found yet) the remainging slots are filled with 0s'''
 
-def hashing_algorithm(string):
-    hashValue = hash_encryption(string)
-    loopLength = loop_length(string)
+def hashing_algorithm(text):
+    hashValue = hash_encryption(text)
+    loopLength = loop_length(text)
     for i in range(loopLength):
         hashValue = hash_encryption(str(hashValue))
     return base64_encode(hashValue)
+    '''hashes the intital text, then gets the loop length based on the new hashValue.
+    then it loops an amount of times based upon loop length, hashing the hashValue that many times.
+    then it encodes the hashValue and returns it'''
+    
+
+print(hashing_algorithm(input()))
