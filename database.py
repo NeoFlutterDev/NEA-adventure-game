@@ -152,6 +152,35 @@ def delete_account(accountKey):
         con.close()
         #close the connection
 
+def load_accounts():
+    
+    try:
+        con = sqlite3.connect('storage.db')
+        cur = con.cursor()
+        #connect to the database
+
+        # Enable foreign key constraints
+        con.execute("PRAGMA foreign_keys = ON")
+        
+        cur.execute('''
+            SELECT accountKey, characterName, level
+            FROM accounts
+        ''')
+
+        result = cur.fetchall()
+
+        con.commit()
+
+        return result
+
+    except sqlite3.Error as e:
+        print('Error:', e)
+        #if any errors occur, print them
+
+    finally:
+        con.close()
+        #close the connection
+
 
 def calculate_weight(correct, incorrect):
     
