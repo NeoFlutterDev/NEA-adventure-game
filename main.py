@@ -12,13 +12,15 @@ pygame.display.set_caption('Ancient Discovery')
 running = True
 #variable for checking if game is still running
 font = pygame.font.Font('spacefont.ttf', 30)
+screen = 'start menu'
 
 def scale_sprite(image):
     return pygame.transform.scale(image, (int(image.get_width() * screenScale[0]), int(image.get_height() * screenScale[1])))
 
 def start_game():
-    pass
-
+    global screen
+    screen = 'character select menu'
+    
 def options_start_menu():
     pass
 
@@ -26,6 +28,9 @@ def statistics_start_menu():
     pass
 
 def empty_def():
+    pass
+
+def bin_account():
     pass
 
 def coordinates_to_quadrant(coordinates):
@@ -60,19 +65,22 @@ def search_buttons(buttons, screen, searchQuadrant):
         
 buttons = {'start menu':[[True, [1946, 2569], start_game, 'sprites/buttons/start button.png'], 
                          [True, [2906, 3529], options_start_menu, 'sprites/buttons/options button start menu.png'], 
-                         [True, [3866, 4489], statistics_start_menu, 'sprites/buttons/statistics button start menu.png']]}
+                         [True, [3866, 4489], statistics_start_menu, 'sprites/buttons/statistics button start menu.png']],
+            'character select menu': [[True, [1146, 1243], bin_account, 'sprites/buttons/bin.png'],
+                                      [True, [2874, 2971], bin_account, 'sprites/buttons/bin.png'],
+                                      [True, [4602, 4699], bin_account, 'sprites/buttons/bin.png']]
+                                      }
 '''this stores the information for all buttons except the exit button, as that is the only button that appears on all screens
 the dictionary has the screen names as the keys for the buttons, with each value being an array off buttons
 each button stores whether it is on or off, the quadrants it appears in, the definition for when it is activated and the name of the button file
 the quadrants are the top left quadrant and bottom right, which the sorting algorithm can figure out what quadrants that button covers
 example: 'start menu':[['start button, True, [1, 106] start_game]'''
 
-screen = 'start menu'
-
 def button_blitter(window, screen, buttons):
     buttonOptions = buttons[screen]
     for button in buttonOptions:
-        window.blit(pygame.image.load(button[3]), quadrant_to_coordinates(button[1][0]))
+        if button[0]:
+            window.blit(pygame.image.load(button[3]), quadrant_to_coordinates(button[1][0]))
 
 while running:
 
@@ -92,9 +100,10 @@ while running:
                 buttonPressed()
 
     if screen != 'travel':
+        window.fill((0, 0, 0))
         window.blit(scale_sprite(pygame.image.load(f'sprites/backdrops/{screen}.png')), (0, 0))
 
-    button_blitter(window, 'start menu', buttons)
+    button_blitter(window, screen, buttons)
     window.blit(scale_sprite(pygame.image.load('sprites/buttons/exit button.png')), (quadrant_to_coordinates(95)))
     #loads, scales and places the button upon the screen
 
