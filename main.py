@@ -109,7 +109,7 @@ while running:
         window.blit(scale_sprite(pygame.image.load(f'sprites/backdrops/{screen}.png')), (0, 0))
 
     button_blitter(window, screen, buttons)
-    window.blit(scale_sprite(pygame.image.load('sprites/buttons/exit button.png')), (quadrant_to_coordinates(95)))
+    window.blit(scale_sprite(pygame.image.load('sprites/buttons/exit.png')), (quadrant_to_coordinates(95)))
     #loads, scales and places the button upon the screen
 
     pygame.display.update()
