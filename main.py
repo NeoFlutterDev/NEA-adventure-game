@@ -23,8 +23,9 @@ def start_game():
     global buttons
     screen = 'character select menu'
     accounts = database.load_accounts()
-    for i in range(accounts):
-        pass
+    for i in range(len(accounts)):
+        buttons['character select menu'][i][0] = True
+        buttons['character select menu'][i+3][0] = True
     
 def options_start_menu():
     pass
@@ -36,6 +37,9 @@ def empty_def():
     pass
 
 def bin_account():
+    pass
+
+def load_account():
     pass
 
 def coordinates_to_quadrant(coordinates):
@@ -73,7 +77,10 @@ buttons = {'start menu':[[True, [1946, 2569], start_game, 'sprites/buttons/start
                          [True, [3866, 4489], statistics_start_menu, 'sprites/buttons/statistics button start menu.png']],
             'character select menu': [[False, [1146, 1243], bin_account, 'sprites/buttons/bin.png'],
                                       [False, [2874, 2971], bin_account, 'sprites/buttons/bin.png'],
-                                      [False, [4602, 4699], bin_account, 'sprites/buttons/bin.png']]
+                                      [False, [4602, 4699], bin_account, 'sprites/buttons/bin.png'],
+                                      [True, [952, 1051], load_account, 'sprites/buttons/load.png'],
+                                      [True, [2680, 2779], load_account, 'sprites/buttons/load.png'],
+                                      [True, [4408, 4507], load_account, 'sprites/buttons/load.png']]
                                       }
 '''this stores the information for all buttons except the exit button, as that is the only button that appears on all screens
 the dictionary has the screen names as the keys for the buttons, with each value being an array off buttons
