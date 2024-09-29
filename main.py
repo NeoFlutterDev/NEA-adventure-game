@@ -1,4 +1,5 @@
 import pygame
+import database
 pygame.init()
 import sys
 import math
@@ -19,7 +20,11 @@ def scale_sprite(image):
 
 def start_game():
     global screen
+    global buttons
     screen = 'character select menu'
+    accounts = database.load_accounts()
+    for i in range(accounts):
+        pass
     
 def options_start_menu():
     pass
@@ -66,9 +71,9 @@ def search_buttons(buttons, screen, searchQuadrant):
 buttons = {'start menu':[[True, [1946, 2569], start_game, 'sprites/buttons/start button.png'], 
                          [True, [2906, 3529], options_start_menu, 'sprites/buttons/options button start menu.png'], 
                          [True, [3866, 4489], statistics_start_menu, 'sprites/buttons/statistics button start menu.png']],
-            'character select menu': [[True, [1146, 1243], bin_account, 'sprites/buttons/bin.png'],
-                                      [True, [2874, 2971], bin_account, 'sprites/buttons/bin.png'],
-                                      [True, [4602, 4699], bin_account, 'sprites/buttons/bin.png']]
+            'character select menu': [[False, [1146, 1243], bin_account, 'sprites/buttons/bin.png'],
+                                      [False, [2874, 2971], bin_account, 'sprites/buttons/bin.png'],
+                                      [False, [4602, 4699], bin_account, 'sprites/buttons/bin.png']]
                                       }
 '''this stores the information for all buttons except the exit button, as that is the only button that appears on all screens
 the dictionary has the screen names as the keys for the buttons, with each value being an array off buttons
