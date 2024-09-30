@@ -7,7 +7,7 @@ import math
 infoObject = pygame.display.Info()
 screenScale = [infoObject.current_w / 1920, infoObject.current_h / 1080]
 #this finds the size of the monitor, as well as making an array to scale the game sprites upon
-window = pygame.display.set_mode((infoObject.current_w, infoObject.current_h))
+window = pygame.display.set_mode((infoObject.current_w, infoObject.current_h), pygame.FULLSCREEN)
 pygame.display.set_caption('Ancient Discovery')
 #initialises the window
 running = True
@@ -78,10 +78,12 @@ buttons = {'start menu':[[True, [1946, 2569], start_game, 'sprites/buttons/start
             'character select menu': [[False, [1146, 1243], bin_account, 'sprites/buttons/bin.png'],
                                       [False, [2874, 2971], bin_account, 'sprites/buttons/bin.png'],
                                       [False, [4602, 4699], bin_account, 'sprites/buttons/bin.png'],
-                                      [True, [952, 1051], load_account, 'sprites/buttons/load.png'],
-                                      [True, [2680, 2779], load_account, 'sprites/buttons/load.png'],
-                                      [True, [4408, 4507], load_account, 'sprites/buttons/load.png']]
+                                      [False, [760, 859], load_account, 'sprites/buttons/load.png'],
+                                      [False, [2488, 2587], load_account, 'sprites/buttons/load.png'],
+                                      [False, [4408, 4507], load_account, 'sprites/buttons/load.png'],
+                                      [True, [900, 1000], load_account, 'sprites/buttons/new game.png']]
                                       }
+#add three new buttons for making a new account 
 '''this stores the information for all buttons except the exit button, as that is the only button that appears on all screens
 the dictionary has the screen names as the keys for the buttons, with each value being an array off buttons
 each button stores whether it is on or off, the quadrants it appears in, the definition for when it is activated and the name of the button file

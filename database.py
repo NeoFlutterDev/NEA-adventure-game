@@ -131,7 +131,7 @@ def delete_account(accountKey):
         con.execute("PRAGMA foreign_keys = ON")
         
         cur.execute('''
-            DELETE FROM accounts where accountKey = ?
+            DELETE FROM accounts WHERE accountKey = ?
         ''', (accountKey,))
         #delete the account with the entered key
 
@@ -317,4 +317,4 @@ def hashing_algorithm(text):
     then it encodes the hashValue and returns it'''
     
 
-print(hashing_algorithm(input()))
+#print(hashing_algorithm(input()))
