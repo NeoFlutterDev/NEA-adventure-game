@@ -26,6 +26,7 @@ def start_game():
     for i in range(len(accounts)):
         buttons['character select menu'][i][0] = True
         buttons['character select menu'][i+3][0] = True
+        buttons['character select menu'][i+6][0] = False
     
 def options_start_menu():
     pass
@@ -40,6 +41,9 @@ def bin_account():
     pass
 
 def load_account():
+    pass
+
+def make_save():
     pass
 
 def coordinates_to_quadrant(coordinates):
@@ -78,10 +82,12 @@ buttons = {'start menu':[[True, [1946, 2569], start_game, 'sprites/buttons/start
             'character select menu': [[False, [1146, 1243], bin_account, 'sprites/buttons/bin.png'],
                                       [False, [2874, 2971], bin_account, 'sprites/buttons/bin.png'],
                                       [False, [4602, 4699], bin_account, 'sprites/buttons/bin.png'],
-                                      [False, [760, 859], load_account, 'sprites/buttons/load.png'],
+                                      [False, [700, 859], load_account, 'sprites/buttons/load.png'],
                                       [False, [2488, 2587], load_account, 'sprites/buttons/load.png'],
-                                      [False, [4408, 4507], load_account, 'sprites/buttons/load.png'],
-                                      [True, [900, 1000], load_account, 'sprites/buttons/new game.png']]
+                                      [False, [4216, 4315], load_account, 'sprites/buttons/load.png'],
+                                      [True, [711, 1114], make_save, 'sprites/buttons/new game.png'],
+                                      [True, [2439, 2842], make_save, 'sprites/buttons/new game.png'],
+                                      [True, [4167, 4570], make_save, 'sprites/buttons/new game.png']]
                                       }
 #add three new buttons for making a new account 
 '''this stores the information for all buttons except the exit button, as that is the only button that appears on all screens
