@@ -46,6 +46,10 @@ def load_account():
 def make_save():
     pass
 
+def go_back_start():
+    global screen
+    screen = 'start menu'
+
 def coordinates_to_quadrant(coordinates):
     quadrantX = coordinates[0] / (20 * screenScale[0])
     quadrantY = coordinates[1] / (20 * screenScale[1])
@@ -87,7 +91,8 @@ buttons = {'start menu':[[True, [1946, 2569], start_game, 'sprites/buttons/start
                                       [False, [4216, 4315], load_account, 'sprites/buttons/load.png'],
                                       [True, [711, 1114], make_save, 'sprites/buttons/new game.png'],
                                       [True, [2439, 2842], make_save, 'sprites/buttons/new game.png'],
-                                      [True, [4167, 4570], make_save, 'sprites/buttons/new game.png']]
+                                      [True, [4167, 4570], make_save, 'sprites/buttons/new game.png'],
+                                      [True, [1, 98], go_back_start, 'sprites/buttons/back arrow.png']]
                                       }
 #add three new buttons for making a new account 
 '''this stores the information for all buttons except the exit button, as that is the only button that appears on all screens
