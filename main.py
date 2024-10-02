@@ -86,10 +86,10 @@ buttons = {'start menu':[[True, [1946, 2569], start_game, 'sprites/buttons/start
             'character select menu': [[False, [1146, 1243], bin_account, 'sprites/buttons/bin.png'],
                                       [False, [2874, 2971], bin_account, 'sprites/buttons/bin.png'],
                                       [False, [4602, 4699], bin_account, 'sprites/buttons/bin.png'],
-                                      [False, [700, 859], load_account, 'sprites/buttons/load.png'],
+                                      [False, [760, 859], load_account, 'sprites/buttons/load.png'],
                                       [False, [2488, 2587], load_account, 'sprites/buttons/load.png'],
                                       [False, [4216, 4315], load_account, 'sprites/buttons/load.png'],
-                                      [True, [711, 1114], make_save, 'sprites/buttons/new game.png'],
+                                      [False, [711, 1114], make_save, 'sprites/buttons/new game.png'],
                                       [True, [2439, 2842], make_save, 'sprites/buttons/new game.png'],
                                       [True, [4167, 4570], make_save, 'sprites/buttons/new game.png'],
                                       [True, [1, 98], go_back_start, 'sprites/buttons/back arrow.png']]
@@ -101,7 +101,10 @@ each button stores whether it is on or off, the quadrants it appears in, the def
 the quadrants are the top left quadrant and bottom right, which the sorting algorithm can figure out what quadrants that button covers
 example: 'start menu':[['start button, True, [1, 106] start_game]'''
 
-def button_blitter(window, screen, buttons):
+def button_blitter():
+    global buttons
+    global screen
+    global window
     buttonOptions = buttons[screen]
     for button in buttonOptions:
         if button[0]:
@@ -128,7 +131,7 @@ while running:
         window.fill((0, 0, 0))
         window.blit(scale_sprite(pygame.image.load(f'sprites/backdrops/{screen}.png')), (0, 0))
 
-    button_blitter(window, screen, buttons)
+    button_blitter()
     window.blit(scale_sprite(pygame.image.load('sprites/buttons/exit.png')), (quadrant_to_coordinates(95)))
     #loads, scales and places the button upon the screen
 
