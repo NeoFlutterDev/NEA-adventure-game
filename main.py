@@ -25,6 +25,7 @@ def start_game():
     accounts = database.load_accounts()
     for i in range(len(accounts)):
         buttons['character select menu'][i][0] = True
+        buttons['character select menu'][i][2] = [bin_account, int(accounts[i][0])]
         buttons['character select menu'][i+3][0] = True
         buttons['character select menu'][i+6][0] = False
     
@@ -37,8 +38,16 @@ def statistics_start_menu():
 def empty_def():
     pass
 
-def bin_account():
-    pass
+def bin_account(accountKey):
+    global screen
+    global buttons
+    database.delete_account(accountKey)
+    for i in range(3):
+        buttons['character select menu'][i][0] = False
+        ['character select menu'][i+3][0] = False
+        buttons['character select menu'][i+6][0] = True
+    window.fill(0, 0, 0)
+    screen = 'start menu'
 
 def load_account():
     pass
@@ -73,23 +82,28 @@ def quadrant_checker(quadrant1, quadrant2, quadrant):
     if (quadrantY >= (quadrant1 // 96)) and (quadrantY <= (quadrant2 // 96)) and (quadrantX >= (quadrant1 % 96)) and (quadrantX <= (quadrant2 % 96)):
         return True
         
-def search_buttons(buttons, screen, searchQuadrant):
+def search_buttons(searchQuadrant):
+    global buttons
+    global screen
     buttonOptions = buttons[screen]
     for button in buttonOptions:
         if button[0] and quadrant_checker(button[1][0], button[1][1], searchQuadrant):
-            return button[2]
+            if isinstance(button[2], list):
+                return button[2][0], button[2][1]
+            else:
+                return button[2]
     return empty_def
         
 buttons = {'start menu':[[True, [1946, 2569], start_game, 'sprites/buttons/start button.png'], 
                          [True, [2906, 3529], options_start_menu, 'sprites/buttons/options button start menu.png'], 
                          [True, [3866, 4489], statistics_start_menu, 'sprites/buttons/statistics button start menu.png']],
-            'character select menu': [[False, [1146, 1243], bin_account, 'sprites/buttons/bin.png'],
-                                      [False, [2874, 2971], bin_account, 'sprites/buttons/bin.png'],
-                                      [False, [4602, 4699], bin_account, 'sprites/buttons/bin.png'],
+            'character select menu': [[False, [1146, 1243], [bin_account, 1], 'sprites/buttons/bin.png'],
+                                      [False, [2874, 2971], [bin_account, 2], 'sprites/buttons/bin.png'],
+                                      [False, [4602, 4699], [bin_account, 3], 'sprites/buttons/bin.png'],
                                       [False, [760, 859], load_account, 'sprites/buttons/load.png'],
                                       [False, [2488, 2587], load_account, 'sprites/buttons/load.png'],
                                       [False, [4216, 4315], load_account, 'sprites/buttons/load.png'],
-                                      [False, [711, 1114], make_save, 'sprites/buttons/new game.png'],
+                                      [True, [711, 1114], make_save, 'sprites/buttons/new game.png'],
                                       [True, [2439, 2842], make_save, 'sprites/buttons/new game.png'],
                                       [True, [4167, 4570], make_save, 'sprites/buttons/new game.png'],
                                       [True, [1, 98], go_back_start, 'sprites/buttons/back arrow.png']]
@@ -104,7 +118,6 @@ example: 'start menu':[['start button, True, [1, 106] start_game]'''
 def button_blitter():
     global buttons
     global screen
-    global window
     buttonOptions = buttons[screen]
     for button in buttonOptions:
         if button[0]:
@@ -124,8 +137,12 @@ while running:
                 pygame.quit()
             
             else: 
-                buttonPressed = search_buttons(buttons, screen, mouseQuadrant)
-                buttonPressed()
+                try:
+                    buttonPressed, parameter = search_buttons(mouseQuadrant)
+                    buttonPressed(parameter)
+                except:
+                    buttonPressed = search_buttons(mouseQuadrant)
+                    buttonPressed()
 
     if screen != 'travel':
         window.fill((0, 0, 0))
