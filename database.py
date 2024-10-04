@@ -318,3 +318,5 @@ def hashing_algorithm(text):
     
 
 #print(hashing_algorithm(input()))
+#table_accounts_insertion('Neo', 'grgdjfvdjrgt64d', 10, 1000, None, None)
+#delete_account(13)
