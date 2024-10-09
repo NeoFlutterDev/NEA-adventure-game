@@ -53,7 +53,9 @@ def load_account():
     pass
 
 def make_save():
-    pass
+    screen = 'password creator'
+    '''password is 8-25 characters, 1 capital, 1 lowercase, 1 number
+    if some criteria is not met display the most important one (go in the given order)'''
 
 def go_back_start():
     global screen
@@ -93,6 +95,9 @@ def search_buttons(searchQuadrant):
             else:
                 return button[2]
     return empty_def
+    '''gets all the buttons for the current screen, then searches through them one by one
+    checks if the button is "on" and whether or not it is where the mouse got pressed
+    if it finds the button it returns it, after checking it is has parameters'''
         
 buttons = {'start menu':[[True, [1946, 2569], start_game, 'sprites/buttons/start button.png'], 
                          [True, [2906, 3529], options_start_menu, 'sprites/buttons/options button start menu.png'], 
@@ -107,8 +112,7 @@ buttons = {'start menu':[[True, [1946, 2569], start_game, 'sprites/buttons/start
                                       [True, [2439, 2842], make_save, 'sprites/buttons/new game.png'],
                                       [True, [4167, 4570], make_save, 'sprites/buttons/new game.png'],
                                       [True, [1, 98], go_back_start, 'sprites/buttons/back arrow.png']]
-                                      }
-#add three new buttons for making a new account 
+                                      } 
 '''this stores the information for all buttons except the exit button, as that is the only button that appears on all screens
 the dictionary has the screen names as the keys for the buttons, with each value being an array off buttons
 each button stores whether it is on or off, the quadrants it appears in, the definition for when it is activated and the name of the button file
@@ -125,6 +129,8 @@ def button_blitter():
 
 while running:
 
+    window.fill((0, 0, 0))
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -135,6 +141,7 @@ while running:
 
             if mouseQuadrant == 95 or mouseQuadrant == 96 or mouseQuadrant == 191 or mouseQuadrant == 192:
                 pygame.quit()
+                #detects if the exit button has been hit
             
             else: 
                 try:
@@ -143,13 +150,14 @@ while running:
                 except:
                     buttonPressed = search_buttons(mouseQuadrant)
                     buttonPressed()
+                    #search to see what button has been pressed, and whether or not is has a parameter to pass, then it executes the given subroutine
 
-    if screen != 'travel':
-        window.fill((0, 0, 0))
-        window.blit(scale_sprite(pygame.image.load(f'sprites/backdrops/{screen}.png')), (0, 0))
+    window.blit(scale_sprite(pygame.image.load(f'sprites/backdrops/{screen}.png')), (0, 0))
+    #updates the display with the current screen
 
     button_blitter()
     window.blit(scale_sprite(pygame.image.load('sprites/buttons/exit.png')), (quadrant_to_coordinates(95)))
     #loads, scales and places the button upon the screen
 
     pygame.display.update()
+    #updates the display with all the new changes
