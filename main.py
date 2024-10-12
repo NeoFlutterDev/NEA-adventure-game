@@ -39,12 +39,12 @@ def empty_def():
     pass
 
 def bin_account(accountKey):
-    global screen
     global buttons
+    global screen
     database.delete_account(accountKey)
     for i in range(3):
         buttons['character select menu'][i][0] = False
-        ['character select menu'][i+3][0] = False
+        buttons['character select menu'][i+3][0] = False
         buttons['character select menu'][i+6][0] = True
     window.fill(0, 0, 0)
     screen = 'start menu'
@@ -95,9 +95,9 @@ def search_buttons(searchQuadrant):
             else:
                 return button[2]
     return empty_def
-    '''gets all the buttons for the current screen, then searches through them one by one
-    checks if the button is "on" and whether or not it is where the mouse got pressed
-    if it finds the button it returns it, after checking it is has parameters'''
+'''gets all the buttons for the current screen, then searches through them one by one
+checks if the button is "on" and whether or not it is where the mouse got pressed
+if it finds the button it returns it, after checking it is has parameters'''
         
 buttons = {'start menu':[[True, [1946, 2569], start_game, 'sprites/buttons/start button.png'], 
                          [True, [2906, 3529], options_start_menu, 'sprites/buttons/options button start menu.png'], 
@@ -131,33 +131,33 @@ while running:
 
     window.fill((0, 0, 0))
 
+    # Handle events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouseQuadrant = coordinates_to_quadrant(pygame.mouse.get_pos())
-            #this finds what quadrant the mouse click happened in
+            print(f"Mouse clicked in quadrant: {mouseQuadrant}")
 
             if mouseQuadrant == 95 or mouseQuadrant == 96 or mouseQuadrant == 191 or mouseQuadrant == 192:
-                pygame.quit()
-                #detects if the exit button has been hit
-            
-            else: 
+                pygame.quit()  # detects if the exit button has been hit
+            else:
                 try:
                     buttonPressed, parameter = search_buttons(mouseQuadrant)
+                    print(f"Button action: {buttonPressed}, parameter: {parameter}")
                     buttonPressed(parameter)
                 except:
                     buttonPressed = search_buttons(mouseQuadrant)
                     buttonPressed()
-                    #search to see what button has been pressed, and whether or not is has a parameter to pass, then it executes the given subroutine
 
+    # Update the screen based on current state
     window.blit(scale_sprite(pygame.image.load(f'sprites/backdrops/{screen}.png')), (0, 0))
-    #updates the display with the current screen
-
+    
+    # Draw buttons
     button_blitter()
+    
+    # Draw the exit button
     window.blit(scale_sprite(pygame.image.load('sprites/buttons/exit.png')), (quadrant_to_coordinates(95)))
-    #loads, scales and places the button upon the screen
 
+    # Update the display
     pygame.display.update()
-    #updates the display with all the new changes
