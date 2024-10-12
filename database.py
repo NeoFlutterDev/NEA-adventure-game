@@ -22,7 +22,7 @@ def createDatabase():
             armour TEXT,
             armourModifier REAL,
             weapon TEXT,
-            weaponModifier REAL,)
+            weaponModifier REAL)
         ''')
         
         # Create the 'questions' table
@@ -316,7 +316,9 @@ def hashing_algorithm(text):
     then it loops an amount of times based upon loop length, hashing the hashValue that many times.
     then it encodes the hashValue and returns it'''
     
-
+#createDatabase()
 #print(hashing_algorithm(input()))
-table_accounts_insertion('Neo', 'grgdjfvdjrgt64d', 10, 1000, None, None)
+#table_accounts_insertion('Neo', 'grgdjfvdjrgt64d', 10, 1000, None, None)
+#table_accounts_insertion('Neo', 'grgdjfvdjrgt64d', 10, 1000, None, None)
+#table_accounts_insertion('Neo', 'grgdjfvdjrgt64d', 10, 1000, None, None)
 #delete_account(13)

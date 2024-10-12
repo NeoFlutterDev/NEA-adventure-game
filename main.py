@@ -46,7 +46,7 @@ def bin_account(accountKey):
         buttons['character select menu'][i][0] = False
         buttons['character select menu'][i+3][0] = False
         buttons['character select menu'][i+6][0] = True
-    window.fill(0, 0, 0)
+    window.fill((0, 0, 0))
     screen = 'start menu'
 
 def load_account():
