@@ -12,8 +12,9 @@ pygame.display.set_caption('Ancient Discovery')
 #initialises the window
 running = True
 #variable for checking if game is still running
-font = pygame.font.Font('spacefont.ttf', 30)
+font = pygame.font.Font('spacefont.ttf', 70)
 screen = 'start menu'
+password = ''
 
 def scale_sprite(image):
     return pygame.transform.scale(image, (int(image.get_width() * screenScale[0]), int(image.get_height() * screenScale[1])))
@@ -53,6 +54,8 @@ def load_account():
     pass
 
 def make_save():
+    global screen
+    window.fill((0, 0, 0))
     screen = 'password creator'
     '''password is 8-25 characters, 1 capital, 1 lowercase, 1 number
     if some criteria is not met display the most important one (go in the given order)'''
@@ -60,6 +63,17 @@ def make_save():
 def go_back_start():
     global screen
     screen = 'start menu'
+
+def passwordTextField(key):
+    global password
+    if key == 'backspace':
+        password = password[:-1]
+    else:
+        password = password + key
+    rectangle = pygame.Rect(150, 370, 1580, 100)
+    pygame.draw.rect(window, (180, 180, 180), rectangle)
+    window.blit(font.render(password, True, (255, 255, 255)), (rectangle.x+5, rectangle.y+5))
+    pygame.display.update()
 
 def coordinates_to_quadrant(coordinates):
     quadrantX = coordinates[0] / (20 * screenScale[0])
@@ -99,7 +113,7 @@ def search_buttons(searchQuadrant):
 checks if the button is "on" and whether or not it is where the mouse got pressed
 if it finds the button it returns it, after checking it is has parameters'''
         
-buttons = {'start menu':[[True, [1946, 2569], start_game, 'sprites/buttons/start button.png'], 
+buttons = {'start menu': [[True, [1946, 2569], start_game, 'sprites/buttons/start button.png'], 
                          [True, [2906, 3529], options_start_menu, 'sprites/buttons/options button start menu.png'], 
                          [True, [3866, 4489], statistics_start_menu, 'sprites/buttons/statistics button start menu.png']],
             'character select menu': [[False, [1146, 1243], [bin_account, 1], 'sprites/buttons/bin.png'],
@@ -111,7 +125,8 @@ buttons = {'start menu':[[True, [1946, 2569], start_game, 'sprites/buttons/start
                                       [True, [711, 1114], make_save, 'sprites/buttons/new game.png'],
                                       [True, [2439, 2842], make_save, 'sprites/buttons/new game.png'],
                                       [True, [4167, 4570], make_save, 'sprites/buttons/new game.png'],
-                                      [True, [1, 98], go_back_start, 'sprites/buttons/back arrow.png']]
+                                      [True, [1, 98], go_back_start, 'sprites/buttons/back arrow.png']],
+            'password creator': []
                                       } 
 '''this stores the information for all buttons except the exit button, as that is the only button that appears on all screens
 the dictionary has the screen names as the keys for the buttons, with each value being an array off buttons
@@ -129,26 +144,30 @@ def button_blitter():
 
 while running:
 
-    window.fill((0, 0, 0))
-
     # Handle events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouseQuadrant = coordinates_to_quadrant(pygame.mouse.get_pos())
-            print(f"Mouse clicked in quadrant: {mouseQuadrant}")
+            #print(f"Mouse clicked in quadrant: {mouseQuadrant}")
 
             if mouseQuadrant == 95 or mouseQuadrant == 96 or mouseQuadrant == 191 or mouseQuadrant == 192:
                 pygame.quit()  # detects if the exit button has been hit
             else:
                 try:
                     buttonPressed, parameter = search_buttons(mouseQuadrant)
-                    print(f"Button action: {buttonPressed}, parameter: {parameter}")
+                    #print(f"Button action: {buttonPressed}, parameter: {parameter}")
                     buttonPressed(parameter)
                 except:
                     buttonPressed = search_buttons(mouseQuadrant)
                     buttonPressed()
+        elif event.type == pygame.KEYDOWN:
+            if screen == 'password creator':
+                if event.key == pygame.K_BACKSPACE:
+                    passwordTextField('backspace')
+                else:
+                    passwordTextField(event.unicode)
 
     # Update the screen based on current state
     window.blit(scale_sprite(pygame.image.load(f'sprites/backdrops/{screen}.png')), (0, 0))
