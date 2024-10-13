@@ -12,7 +12,7 @@ pygame.display.set_caption('Ancient Discovery')
 #initialises the window
 running = True
 #variable for checking if game is still running
-font = pygame.font.Font('spacefont.ttf', 70)
+font = pygame.font.Font(None, 130)
 screen = 'start menu'
 password = ''
 
@@ -68,12 +68,8 @@ def passwordTextField(key):
     global password
     if key == 'backspace':
         password = password[:-1]
-    else:
+    elif len(password) < 18:
         password = password + key
-    rectangle = pygame.Rect(150, 370, 1580, 100)
-    pygame.draw.rect(window, (180, 180, 180), rectangle)
-    window.blit(font.render(password, True, (255, 255, 255)), (rectangle.x+5, rectangle.y+5))
-    pygame.display.update()
 
 def coordinates_to_quadrant(coordinates):
     quadrantX = coordinates[0] / (20 * screenScale[0])
@@ -167,7 +163,10 @@ while running:
                 if event.key == pygame.K_BACKSPACE:
                     passwordTextField('backspace')
                 else:
-                    passwordTextField(event.unicode)
+                    if pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                        passwordTextField(event.unicode.upper())
+                    else:
+                        passwordTextField(event.unicode)
 
     # Update the screen based on current state
     window.blit(scale_sprite(pygame.image.load(f'sprites/backdrops/{screen}.png')), (0, 0))
@@ -177,6 +176,12 @@ while running:
     
     # Draw the exit button
     window.blit(scale_sprite(pygame.image.load('sprites/buttons/exit.png')), (quadrant_to_coordinates(95)))
+
+    #draw password text if on the password creator screen
+    if screen == 'password creator':
+        rectangle = pygame.Rect(150, 370, 1580, 100)
+        pygame.draw.rect(window, (180, 180, 180), rectangle)
+        window.blit(font.render(password, True, (255, 255, 255)), (rectangle.x+5, rectangle.y+5))
 
     # Update the display
     pygame.display.update()
