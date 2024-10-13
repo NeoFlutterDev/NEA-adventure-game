@@ -29,6 +29,7 @@ def start_game():
         buttons['character select menu'][i][2] = [bin_account, int(accounts[i][0])]
         buttons['character select menu'][i+3][0] = True
         buttons['character select menu'][i+6][0] = False
+        buttons['character select menu'][i+6][0] = [make_save, int(accounts[i][0])]
     
 def options_start_menu():
     pass
@@ -53,10 +54,12 @@ def bin_account(accountKey):
 def load_account():
     pass
 
-def make_save():
+def make_save(accountKey):
     global screen
+    global buttons
     window.fill((0, 0, 0))
     screen = 'password creator'
+    buttons['password creator'][5][2][1] = accountKey
     '''password is 8-25 characters, 1 capital, 1 lowercase, 1 number
     if some criteria is not met display the most important one (go in the given order)'''
 
@@ -64,12 +67,41 @@ def go_back_start():
     global screen
     screen = 'start menu'
 
+def password_buttons_false():
+    global buttons
+    buttons['password creator'][0][0] = False
+    buttons['password creator'][1][0] = False
+    buttons['password creator'][2][0] = False
+    buttons['password creator'][3][0] = False
+    buttons['password creator'][4][0] = False
+    buttons['password creator'][5][0] = False
+
 def passwordTextField(key):
     global password
+    global buttons
+    symbols = '[@_!#$%^&*()<>?/\|}{~:]'
     if key == 'backspace':
         password = password[:-1]
     elif len(password) < 18:
         password = password + key
+    if len(password) < 8:
+        buttons['password creator'][0][0] = True
+    elif any(not(character.isalpha() or character.isnumeric() or character == ' ') for character in password):
+        buttons['password creator'][1][0] = True
+    elif any(character.islower() for character in password):
+        buttons['password creator'][2][0] = True
+    elif any(character.isupper() for character in password):
+        buttons['password creator'][3][0] = True
+    elif any(character.isnumeric() for character in password):
+        buttons['password creator'][4][0] = True
+    else:
+        buttons['password creator'][5][0] = True
+
+
+def upload_password():
+    global password
+    database.table_accounts_insertion('Unknown', database.hashing_algorithm(password), 0, 0, None, None)
+    start_game()
 
 def coordinates_to_quadrant(coordinates):
     quadrantX = coordinates[0] / (20 * screenScale[0])
@@ -118,11 +150,16 @@ buttons = {'start menu': [[True, [1946, 2569], start_game, 'sprites/buttons/star
                                       [False, [760, 859], load_account, 'sprites/buttons/load.png'],
                                       [False, [2488, 2587], load_account, 'sprites/buttons/load.png'],
                                       [False, [4216, 4315], load_account, 'sprites/buttons/load.png'],
-                                      [True, [711, 1114], make_save, 'sprites/buttons/new game.png'],
-                                      [True, [2439, 2842], make_save, 'sprites/buttons/new game.png'],
-                                      [True, [4167, 4570], make_save, 'sprites/buttons/new game.png'],
+                                      [True, [711, 1114], [make_save, 1], 'sprites/buttons/new game.png'],
+                                      [True, [2439, 2842], [make_save, 2], 'sprites/buttons/new game.png'],
+                                      [True, [4167, 4570], [make_save, 3], 'sprites/buttons/new game.png'],
                                       [True, [1, 98], go_back_start, 'sprites/buttons/back arrow.png']],
-            'password creator': []
+            'password creator': [[True, [2505, 2519], empty_def, 'sprites/buttons/password too short.png'],
+                                 [False, [2505, 2519], empty_def, 'sprites/buttons/no capital letter'],
+                                 [False, [2505, 2519], empty_def, 'sprites/buttons/no lowercase'],
+                                 [False, [2505, 2519], empty_def, 'sprites/buttons/no symbols'],
+                                 [False, [2505, 2519], empty_def, 'sprites/buttons/no numbers'],
+                                 [False, [2505, 2519], [upload_password, 1], 'sprites/button/upload password']]
                                       } 
 '''this stores the information for all buttons except the exit button, as that is the only button that appears on all screens
 the dictionary has the screen names as the keys for the buttons, with each value being an array off buttons
