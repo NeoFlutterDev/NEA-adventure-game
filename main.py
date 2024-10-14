@@ -1,27 +1,34 @@
 import pygame
 import database
-pygame.init()
 import sys
 import math
 
+pygame.init()
+
+#get display information and set up screenScale
 infoObject = pygame.display.Info()
 screenScale = [infoObject.current_w / 1920, infoObject.current_h / 1080]
-#this finds the size of the monitor, as well as making an array to scale the game sprites upon
+
+#initialize the game window
 window = pygame.display.set_mode((infoObject.current_w, infoObject.current_h), pygame.FULLSCREEN)
 pygame.display.set_caption('Ancient Discovery')
-#initialises the window
+
+#game state
 running = True
-#variable for checking if game is still running
 font = pygame.font.Font(None, 130)
 screen = 'start menu'
 password = ''
 
+#scales sprites based upon the screen size
 def scale_sprite(image):
-    return pygame.transform.scale(image, (int(image.get_width() * screenScale[0]), int(image.get_height() * screenScale[1])))
+    return pygame.transform.scale(image, (
+        int(image.get_width() * screenScale[0]),
+        int(image.get_height() * screenScale[1])
+    ))
 
+#change to the character select menu and load all the accounts
 def start_game():
-    global screen
-    global buttons
+    global screen, buttons
     screen = 'character select menu'
     accounts = database.load_accounts()
     for i in range(len(accounts)):
@@ -29,8 +36,8 @@ def start_game():
         buttons['character select menu'][i][2] = [bin_account, int(accounts[i][0])]
         buttons['character select menu'][i+3][0] = True
         buttons['character select menu'][i+6][0] = False
-        buttons['character select menu'][i+6][0] = [make_save, int(accounts[i][0])]
-    
+        buttons['character select menu'][i+6][2] = [make_save, int(accounts[i][0])]
+
 def options_start_menu():
     pass
 
@@ -40,161 +47,160 @@ def statistics_start_menu():
 def empty_def():
     pass
 
+#delete an account and then reload the screen and accounts
 def bin_account(accountKey):
-    global buttons
-    global screen
+    global buttons, screen
     database.delete_account(accountKey)
     for i in range(3):
         buttons['character select menu'][i][0] = False
         buttons['character select menu'][i+3][0] = False
         buttons['character select menu'][i+6][0] = True
     window.fill((0, 0, 0))
-    screen = 'start menu'
+    start_game()
 
 def load_account():
     pass
 
-def make_save(accountKey):
-    global screen
-    global buttons
+#move to the password screen
+def make_save():
+    global screen, buttons
     window.fill((0, 0, 0))
     screen = 'password creator'
-    buttons['password creator'][5][2] = [upload_password, accountKey]
-    '''password is 8-25 characters, 1 capital, 1 lowercase, 1 number
-    if some criteria is not met display the most important one (go in the given order)'''
 
+#return to start menu
 def go_back_start():
     global screen
     screen = 'start menu'
 
+#clear the password criteria buttons
 def password_buttons_false():
     global buttons
-    buttons['password creator'][0][0] = False
-    buttons['password creator'][1][0] = False
-    buttons['password creator'][2][0] = False
-    buttons['password creator'][3][0] = False
-    buttons['password creator'][4][0] = False
-    buttons['password creator'][5][0] = False
+    for i in range(6):
+        buttons['password creator'][i][0] = False
 
+#check if the password is viable after appending/deleting a character
 def passwordTextField(key):
-    global password
-    global buttons
+    global password, buttons
     symbols = '[@_!#$%^&*()<>?/\|}{~:]'
     password_buttons_false()
+    
     if key == 'backspace':
         password = password[:-1]
-    elif len(password) < 18:
-        password = password + key
+    elif len(password) < 18 and key.isprintable():
+        password += key
+    
+    #validate password criteria in order of most important to least
     if len(password) < 8:
-        buttons['password creator'][0][0] = True
-    elif not any(character in symbols for character in password):
-        buttons['password creator'][1][0] = True
-    elif not any(character.islower() for character in password):
-        buttons['password creator'][2][0] = True
-    elif not any(character.isupper() for character in password):
-        buttons['password creator'][3][0] = True
-    elif not any(character.isnumeric() for character in password):
-        buttons['password creator'][4][0] = True
+        buttons['password creator'][0][0] = True  # Password too short
+    elif not any(char in symbols for char in password):
+        buttons['password creator'][1][0] = True  #no symbols
+    elif not any(char.islower() for char in password):
+        buttons['password creator'][2][0] = True  #no lowercase
+    elif not any(char.isupper() for char in password):
+        buttons['password creator'][3][0] = True  #no capitals
+    elif not any(char.isdigit() for char in password):
+        buttons['password creator'][4][0] = True  #no numbers
     else:
-        buttons['password creator'][5][0] = True
+        buttons['password creator'][5][0] = True  #submit password
 
-
+#upload the hashed password to the database
 def upload_password():
     global password
-    database.table_accounts_insertion('Unknown', database.hashing_algorithm(password), 0, 0, None, None)
+    hashedPassword = database.hashing_algorithm(password)
+    database.table_accounts_insertion('Unknown', hashedPassword, 1, 1, None, None)
+    password = ''
     start_game()
 
+#determine quadrant based upon given coordinates
 def coordinates_to_quadrant(coordinates):
     quadrantX = coordinates[0] / (20 * screenScale[0])
     quadrantY = coordinates[1] / (20 * screenScale[1])
     return (math.trunc(quadrantY) * 96) + math.trunc(quadrantX) + 1
-'''this finds the quadrant in which the mouse is currently located, by finding which 20 pixels it is located in in both height and width
-it then adds these values together, after multiplying the Y quadrant by 96, as there is 96 quadrants per row
-the top left quadrant is 1, and the bottom right quadrant is 5184'''
+    #quadrants range from 1 to 5184
 
+#determine coordinates based upon given quadrant
 def quadrant_to_coordinates(quadrant):
     quadrant -= 1
     coordinateX = (quadrant % 96) * 20 * screenScale[0]
     coordinateY = (quadrant // 96) * 20 * screenScale[1]
     return [coordinateX, coordinateY]
-'''this reverses the quadrant maker, by finding the coordinates used to make the quadrant
-the X coordinate is found by the modulo of the quadrant, as the quadrants are counted left to right then down, then multiplied by 20 to find the exact coordinate
-the Y coordinate is found by the integer division of the quadrant, as each quadrant down is 96 higher than the previous, due to how it is counted'''
 
-def quadrant_checker(quadrant1, quadrant2, quadrant):
-    quadrantX = quadrant % 96
-    quadrantY = quadrant // 96
-    if (quadrantY >= (quadrant1 // 96)) and (quadrantY <= (quadrant2 // 96)) and (quadrantX >= (quadrant1 % 96)) and (quadrantX <= (quadrant2 % 96)):
-        return True
-        
+#check if the pressed quadrant is part of the button
+def quadrant_checker(buttonQuadrant1, buttonQuadrant2, pressedQuadrant):
+    quadrantX = pressedQuadrant % 96
+    quadrantY = pressedQuadrant // 96
+    q1X, q1Y = buttonQuadrant1 % 96, buttonQuadrant1 // 96
+    q2X, q2Y = buttonQuadrant2 % 96, buttonQuadrant2 // 96
+    return (q1Y <= quadrantY <= q2Y) and (q1X <= quadrantX <= q2X)
+
+#find the button pressed based upon the given quadrant and current screen
 def search_buttons(searchQuadrant):
-    global buttons
-    global screen
-    buttonOptions = buttons[screen]
+    global buttons, screen
+    buttonOptions = buttons.get(screen, [])
     for button in buttonOptions:
-        if button[0] and quadrant_checker(button[1][0], button[1][1], searchQuadrant):
-            if isinstance(button[2], list):
-                return button[2][0], button[2][1]
-            else:
-                return button[2]
-    return empty_def
-'''gets all the buttons for the current screen, then searches through them one by one
-checks if the button is "on" and whether or not it is where the mouse got pressed
-if it finds the button it returns it, after checking it is has parameters'''
-        
-buttons = {'start menu': [[True, [1946, 2569], start_game, 'sprites/buttons/start button.png'], 
-                         [True, [2906, 3529], options_start_menu, 'sprites/buttons/options button start menu.png'], 
-                         [True, [3866, 4489], statistics_start_menu, 'sprites/buttons/statistics button start menu.png']],
-            'character select menu': [[False, [1146, 1243], [bin_account, 1], 'sprites/buttons/bin.png'],
-                                      [False, [2874, 2971], [bin_account, 2], 'sprites/buttons/bin.png'],
-                                      [False, [4602, 4699], [bin_account, 3], 'sprites/buttons/bin.png'],
-                                      [False, [760, 859], load_account, 'sprites/buttons/load.png'],
-                                      [False, [2488, 2587], load_account, 'sprites/buttons/load.png'],
-                                      [False, [4216, 4315], load_account, 'sprites/buttons/load.png'],
-                                      [True, [711, 1114], [make_save, 1], 'sprites/buttons/new game.png'],
-                                      [True, [2439, 2842], [make_save, 2], 'sprites/buttons/new game.png'],
-                                      [True, [4167, 4570], [make_save, 3], 'sprites/buttons/new game.png'],
-                                      [True, [1, 98], go_back_start, 'sprites/buttons/back arrow.png']],
-            'password creator': [[True, [2505, 2519], empty_def, 'sprites/buttons/password too short.png'],
-                                 [False, [2505, 2519], empty_def, 'sprites/buttons/no symbols.png'],
-                                 [False, [2505, 2519], empty_def, 'sprites/buttons/no lowercase.png'],
-                                 [False, [2505, 2519], empty_def, 'sprites/buttons/no capital letter.png'],
-                                 [False, [2505, 2519], empty_def, 'sprites/buttons/no numbers.png'],
-                                 [False, [2505, 2519], [upload_password, 1], 'sprites/buttons/upload password.png']]
-} 
-'''this stores the information for all buttons except the exit button, as that is the only button that appears on all screens
-the dictionary has the screen names as the keys for the buttons, with each value being an array off buttons
-each button stores whether it is on or off, the quadrants it appears in, the definition for when it is activated and the name of the button file
-the quadrants are the top left quadrant and bottom right, which the sorting algorithm can figure out what quadrants that button covers
-example: 'start menu':[['start button, True, [1, 106] start_game]'''
+        is_active, (q1, q2), action, sprite = button
+        if is_active and quadrant_checker(q1, q2, searchQuadrant):
+            return action
+    return empty_def  #default action if no button is found
 
+#all buttons, ordered by the screen, saved as the key
+buttons = {
+    'start menu': [
+        [True, [1946, 2569], start_game, 'sprites/buttons/start button.png'], 
+        [True, [2906, 3529], options_start_menu, 'sprites/buttons/options button start menu.png'], 
+        [True, [3866, 4489], statistics_start_menu, 'sprites/buttons/statistics button start menu.png']
+    ],
+    'character select menu': [
+        [False, [1146, 1243], [bin_account, 1], 'sprites/buttons/bin.png'],
+        [False, [2874, 2971], [bin_account, 2], 'sprites/buttons/bin.png'],
+        [False, [4602, 4699], [bin_account, 3], 'sprites/buttons/bin.png'],
+        [False, [760, 859], load_account, 'sprites/buttons/load.png'],
+        [False, [2488, 2587], load_account, 'sprites/buttons/load.png'],
+        [False, [4216, 4315], load_account, 'sprites/buttons/load.png'],
+        [True, [711, 1114], make_save, 'sprites/buttons/new game.png'],
+        [True, [2439, 2842], make_save, 'sprites/buttons/new game.png'],
+        [True, [4167, 4570], make_save, 'sprites/buttons/new game.png'],
+        [True, [1, 98], go_back_start, 'sprites/buttons/back arrow.png']
+    ],
+    'password creator': [
+        [True, [2505, 2519], empty_def, 'sprites/buttons/password too short.png'],
+        [False, [2505, 2519], empty_def, 'sprites/buttons/no symbols.png'],
+        [False, [2505, 2519], empty_def, 'sprites/buttons/no lowercase.png'],
+        [False, [2505, 2519], empty_def, 'sprites/buttons/no capital letter.png'],
+        [False, [2505, 2519], empty_def, 'sprites/buttons/no numbers.png'],
+        [False, [2505, 2519], upload_password, 'sprites/buttons/upload password.png']
+    ]
+}
+#order of button, whether it is visible, bounds, what to run when pressed, sprite path
+
+#load all buttons on the current screen which are enabled
 def button_blitter():
-    global buttons
-    global screen
+    global buttons, screen
     buttonOptions = buttons[screen]
     for button in buttonOptions:
         if button[0]:
             window.blit(pygame.image.load(button[3]), quadrant_to_coordinates(button[1][0]))
 
+#main game loop
 while running:
-
-    # Handle events
+    #load events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            mouseQuadrant = coordinates_to_quadrant(pygame.mouse.get_pos())
-            #print(f"Mouse clicked in quadrant: {mouseQuadrant}")
+            mouse_pos = pygame.mouse.get_pos()
+            mouseQuadrant = coordinates_to_quadrant(mouse_pos)
+            # print(f"Mouse clicked in quadrant: {mouseQuadrant}")
 
-            if mouseQuadrant == 95 or mouseQuadrant == 96 or mouseQuadrant == 191 or mouseQuadrant == 192:
-                pygame.quit()  # detects if the exit button has been hit
+            if mouseQuadrant in [95, 96, 191, 192]:
+                pygame.quit()  #detects if the exit button has been hit
+                sys.exit()
             else:
-                try:
-                    buttonPressed, parameter = search_buttons(mouseQuadrant)
-                    #print(f"Button action: {buttonPressed}, parameter: {parameter}")
+                buttonPressed = search_buttons(mouseQuadrant)
+                if isinstance(buttonPressed, list):
+                    buttonPressed, parameter = buttonPressed
                     buttonPressed(parameter)
-                except:
-                    buttonPressed = search_buttons(mouseQuadrant)
+                else:
                     buttonPressed()
         elif event.type == pygame.KEYDOWN:
             if screen == 'password creator':
@@ -206,20 +212,25 @@ while running:
                     else:
                         passwordTextField(event.unicode)
 
-    # Update the screen based on current state
+    #update the screen based on current screen
     window.blit(scale_sprite(pygame.image.load(f'sprites/backdrops/{screen}.png')), (0, 0))
-    
-    # Draw buttons
+
+    #draw buttons on screen
     button_blitter()
-    
-    # Draw the exit button
-    window.blit(scale_sprite(pygame.image.load('sprites/buttons/exit.png')), (quadrant_to_coordinates(95)))
+
+    #draw the exit button
+    window.blit(scale_sprite(pygame.image.load('sprites/buttons/exit.png')), quadrant_to_coordinates(95))
 
     #draw password text if on the password creator screen
     if screen == 'password creator':
         rectangle = pygame.Rect(150, 370, 1580, 100)
         pygame.draw.rect(window, (180, 180, 180), rectangle)
-        window.blit(font.render(password, True, (255, 255, 255)), (rectangle.x+5, rectangle.y+5))
+        password_text = font.render(password, True, (255, 255, 255))
+        window.blit(password_text, (rectangle.x + 5, rectangle.y + 5))
 
-    # Update the display
+    #update the display
     pygame.display.update()
+
+#quit Pygame and program
+pygame.quit()
+sys.exit()
