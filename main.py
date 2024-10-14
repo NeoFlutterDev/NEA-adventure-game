@@ -59,7 +59,7 @@ def make_save(accountKey):
     global buttons
     window.fill((0, 0, 0))
     screen = 'password creator'
-    buttons['password creator'][5][2][1] = accountKey
+    buttons['password creator'][5][2] = [upload_password, accountKey]
     '''password is 8-25 characters, 1 capital, 1 lowercase, 1 number
     if some criteria is not met display the most important one (go in the given order)'''
 
@@ -80,19 +80,20 @@ def passwordTextField(key):
     global password
     global buttons
     symbols = '[@_!#$%^&*()<>?/\|}{~:]'
+    password_buttons_false()
     if key == 'backspace':
         password = password[:-1]
     elif len(password) < 18:
         password = password + key
     if len(password) < 8:
         buttons['password creator'][0][0] = True
-    elif any(not(character.isalpha() or character.isnumeric() or character == ' ') for character in password):
+    elif not any(character in symbols for character in password):
         buttons['password creator'][1][0] = True
-    elif any(character.islower() for character in password):
+    elif not any(character.islower() for character in password):
         buttons['password creator'][2][0] = True
-    elif any(character.isupper() for character in password):
+    elif not any(character.isupper() for character in password):
         buttons['password creator'][3][0] = True
-    elif any(character.isnumeric() for character in password):
+    elif not any(character.isnumeric() for character in password):
         buttons['password creator'][4][0] = True
     else:
         buttons['password creator'][5][0] = True
@@ -155,12 +156,12 @@ buttons = {'start menu': [[True, [1946, 2569], start_game, 'sprites/buttons/star
                                       [True, [4167, 4570], [make_save, 3], 'sprites/buttons/new game.png'],
                                       [True, [1, 98], go_back_start, 'sprites/buttons/back arrow.png']],
             'password creator': [[True, [2505, 2519], empty_def, 'sprites/buttons/password too short.png'],
-                                 [False, [2505, 2519], empty_def, 'sprites/buttons/no capital letter'],
-                                 [False, [2505, 2519], empty_def, 'sprites/buttons/no lowercase'],
-                                 [False, [2505, 2519], empty_def, 'sprites/buttons/no symbols'],
-                                 [False, [2505, 2519], empty_def, 'sprites/buttons/no numbers'],
-                                 [False, [2505, 2519], [upload_password, 1], 'sprites/button/upload password']]
-                                      } 
+                                 [False, [2505, 2519], empty_def, 'sprites/buttons/no symbols.png'],
+                                 [False, [2505, 2519], empty_def, 'sprites/buttons/no lowercase.png'],
+                                 [False, [2505, 2519], empty_def, 'sprites/buttons/no capital letter.png'],
+                                 [False, [2505, 2519], empty_def, 'sprites/buttons/no numbers.png'],
+                                 [False, [2505, 2519], [upload_password, 1], 'sprites/buttons/upload password.png']]
+} 
 '''this stores the information for all buttons except the exit button, as that is the only button that appears on all screens
 the dictionary has the screen names as the keys for the buttons, with each value being an array off buttons
 each button stores whether it is on or off, the quadrants it appears in, the definition for when it is activated and the name of the button file
