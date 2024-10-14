@@ -109,6 +109,8 @@ def upload_password():
     hashedPassword = database.hashing_algorithm(password)
     database.table_accounts_insertion('Unknown', hashedPassword, 1, 1, None, None)
     password = ''
+    buttons['password creator'][5][0] = False
+    buttons['password creator'][0][0] = True
     start_game()
 
 #determine quadrant based upon given coordinates
