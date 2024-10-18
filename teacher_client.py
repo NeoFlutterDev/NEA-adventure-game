@@ -1,9 +1,20 @@
 import socket
 import threading
 import random
+import pygame 
+
+pygame.init()
 
 active_students = []
 #tracks all current students connected
+
+#get display information and set up screenScale
+infoObject = pygame.display.Info()
+screenScale = [infoObject.current_w / 1920, infoObject.current_h / 1080]
+
+#initialize the game window
+window = pygame.display.set_mode((infoObject.current_w, infoObject.current_h), pygame.FULLSCREEN)
+pygame.display.set_caption('Teacher Display')
 
 def handle_client(conn, address):
     print(f"New connection from: {address}")
