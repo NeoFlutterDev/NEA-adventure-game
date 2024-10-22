@@ -63,7 +63,7 @@ def load_account():
 
 #move to the password screen
 def make_save():
-    global screen, buttons
+    global screen 
     window.fill((0, 0, 0))
     screen = 'password creator'
 
