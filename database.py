@@ -89,6 +89,41 @@ def table_accounts_insertion(name, password, lvl, money, weapon, armour):
         con.close()
         #close the connection
 
+def load_account_password(accountKey):
+    try:
+        con = sqlite3.connect('storage.db')
+        cur = con.cursor()
+        #connect to the database
+
+        # Enable foreign key constraints
+        con.execute("PRAGMA foreign_keys = ON")
+
+        query = '''
+        SELECT encryptedPassword
+        FROM accounts
+        WHERE accountKey = ?'''
+        #define the query, with placeholders
+
+        data = (accountKey,)
+        #enter data that is to replace the old data
+        cur.execute(query, data)
+        #execute the parameterised query
+
+        password = cur.fetchone()
+
+        con.commit()
+        #commit the query
+
+        return password
+    
+    except sqlite3.Error as e:
+        print('Error:', e)
+        #if any errors occur, print them
+
+    finally:
+        con.close()
+        #close the connection
+
 def update_account_info(lvl, money, weapon, armour, accountKey):
     try:
         con = sqlite3.connect('storage.db')

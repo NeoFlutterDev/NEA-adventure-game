@@ -35,8 +35,8 @@ def start_game():
         buttons['character select menu'][i][0] = True
         buttons['character select menu'][i][2] = [bin_account, int(accounts[i][0])]
         buttons['character select menu'][i+3][0] = True
+        buttons['character select menu'][i+3][2] = [load_account, int(accounts[i][0])]
         buttons['character select menu'][i+6][0] = False
-        buttons['character select menu'][i+6][2] = [make_save, int(accounts[i][0])]
 
 def options_start_menu():
     pass
@@ -58,8 +58,11 @@ def bin_account(accountKey):
     window.fill((0, 0, 0))
     start_game()
 
-def load_account():
-    pass
+def load_account(accountKey):
+    global screen, buttons
+    buttons['load account'][0][2] = [check_password, accountKey]
+    window.fill((0, 0, 0))
+    screen = 'load account'
 
 #move to the password screen
 def make_save():
@@ -68,9 +71,9 @@ def make_save():
     screen = 'password creator'
 
 #return to start menu
-def go_back_start():
+def go_back(newScreen):
     global screen
-    screen = 'start menu'
+    screen = newScreen
 
 #clear the password criteria buttons
 def password_buttons_false():
@@ -79,7 +82,7 @@ def password_buttons_false():
         buttons['password creator'][i][0] = False
 
 #check if the password is viable after appending/deleting a character
-def passwordTextField(key):
+def passwordTextFieldCreation(key):
     global password, buttons
     symbols = '[@_!#$%^&*()<>?/\|}{~:]'
     password_buttons_false()
@@ -112,6 +115,30 @@ def upload_password():
     buttons['password creator'][5][0] = False
     buttons['password creator'][0][0] = True
     start_game()
+
+def passwordTextFieldChecking(key):
+    global password, buttons    
+
+    buttons['load account'][1][0] = False
+    buttons['load account'][0][0] = True
+    
+    window.fill({0, 0, 0})
+    button_blitter()
+    
+    if key == 'backspace':
+        password = password[:-1]
+    elif len(password) < 18 and key.isprintable():
+        password += key
+    
+def check_password(accountKey):
+    global password, buttons
+
+    hashedPassword = database.hashing_algorithm(password)
+    if hashedPassword == database.load_account_password(accountKey):
+        pass
+    else: 
+        buttons['load account'][0][0] = False
+        buttons['load account'][1][0] = True
 
 #determine quadrant based upon given coordinates
 def coordinates_to_quadrant(coordinates):
@@ -156,13 +183,13 @@ buttons = {
         [False, [1146, 1243], [bin_account, 1], 'sprites/buttons/bin.png'],
         [False, [2874, 2971], [bin_account, 2], 'sprites/buttons/bin.png'],
         [False, [4602, 4699], [bin_account, 3], 'sprites/buttons/bin.png'],
-        [False, [760, 859], load_account, 'sprites/buttons/load.png'],
-        [False, [2488, 2587], load_account, 'sprites/buttons/load.png'],
-        [False, [4216, 4315], load_account, 'sprites/buttons/load.png'],
+        [False, [760, 859], [load_account, 1], 'sprites/buttons/load.png'],
+        [False, [2488, 2587], [load_account, 2], 'sprites/buttons/load.png'],
+        [False, [4216, 4315], [load_account, 3], 'sprites/buttons/load.png'],
         [True, [711, 1114], make_save, 'sprites/buttons/new game.png'],
         [True, [2439, 2842], make_save, 'sprites/buttons/new game.png'],
         [True, [4167, 4570], make_save, 'sprites/buttons/new game.png'],
-        [True, [1, 98], go_back_start, 'sprites/buttons/back arrow.png']
+        [True, [1, 98], [go_back, 'start menu'], 'sprites/buttons/back arrow.png']
     ],
     'password creator': [
         [True, [2505, 2519], empty_def, 'sprites/buttons/password too short.png'],
@@ -171,6 +198,10 @@ buttons = {
         [False, [2505, 2519], empty_def, 'sprites/buttons/no capital letter.png'],
         [False, [2505, 2519], empty_def, 'sprites/buttons/no numbers.png'],
         [False, [2505, 2519], upload_password, 'sprites/buttons/upload password.png']
+    ],
+    'load account': [
+        [True, [2505, 2519], [check_password, 1], 'sprites/buttons/upload password.png'],
+        [False, [2505, 2519], empty_def, 'sprites/buttons/incorrect password.png']
     ]
 }
 #order of button, whether it is visible, bounds, what to run when pressed, sprite path
@@ -207,12 +238,20 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if screen == 'password creator':
                 if event.key == pygame.K_BACKSPACE:
-                    passwordTextField('backspace')
+                    passwordTextFieldCreation('backspace')
                 else:
                     if pygame.key.get_mods() & pygame.KMOD_SHIFT:
-                        passwordTextField(event.unicode.upper())
+                        passwordTextFieldCreation(event.unicode.upper())
                     else:
-                        passwordTextField(event.unicode)
+                        passwordTextFieldCreation(event.unicode)
+            elif screen == 'load account':
+                if event.key == pygame.K_BACKSPACE:
+                    passwordTextFieldCreation('backspace')
+                else:
+                    if pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                        passwordTextFieldCreation(event.unicode.upper())
+                    else:
+                        passwordTextFieldCreation(event.unicode)
 
     #update the screen based on current screen
     window.blit(scale_sprite(pygame.image.load(f'sprites/backdrops/{screen}.png')), (0, 0))
@@ -224,7 +263,7 @@ while running:
     window.blit(scale_sprite(pygame.image.load('sprites/buttons/exit.png')), quadrant_to_coordinates(95))
 
     #draw password text if on the password creator screen
-    if screen == 'password creator':
+    if screen == 'password creator' or screen == 'load account':
         rectangle = pygame.Rect(150, 370, 1580, 100)
         pygame.draw.rect(window, (180, 180, 180), rectangle)
         password_text = font.render(password, True, (255, 255, 255))
