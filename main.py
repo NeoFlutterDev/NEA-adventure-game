@@ -18,6 +18,7 @@ running = True
 font = pygame.font.Font(None, 130)
 screen = 'start menu'
 password = ''
+print('skibidi')
 
 #scales sprites based upon the screen size
 def scale_sprite(image):
@@ -129,6 +130,12 @@ def passwordTextFieldChecking(key):
         password = password[:-1]
     elif len(password) < 18 and key.isprintable():
         password += key
+
+    print("Submit button visible:", buttons['load account'][0][0])
+    print("Incorrect password button visible:", buttons['load account'][1][0])
+    print("Current password:", password)
+    
+    pygame.display.update()
     
 def check_password(accountKey):
     global password, buttons
