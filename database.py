@@ -1,5 +1,6 @@
 import sqlite3
 import string
+import random
 
 def createDatabase():
     try:
@@ -298,6 +299,76 @@ def update_question(answer, weightKey, accountKey):
         if con:
             con.close()
 
+def pull_question(questionKey):
+    try:
+        # Connect to the database
+        con = sqlite3.connect('storage.db')
+        cur = con.cursor()
+        con.execute("PRAGMA foreign_keys = ON")
+
+        query = '''
+        SELECT question, answer
+        FROM questions
+        WHERE questionKey = ?'''
+
+        cur.execute(query, (questionKey, ))
+
+        return cur.fetchone()
+    
+    except sqlite3.Error as e:
+        print('Database Error:', e)
+
+    except ValueError as ve:
+        print('Value Error:', ve)
+    
+    finally:
+        # Close the connection and cursor
+        if cur:
+            cur.close()
+        if con:
+            con.close()
+
+
+def get_question(accountKey):
+    try:
+        # Connect to the database
+        con = sqlite3.connect('storage.db')
+        cur = con.cursor()
+        con.execute("PRAGMA foreign_keys = ON")
+
+        query = '''
+        SELECT weight, questionKey
+        FROM weights
+        WHERE accountKey = ?'''
+
+        cur.execute(query, (accountKey, ))
+
+        questions = cur.fetchall()
+        
+        sumWeights = 0
+        for question in questions:
+            sumWeights += question[0]
+        
+        chosenQuestion = random.uniform(1, sumWeights)
+
+        for i in range(len(questions)):
+            chosenQuestion -= question[i][0]
+            if chosenQuestion <= 0:
+                return pull_question(question[i][1])
+
+    except sqlite3.Error as e:
+        print('Database Error:', e)
+
+    except ValueError as ve:
+        print('Value Error:', ve)
+    
+    finally:
+        # Close the connection and cursor
+        if cur:
+            cur.close()
+        if con:
+            con.close()
+
 def loop_length(text):
     loopLength = 0
     for char in text:
@@ -350,10 +421,3 @@ def hashing_algorithm(text):
     '''hashes the intital text, then gets the loop length based on the new hashValue.
     then it loops an amount of times based upon loop length, hashing the hashValue that many times.
     then it encodes the hashValue and returns it'''
-    
-#createDatabase()
-#print(hashing_algorithm(input()))
-#table_accounts_insertion('Neo', 'grgdjfvdjrgt64d', 10, 1000, None, None)
-#table_accounts_insertion('Neo', 'grgdjfvdjrgt64d', 10, 1000, None, None)
-#table_accounts_insertion('Neo', 'grgdjfvdjrgt64d', 10, 1000, None, None)
-#delete_account(13)
