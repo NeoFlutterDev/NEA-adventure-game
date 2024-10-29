@@ -18,7 +18,6 @@ running = True
 font = pygame.font.Font(None, 130)
 screen = 'start menu'
 password = ''
-print('skibidi')
 
 #scales sprites based upon the screen size
 def scale_sprite(image):
@@ -123,26 +122,19 @@ def passwordTextFieldChecking(key):
     buttons['load account'][1][0] = False
     buttons['load account'][0][0] = True
     
-    window.fill({0, 0, 0})
-    button_blitter()
-    
     if key == 'backspace':
         password = password[:-1]
     elif len(password) < 18 and key.isprintable():
         password += key
 
-    print("Submit button visible:", buttons['load account'][0][0])
-    print("Incorrect password button visible:", buttons['load account'][1][0])
-    print("Current password:", password)
-    
     pygame.display.update()
     
 def check_password(accountKey):
     global password, buttons
 
     hashedPassword = database.hashing_algorithm(password)
-    if hashedPassword == database.load_account_password(accountKey):
-        pass
+    if hashedPassword == database.load_account_password(accountKey)[0]:
+        print('correct')
     else: 
         buttons['load account'][0][0] = False
         buttons['load account'][1][0] = True
@@ -253,12 +245,12 @@ while running:
                         passwordTextFieldCreation(event.unicode)
             elif screen == 'load account':
                 if event.key == pygame.K_BACKSPACE:
-                    passwordTextFieldCreation('backspace')
+                    passwordTextFieldChecking('backspace')
                 else:
                     if pygame.key.get_mods() & pygame.KMOD_SHIFT:
-                        passwordTextFieldCreation(event.unicode.upper())
+                        passwordTextFieldChecking(event.unicode.upper())
                     else:
-                        passwordTextFieldCreation(event.unicode)
+                        passwordTextFieldChecking(event.unicode)
 
     #update the screen based on current screen
     window.blit(scale_sprite(pygame.image.load(f'sprites/backdrops/{screen}.png')), (0, 0))
