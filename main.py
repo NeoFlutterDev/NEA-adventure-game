@@ -196,11 +196,13 @@ buttons = {
         [False, [2505, 2519], empty_def, 'sprites/buttons/no lowercase.png'],
         [False, [2505, 2519], empty_def, 'sprites/buttons/no capital letter.png'],
         [False, [2505, 2519], empty_def, 'sprites/buttons/no numbers.png'],
-        [False, [2505, 2519], upload_password, 'sprites/buttons/upload password.png']
+        [False, [2505, 2519], upload_password, 'sprites/buttons/upload password.png'],
+        [True, [1, 98], [go_back, 'character select menu'], 'sprites/buttons/back arrow.png']
     ],
     'load account': [
         [True, [2505, 2519], [check_password, 1], 'sprites/buttons/upload password.png'],
-        [False, [2505, 2519], empty_def, 'sprites/buttons/incorrect password.png']
+        [False, [2505, 2519], empty_def, 'sprites/buttons/incorrect password.png'],
+        [True, [1, 98], [go_back, 'character select menu'], 'sprites/buttons/back arrow.png']
     ],
     'networking': [
         [True, [1, 98], [go_back, 'start menu'], 'sprites/buttons/back arrow.png']  
