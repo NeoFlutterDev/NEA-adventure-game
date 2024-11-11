@@ -201,7 +201,10 @@ buttons = {
     'load account': [
         [True, [2505, 2519], [check_password, 1], 'sprites/buttons/upload password.png'],
         [False, [2505, 2519], empty_def, 'sprites/buttons/incorrect password.png']
-    ]
+    ],
+    'networking': [
+        [True, [1, 98], [go_back, 'start menu'], 'sprites/buttons/back arrow.png']  
+    ],
 }
 #order of button, whether it is visible, bounds, what to run when pressed, sprite path
 
@@ -227,6 +230,9 @@ while running:
             if mouseQuadrant in [95, 96, 191, 192]:
                 pygame.quit()  #detects if the exit button has been hit
                 sys.exit()
+            elif mouseQuadrant in [3, 4, 99, 100] and screen != 'networking':
+                buttons['networking'][0][2][1] = screen
+                screen = 'networking'
             else:
                 buttonPressed = search_buttons(mouseQuadrant)
                 if isinstance(buttonPressed, list):
@@ -260,6 +266,7 @@ while running:
 
     #draw the exit button
     window.blit(scale_sprite(pygame.image.load('sprites/buttons/exit.png')), quadrant_to_coordinates(95))
+    window.blit(scale_sprite(pygame.image.load('sprites/buttons/network symbol.png')), quadrant_to_coordinates(3))
 
     #draw password text if on the password creator screen
     if screen == 'password creator' or screen == 'load account':
