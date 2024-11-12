@@ -1,16 +1,19 @@
 import socket
 
-def client_program():
+def client_program(attempted_port):
     
     host = socket.gethostbyname(socket.gethostname())
-    port = int(input())  # The port the server is listening on
+    port = int(attempted_port)  # The port the server is listening on
 
     # Create a socket object
     client_socket = socket.socket()
 
     # Connect to the server using the LAN IP
-    client_socket.connect((host, port))
-
+    try:
+        client_socket.connect((host, port))
+    except:
+        print('incorrect port')
+    
     while True:
         # Input message to send to the server
         message = input("Enter message to send (type 'exit' to disconnect): ")

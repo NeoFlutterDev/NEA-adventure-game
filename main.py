@@ -2,6 +2,7 @@ import pygame
 import database
 import sys
 import math
+import student_communication
 
 pygame.init()
 
@@ -16,8 +17,11 @@ pygame.display.set_caption('Ancient Discovery')
 #game state
 running = True
 font = pygame.font.Font(None, 130)
+smallFont = pygame.font.Font(None, 60)
 screen = 'start menu'
 password = ''
+networkPin = ''
+
 
 #scales sprites based upon the screen size
 def scale_sprite(image):
@@ -139,6 +143,26 @@ def check_password(accountKey):
         buttons['load account'][0][0] = False
         buttons['load account'][1][0] = True
 
+def network_pin_enterer(key):
+    global networkPin
+    global buttons
+
+    if key == 'backspace':
+        networkPin = networkPin[:-1]
+    elif len(networkPin) < 4:
+        networkPin += key
+
+    if len(networkPin) == 4:
+        buttons['networking'][1][0] = True
+
+    pygame.display.update()
+
+def connect_to_network():
+    global networkPin
+
+    student_communication.client_program(networkPin)
+
+
 #determine quadrant based upon given coordinates
 def coordinates_to_quadrant(coordinates):
     quadrantX = coordinates[0] / (20 * screenScale[0])
@@ -205,7 +229,8 @@ buttons = {
         [True, [1, 98], [go_back, 'character select menu'], 'sprites/buttons/back arrow.png']
     ],
     'networking': [
-        [True, [1, 98], [go_back, 'start menu'], 'sprites/buttons/back arrow.png']  
+        [True, [1, 98], [go_back, 'start menu'], 'sprites/buttons/back arrow.png'],
+        [False, [1173, 1187], connect_to_network, 'sprites/buttons/upload password.png'],  
     ],
 }
 #order of button, whether it is visible, bounds, what to run when pressed, sprite path
@@ -259,6 +284,11 @@ while running:
                         passwordTextFieldChecking(event.unicode.upper())
                     else:
                         passwordTextFieldChecking(event.unicode)
+            elif screen == 'networking':
+                if event.key == pygame.K_BACKSPACE:
+                    network_pin_enterer('backspace')
+                elif event.unicode.isdigit():
+                    network_pin_enterer(event.unicode)
 
     #update the screen based on current screen
     window.blit(scale_sprite(pygame.image.load(f'sprites/backdrops/{screen}.png')), (0, 0))
@@ -270,11 +300,16 @@ while running:
     window.blit(scale_sprite(pygame.image.load('sprites/buttons/exit.png')), quadrant_to_coordinates(95))
     window.blit(scale_sprite(pygame.image.load('sprites/buttons/network symbol.png')), quadrant_to_coordinates(3))
 
-    #draw password text if on the password creator screen
+    #draw password text if on the password creator, load account or networking screen
     if screen == 'password creator' or screen == 'load account':
         rectangle = pygame.Rect(150, 370, 1580, 100)
         pygame.draw.rect(window, (180, 180, 180), rectangle)
         password_text = font.render(password, True, (255, 255, 255))
+        window.blit(password_text, (rectangle.x + 5, rectangle.y + 5))
+    elif screen == 'networking':
+        rectangle = pygame.Rect(400, 170, 1450, 50)
+        pygame.draw.rect(window, (180, 180, 180), rectangle)
+        password_text = smallFont.render(networkPin, True, (255, 255, 255))
         window.blit(password_text, (rectangle.x + 5, rectangle.y + 5))
 
     #update the display
