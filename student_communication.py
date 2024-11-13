@@ -33,4 +33,21 @@ def client_program(attempted_port):
     # Close the client connection
     client_socket.close()
 
-client_program()
+#client_program()
+
+def first_connection(port):
+
+    host = socket.gethostbyname(socket.gethostname())
+    port = int(port)
+
+    # Create a socket object
+    client_socket = socket.socket()
+
+    # Connect to the server using the LAN IP
+    try:
+        client_socket.connect((host, port))
+    except:
+        return False, ''
+
+    client_socket.send()
+    

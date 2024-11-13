@@ -21,7 +21,7 @@ smallFont = pygame.font.Font(None, 60)
 screen = 'start menu'
 password = ''
 networkPin = ''
-
+authenticationTicket = ''
 
 #scales sprites based upon the screen size
 def scale_sprite(image):
@@ -159,8 +159,9 @@ def network_pin_enterer(key):
 
 def connect_to_network():
     global networkPin
+    global authenticationTicket
 
-    student_communication.client_program(networkPin)
+    success, authenticationTicket = student_communication.first_connection(networkPin)
 
 
 #determine quadrant based upon given coordinates
@@ -298,8 +299,11 @@ while running:
 
     #draw the exit button
     window.blit(scale_sprite(pygame.image.load('sprites/buttons/exit.png')), quadrant_to_coordinates(95))
-    window.blit(scale_sprite(pygame.image.load('sprites/buttons/network symbol.png')), quadrant_to_coordinates(3))
-
+    if authenticationTicket == '':
+        window.blit(scale_sprite(pygame.image.load('sprites/buttons/no connection.png')), quadrant_to_coordinates(3))
+    else:
+        window.blit(scale_sprite(pygame.image.load('sprites/buttons/connection.png')), quadrant_to_coordinates(3))    
+    
     #draw password text if on the password creator, load account or networking screen
     if screen == 'password creator' or screen == 'load account':
         rectangle = pygame.Rect(150, 370, 1580, 100)
