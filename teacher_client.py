@@ -5,6 +5,8 @@ import pygame
 
 pygame.init()
 
+characters = list("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~")
+
 active_students = []
 #tracks all current students connected
 
