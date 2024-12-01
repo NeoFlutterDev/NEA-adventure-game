@@ -45,7 +45,7 @@ def handle_client(conn, address):
 
 def server_program():
     host = '0.0.0.0'  # Bind to all available interfaces allowing for easier server creation
-    port = random.randint(2000, 9999) #creates a random port for students to join to
+    port = random.randint(49125, 65535) #creates a random port for students to join to chosen from a list of always empty ports
 
     students = int(input("How many students are in the class\n-> "))
 
