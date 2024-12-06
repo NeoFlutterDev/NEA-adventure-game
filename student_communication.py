@@ -1,10 +1,10 @@
 import socket
 import json
-import datetime
-#from zoneinfo import ZoneInfo
+from datetime import datetime, timedelta, timezone
 
 def seconds_since_midnight():
-    currentTime = datetime.datetime.now(ZoneInfo('Europe/London'))
+    timeZone = timezone(timedelta(hours=0))
+    currentTime = datetime.now(timeZone)
     secondsSinceMidnight = currentTime.hour * 3600 + currentTime.minute * 60 + currentTime.second 
     return secondsSinceMidnight
 

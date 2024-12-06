@@ -2,7 +2,7 @@ import pygame
 import database
 import sys
 import math
-#import student_communication
+import student_communication
 
 pygame.init()
 
