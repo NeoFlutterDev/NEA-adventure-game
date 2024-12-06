@@ -2,7 +2,7 @@ import pygame
 import database
 import sys
 import math
-import student_communication
+#import student_communication
 
 pygame.init()
 
@@ -123,8 +123,9 @@ def upload_password():
 def passwordTextFieldChecking(key):
     global password, buttons    
 
-    buttons['load account'][1][0] = False
     buttons['load account'][0][0] = True
+    buttons['load account'][1][0] = False
+    buttons['load account'][2][0] = False
     
     if key == 'backspace':
         password = password[:-1]
@@ -138,7 +139,8 @@ def check_password(accountKey):
 
     hashedPassword = database.hashing_algorithm(password)
     if hashedPassword == database.load_account_password(accountKey)[0]:
-        print('correct')
+        buttons['load account'][0][0] = False
+        buttons['load account'][2][0] = True
     else: 
         buttons['load account'][0][0] = False
         buttons['load account'][1][0] = True
@@ -227,6 +229,7 @@ buttons = {
     'load account': [
         [True, [2505, 2519], [check_password, 1], 'sprites/buttons/upload password.png'],
         [False, [2505, 2519], empty_def, 'sprites/buttons/incorrect password.png'],
+        [False, [2505, 2519], empty_def, 'sprites/buttons/correct password.png'],
         [True, [1, 98], [go_back, 'character select menu'], 'sprites/buttons/back arrow.png']
     ],
     'networking': [
