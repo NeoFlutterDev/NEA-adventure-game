@@ -2,6 +2,7 @@ import socket
 import threading
 import random
 import pygame 
+import json
 
 pygame.init()
 
@@ -29,7 +30,15 @@ def handle_client(conn, address):
             if not data:
                 break  # Student disconnected and leaves the queue
 
-            print(f"Received from {address}: {data}")
+            try:
+                data = json.loads(data)
+                data['unique_ID']
+            except:
+                data = json.loads(data)
+                uniqueID = ''
+                for i in range(16):
+                    uniqueID += characters[random.randint(0, 93)]
+                conn.send(uniqueID.encode())
 
             # Send a response to the student
             response = f"Server received: {data}"
