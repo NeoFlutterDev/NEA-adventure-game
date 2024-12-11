@@ -1,0 +1,286 @@
+import pygame
+import sys
+import math
+import database
+
+class GameUI:
+    def __init__(self, screen_scale, buttons, fontSizes, studentName):
+        self.screenScale = screen_scale
+        self.buttons = buttons
+        self.font = pygame.font.Font(None, fontSizes['large'])
+        self.smallFont = pygame.font.Font(None, fontSizes['small'])
+        self.window = None
+        self.screen = 'start menu'
+        self.password = ''
+        self.networkPin = ''
+        self.uniqueID = ''
+        self.characterName = ''
+        self.running = True
+        self.studentName = studentName
+
+    def empty_def():
+        pass
+    
+    def initialize_window(self):
+        info_object = pygame.display.Info()
+        self.window = pygame.display.set_mode((info_object.current_w, info_object.current_h), pygame.FULLSCREEN)
+        pygame.display.set_caption('Ancient Discovery')
+
+    #scales sprites based upon the screen size
+    def scale_sprite(self, image):
+        return pygame.transform.scale(image, (
+            int(image.get_width() * self.screenScale[0]),
+            int(image.get_height() * self.screenScale[1])
+        ))
+    
+    def button_blitter(self):
+        button_options = self.buttons[self.screen]
+        for button in button_options:
+            if button[0]:
+                self.window.blit(pygame.image.load(button[3]), self.quadrant_to_coordinates(button[1][0]))
+    #load all buttons on the current screen which are enabled
+
+    def coordinates_to_quadrant(self, coordinates):
+        quadrantX = coordinates[0] / (20 * self.screenScale[0])
+        quadrantY = coordinates[1] / (20 * self.screenScale[1])
+        return (math.trunc(quadrantY) * 96) + math.trunc(quadrantX) + 1
+    
+    def quadrant_to_coordinates(self, quadrant):
+        quadrant -= 1
+        coordinateX = (quadrant % 96) * 20 * self.screenScale[0]
+        coordinateY = (quadrant // 96) * 20 * self.screenScale[1]
+        return [coordinateX, coordinateY]
+    
+    def quadrant_checker(buttonQuadrant1, buttonQuadrant2, pressedQuadrant):
+        quadrantX = pressedQuadrant % 96
+        quadrantY = pressedQuadrant // 96
+        quadrant1X, quadrant1Y = buttonQuadrant1 % 96, buttonQuadrant1 // 96
+        quadrant2X, quadrant2Y = buttonQuadrant2 % 96, buttonQuadrant2 // 96
+        return (quadrant1Y <= quadrantY <= quadrant2Y) and (quadrant1X <= quadrantX <= quadrant2X)
+    
+    def search_buttons(self, searchQuadrant):
+        buttonOptions = self.buttons.get(self.screen, [])
+        for button in buttonOptions:
+            is_active, (q1, q2), action, sprite = button
+            if is_active and self.quadrant_checker(q1, q2, searchQuadrant):
+                return action
+        return self.empty_def #default action if no button is found
+    #find the button pressed based upon the given quadrant and current screen
+    
+    #change to the character select menu and load all the accounts
+    def start_game(self):
+        self.screen = 'character select menu'
+        accounts = database.load_accounts()
+        for i in range(len(accounts)):
+            self.buttons['character select menu'][i][0] = True
+            self.buttons['character select menu'][i][2] = [self.bin_account, int(accounts[i][0])]
+            self.buttons['character select menu'][i+3][0] = True
+            self.buttons['character select menu'][i+3][2] = [self.load_account, int(accounts[i][0])]
+            self.buttons['character select menu'][i+6][0] = False
+        self.render()
+    
+    def bin_account(self, accountKey):
+        database.delete_account(accountKey)
+        for i in range(3):
+            self.buttons['character select menu'][i][0] = False
+            self.buttons['character select menu'][i+3][0] = False
+            self.buttons['character select menu'][i+6][0] = True
+        self.start_game()
+    #delete an account and then reload the screen and accounts
+
+    def load_account(self, accountKey):
+        self.buttons['load account'][0][2] = [self.check_password, accountKey]
+        self.window.fill((0, 0, 0))
+        self.screen = 'load account'
+    
+    def make_save(self): 
+        self.window.fill((0, 0, 0))
+        self.screen = 'password creator'
+        #move to the password screen
+    
+    def go_back(self, newScreen):
+        self.screen = newScreen
+    #return to previous screen
+    
+    def password_buttons_false(self):
+        for i in range(6):
+            self.buttons['password creator'][i][0] = False
+    #return the password criteria buttons to default
+    
+    def password_text_field_creation(self, key):
+        symbols = '[@_!#$%^&*()<>?/\|}{~:]'
+        self.password_buttons_false()
+        
+        if key == 'backspace':
+            password = password[:-1]
+        elif len(password) < 18 and key.isprintable():
+            password += key
+        
+        #validate password criteria in order of most important to least
+        if len(password) < 8:
+            self.buttons['password creator'][0][0] = True  # Password too short
+        elif not any(char in symbols for char in password):
+            self.buttons['password creator'][1][0] = True  #no symbols
+        elif not any(char.islower() for char in password):
+            self.buttons['password creator'][2][0] = True  #no lowercase
+        elif not any(char.isupper() for char in password):
+            self.buttons['password creator'][3][0] = True  #no capitals
+        elif not any(char.isdigit() for char in password):
+            self.buttons['password creator'][4][0] = True  #no numbers
+        else:
+            self.buttons['password creator'][5][0] = True  #submit password
+        
+        self.render()
+    #check if the password is viable after appending/deleting a character
+
+    def password_text_field_checking(self, key):
+        self.buttons['load account'][0][0] = True
+        self.buttons['load account'][1][0] = False
+        self.buttons['load account'][2][0] = False
+        
+        if key == 'backspace':
+            password = password[:-1]
+        elif len(password) < 18 and key.isprintable():
+            password += key
+        
+        self.render()
+
+    def check_password(self, accountKey):
+        hashedPassword = database.hashing_algorithm(self.password)
+        if hashedPassword == database.load_account_attribute('encryptedPassword', accountKey)[0]:
+            self.buttons['load account'][0][0] = False
+            self.buttons['load account'][2][0] = True
+        else: 
+            self.buttons['load account'][0][0] = False
+            self.buttons['load account'][1][0] = True
+        #check for character name to see if the tutorial needs to be ran
+
+        self.characterName = database.load_account_attribute('characterName', accountKey)[0]
+
+        if self.characterName == 'Unknown':
+            tutorial.load_tutorial(accountKey)
+        else:
+            load_save_state(accountKey)
+
+        self.render()
+
+    def upload_password(self):
+        hashedPassword = database.hashing_algorithm(self.password)
+        database.table_accounts_insertion('Unknown', hashedPassword, 1, 1, None, None)
+        self.password = ''
+        self.buttons['password creator'][5][0] = False
+        self.buttons['password creator'][0][0] = True
+        self.start_game()
+    #upload the hashed password to the database
+    
+    def network_pin_enterer(self, key):
+        if key == 'backspace':
+            self.networkPin = self.networkPin[:-1]
+        elif len(self.networkPin) < 5:
+            self.networkPin += key
+
+        if len(self.networkPin) == 5:
+            self.buttons['networking'][1][0] = True
+    
+    def render(self):
+        self.window.fill((0, 0, 0))
+        self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/backdrops/{self.screen}.png')), (0, 0))
+
+        self.button_blitter()
+
+        self.window.blit(self.scale_sprite(pygame.image.load('sprites/buttons/exit.png')), self.quadrant_to_coordinates(95))
+
+        if self.uniqueID == '' and self.characterName != '':
+            self.window.blit(self.scale_sprite(pygame.image.load('sprites/buttons/no connection.png')), self.quadrant_to_coordinates(3))
+        elif self.characterName != '':
+            self.window.blit(self.scale_sprite(pygame.image.load('sprites/buttons/connection.png')), self.quadrant_to_coordinates(3))  
+        
+        if self.screen == 'password creator' or self.screen == 'load account':
+            rectangle = pygame.Rect(150, 370, 1580, 100)
+            pygame.draw.rect(self.window, (180, 180, 180), rectangle)
+            password_text = self.font.render(self.password, True, (255, 255, 255))
+            self.window.blit(password_text, (rectangle.x + 5, rectangle.y + 5))
+        elif self.screen == 'networking':
+            rectangle = pygame.Rect(400, 170, 1450, 50)
+            pygame.draw.rect(self.window, (180, 180, 180), rectangle)
+            password_text = self.smallFont.render(self.networkPin, True, (255, 255, 255))
+            self.window.blit(password_text, (rectangle.x + 5, rectangle.y + 5))
+        #draw password text if on the password creator, load account or networking screen
+      
+        pygame.display.update()
+
+    def handle_event(self, event):
+        if event.type == pygame.QUIT:
+            self.quit_game()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            self.handle_mouse_click_event(event)
+        elif event.type == pygame.KEYDOWN:
+            self.handle_key_press_event(event)
+
+    def quit_game(self):
+        pygame.quit()
+        sys.exit()
+
+    def handle_mouse_click_event(self):
+        mousePos = pygame.mouse.get_pos()
+        mouseQuadrant = self.coordinates_to_quadrant(mousePos)
+        
+        if mouseQuadrant in [95, 96, 191, 192]:
+            self.quit_game()
+        elif mouseQuadrant in [3, 4, 99, 100] and self.screen not in ['networking', 'load account'] and self.characterName != '':
+            self.buttons['networking'][0][2][1] = self.screen
+            self.screen = 'networking'
+        else:
+            self.handle_button_click_event()
+    
+    def handle_button_click_event(self):
+        mousePos = pygame.mouse.get_pos()
+        mouseQuadrant = self.coordinates_to_quadrant(mousePos)
+
+        buttonAction = self.search_buttons(mouseQuadrant)
+        if isinstance(buttonAction, list):
+            action, parameter = buttonAction
+            action(parameter)
+        else:
+            buttonAction()
+    
+    def handle_key_press_event(self, event):
+        screenKeyHandlers = {
+            'password creator': self.handle_password_creator_key,
+            'load account': self.handle_load_account_key,
+            'networking': self.handle_networking_key
+        }
+        handle = screenKeyHandlers.get(self.screen)
+        if handle:
+            handle(event)
+
+    def handle_password_creator_key(self, event):
+        if event.key == pygame.K_BACKSPACE:
+            self.password_text_field_creation('backspace')
+        else:
+            if pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                self.password_text_field_creation(event.unicode.upper())
+            else:
+                self.password_text_field_creation(event.unicode)
+        
+    def handle_load_account_key(self, event):
+        if event.key == pygame.K_BACKSPACE:
+            self.password_text_field_checking('backspace')
+        else:
+            if pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                self.password_text_field_checking(event.unicode.upper())
+            else:
+                self.password_text_field_checking(event.unicode)
+
+    def handle_networking_key(self, event):
+        if event.key == pygame.K_BACKSPACE:
+            self.network_pin_enterer('backspace')
+        elif event.unicode.isdigit():
+            self.network_pin_enterer(event.unicode)
+
+    def run(self):
+        while self.running:
+            for event in pygame.event.get():
+                self.handle_event(event)
+            self.render()
+        self.quit_game()
