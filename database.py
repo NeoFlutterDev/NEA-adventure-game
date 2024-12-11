@@ -90,7 +90,7 @@ def table_accounts_insertion(name, password, lvl, money, weapon, armour):
         con.close()
         #close the connection
 
-def load_account_password(accountKey):
+def load_account_attribute(attribute, accountKey):
     try:
         con = sqlite3.connect('storage.db')
         cur = con.cursor()
@@ -99,8 +99,8 @@ def load_account_password(accountKey):
         # Enable foreign key constraints
         con.execute("PRAGMA foreign_keys = ON")
 
-        query = '''
-        SELECT encryptedPassword
+        query = f'''
+        SELECT {attribute}
         FROM accounts
         WHERE accountKey = ?'''
         #define the query, with placeholders
@@ -110,12 +110,12 @@ def load_account_password(accountKey):
         cur.execute(query, data)
         #execute the parameterised query
 
-        password = cur.fetchone()
+        attributeValue = cur.fetchone()
 
         con.commit()
         #commit the query
 
-        return password
+        return attributeValue
     
     except sqlite3.Error as e:
         print('Error:', e)
@@ -421,3 +421,7 @@ def hashing_algorithm(text):
     '''hashes the intital text, then gets the loop length based on the new hashValue.
     then it loops an amount of times based upon loop length, hashing the hashValue that many times.
     then it encodes the hashValue and returns it'''
+
+
+#print(load_account_attribute('characterName', 41)[0])
+#print(load_account_attribute('encryptedPassword', 41)[0])
