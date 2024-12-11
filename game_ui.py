@@ -4,9 +4,9 @@ import math
 import database
 
 class GameUI:
-    def __init__(self, screen_scale, buttons, fontSizes, studentName):
+    def __init__(self, screen_scale, fontSizes, studentName):
         self.screenScale = screen_scale
-        self.buttons = buttons
+        self.buttons = {}
         self.font = pygame.font.Font(None, fontSizes['large'])
         self.smallFont = pygame.font.Font(None, fontSizes['small'])
         self.window = None
@@ -18,7 +18,49 @@ class GameUI:
         self.running = True
         self.studentName = studentName
 
-    def empty_def():
+    def initialize_buttons(self, connect_to_network):
+        self.buttons = {
+            'start menu': [
+                [True, [1946, 2569], self.start_game, 'sprites/buttons/start button.png'],
+                [True, [2906, 3529], self.options_start_menu, 'sprites/buttons/options button start menu.png'],
+                [True, [3866, 4489], self.statistics_start_menu, 'sprites/buttons/statistics button start menu.png']
+            ],
+            'character select menu': [
+                [False, [1146, 1243], [self.bin_account, 1], 'sprites/buttons/bin.png'],
+                [False, [2874, 2971], [self.bin_account, 2], 'sprites/buttons/bin.png'],
+                [False, [4602, 4699], [self.bin_account, 3], 'sprites/buttons/bin.png'],
+                [False, [760, 859], [self.load_account, 1], 'sprites/buttons/load.png'],
+                [False, [2488, 2587], [self.load_account, 2], 'sprites/buttons/load.png'],
+                [False, [4216, 4315], [self.load_account, 3], 'sprites/buttons/load.png'],
+                [True, [711, 1114], self.make_save, 'sprites/buttons/new game.png'],
+                [True, [2439, 2842], self.make_save, 'sprites/buttons/new game.png'],
+                [True, [4167, 4570], self.make_save, 'sprites/buttons/new game.png'],
+                [True, [1, 98], [self.go_back, 'start menu'], 'sprites/buttons/back arrow.png']
+            ],
+            'password creator': [
+                [True, [2505, 2519], self.empty_def, 'sprites/buttons/password too short.png'],
+                [False, [2505, 2519], self.empty_def, 'sprites/buttons/no symbols.png'],
+                [False, [2505, 2519], self.empty_def, 'sprites/buttons/no lowercase.png'],
+                [False, [2505, 2519], self.empty_def, 'sprites/buttons/no capital letter.png'],
+                [False, [2505, 2519], self.empty_def, 'sprites/buttons/no numbers.png'],
+                [False, [2505, 2519], self.upload_password, 'sprites/buttons/upload password.png'],
+                [True, [1, 98], [self.go_back, 'character select menu'], 'sprites/buttons/back arrow.png']
+            ],
+            'load account': [
+                [True, [2505, 2519], [self.check_password, 1], 'sprites/buttons/upload password.png'],
+                [False, [2505, 2519], self.empty_def, 'sprites/buttons/incorrect password.png'],
+                [False, [2505, 2519], self.empty_def, 'sprites/buttons/correct password.png'],
+                [True, [1, 98], [self.go_back, 'character select menu'], 'sprites/buttons/back arrow.png']
+            ],
+            'networking': [
+                [True, [1, 98], [self.go_back, 'start menu'], 'sprites/buttons/back arrow.png'],
+                [False, [1173, 1187], lambda: connect_to_network(self), 'sprites/buttons/upload password.png'],
+            ],
+        }
+    #all buttons, ordered by the screen, saved as the key
+    #order of button, whether it is visible, bounds, what to run when pressed, sprite path
+
+    def empty_def(self):
         pass
     
     def initialize_window(self):
@@ -51,7 +93,7 @@ class GameUI:
         coordinateY = (quadrant // 96) * 20 * self.screenScale[1]
         return [coordinateX, coordinateY]
     
-    def quadrant_checker(buttonQuadrant1, buttonQuadrant2, pressedQuadrant):
+    def quadrant_checker(self, buttonQuadrant1, buttonQuadrant2, pressedQuadrant):
         quadrantX = pressedQuadrant % 96
         quadrantY = pressedQuadrant // 96
         quadrant1X, quadrant1Y = buttonQuadrant1 % 96, buttonQuadrant1 // 96
@@ -78,6 +120,12 @@ class GameUI:
             self.buttons['character select menu'][i+3][2] = [self.load_account, int(accounts[i][0])]
             self.buttons['character select menu'][i+6][0] = False
         self.render()
+    
+    def options_start_menu(self):
+        pass
+
+    def statistics_start_menu(self):
+        pass
     
     def bin_account(self, accountKey):
         database.delete_account(accountKey)
@@ -112,20 +160,20 @@ class GameUI:
         self.password_buttons_false()
         
         if key == 'backspace':
-            password = password[:-1]
-        elif len(password) < 18 and key.isprintable():
-            password += key
+            self.password = self.password[:-1]
+        elif len(self.password) < 18 and key.isprintable():
+            self.password += key
         
         #validate password criteria in order of most important to least
-        if len(password) < 8:
+        if len(self.password) < 8:
             self.buttons['password creator'][0][0] = True  # Password too short
-        elif not any(char in symbols for char in password):
+        elif not any(char in symbols for char in self.password):
             self.buttons['password creator'][1][0] = True  #no symbols
-        elif not any(char.islower() for char in password):
+        elif not any(char.islower() for char in self.password):
             self.buttons['password creator'][2][0] = True  #no lowercase
-        elif not any(char.isupper() for char in password):
+        elif not any(char.isupper() for char in self.password):
             self.buttons['password creator'][3][0] = True  #no capitals
-        elif not any(char.isdigit() for char in password):
+        elif not any(char.isdigit() for char in self.password):
             self.buttons['password creator'][4][0] = True  #no numbers
         else:
             self.buttons['password creator'][5][0] = True  #submit password
@@ -139,9 +187,9 @@ class GameUI:
         self.buttons['load account'][2][0] = False
         
         if key == 'backspace':
-            password = password[:-1]
-        elif len(password) < 18 and key.isprintable():
-            password += key
+            self.password = self.password[:-1]
+        elif len(self.password) < 18 and key.isprintable():
+            self.password += key
         
         self.render()
 
@@ -213,7 +261,7 @@ class GameUI:
         if event.type == pygame.QUIT:
             self.quit_game()
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            self.handle_mouse_click_event(event)
+            self.handle_mouse_click_event()
         elif event.type == pygame.KEYDOWN:
             self.handle_key_press_event(event)
 
