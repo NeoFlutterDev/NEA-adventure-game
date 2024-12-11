@@ -3,6 +3,7 @@ import database
 import sys
 import math
 import student_communication
+import tutorial
 
 pygame.init()
 
@@ -21,7 +22,12 @@ smallFont = pygame.font.Font(None, 60)
 screen = 'start menu'
 password = ''
 networkPin = ''
-authenticationTicket = ''
+uniqueID = ''
+studentName = input('Enter your name')
+characterName = ''
+
+def empty_def():
+    pass
 
 #scales sprites based upon the screen size
 def scale_sprite(image):
@@ -46,9 +52,6 @@ def options_start_menu():
     pass
 
 def statistics_start_menu():
-    pass
-
-def empty_def():
     pass
 
 #delete an account and then reload the screen and accounts
@@ -135,15 +138,24 @@ def passwordTextFieldChecking(key):
     pygame.display.update()
     
 def check_password(accountKey):
-    global password, buttons
+    global password, buttons, characterName
 
     hashedPassword = database.hashing_algorithm(password)
-    if hashedPassword == database.load_account_password(accountKey)[0]:
+    if hashedPassword == database.load_account_attribute('encryptedPassword', accountKey)[0]:
         buttons['load account'][0][0] = False
         buttons['load account'][2][0] = True
     else: 
         buttons['load account'][0][0] = False
         buttons['load account'][1][0] = True
+
+    #check for character name to see if the tutorial needs to be ran
+
+    characterName = database.load_account_attribute('characterName', accountKey)[0]
+
+    if characterName == 'Unknown':
+        tutorial.load_tutorial(accountKey)
+    else:
+        load_save_state(accountKey)
 
 def network_pin_enterer(key):
     global networkPin
@@ -151,19 +163,18 @@ def network_pin_enterer(key):
 
     if key == 'backspace':
         networkPin = networkPin[:-1]
-    elif len(networkPin) < 4:
+    elif len(networkPin) < 5:
         networkPin += key
 
-    if len(networkPin) == 4:
+    if len(networkPin) == 5:
         buttons['networking'][1][0] = True
 
     pygame.display.update()
 
 def connect_to_network():
-    global networkPin
-    global authenticationTicket
+    global networkPin, uniqueID, studentName, characterName
 
-    success, authenticationTicket = student_communication.first_connection(networkPin)
+    success, uniqueID = student_communication.first_connection(networkPin, studentName, characterName)
 
 
 #determine quadrant based upon given coordinates
@@ -184,9 +195,9 @@ def quadrant_to_coordinates(quadrant):
 def quadrant_checker(buttonQuadrant1, buttonQuadrant2, pressedQuadrant):
     quadrantX = pressedQuadrant % 96
     quadrantY = pressedQuadrant // 96
-    q1X, q1Y = buttonQuadrant1 % 96, buttonQuadrant1 // 96
-    q2X, q2Y = buttonQuadrant2 % 96, buttonQuadrant2 // 96
-    return (q1Y <= quadrantY <= q2Y) and (q1X <= quadrantX <= q2X)
+    quadrant1X, quadrant1Y = buttonQuadrant1 % 96, buttonQuadrant1 // 96
+    quadrant2X, quadrant2Y = buttonQuadrant2 % 96, buttonQuadrant2 // 96
+    return (quadrant1Y <= quadrantY <= quadrant2Y) and (quadrant1X <= quadrantX <= quadrant2X)
 
 #find the button pressed based upon the given quadrant and current screen
 def search_buttons(searchQuadrant):
@@ -261,7 +272,7 @@ while running:
             if mouseQuadrant in [95, 96, 191, 192]:
                 pygame.quit()  #detects if the exit button has been hit
                 sys.exit()
-            elif mouseQuadrant in [3, 4, 99, 100] and screen != 'networking':
+            elif mouseQuadrant in [3, 4, 99, 100] and screen != 'networking' and screen != 'load account' and characterName != '':
                 buttons['networking'][0][2][1] = screen
                 screen = 'networking'
             else:
@@ -302,9 +313,9 @@ while running:
 
     #draw the exit button
     window.blit(scale_sprite(pygame.image.load('sprites/buttons/exit.png')), quadrant_to_coordinates(95))
-    if authenticationTicket == '':
+    if uniqueID == '' and characterName != '':
         window.blit(scale_sprite(pygame.image.load('sprites/buttons/no connection.png')), quadrant_to_coordinates(3))
-    else:
+    elif characterName != '':
         window.blit(scale_sprite(pygame.image.load('sprites/buttons/connection.png')), quadrant_to_coordinates(3))    
     
     #draw password text if on the password creator, load account or networking screen
