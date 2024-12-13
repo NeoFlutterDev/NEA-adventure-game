@@ -14,7 +14,11 @@ def connect_to_network(ui):
 
     success, uniqueID = student_communication.first_connection(ui.networkPin, ui.studentName, ui.characterName)
 
-ui = GameUI(screenScale, fontSizes, studentName)
+def tutorial_call(ui, accountKey):
+    tutorial.load_tutorial(ui, accountKey)
+
+mainSubroutines = [lambda: connect_to_network(self), lambda: tutorial_call(self)]
+ui = GameUI(screenScale, fontSizes, studentName, mainSubroutines)
 ui.initialize_buttons(connect_to_network)
 ui.initialize_window()
 ui.run()

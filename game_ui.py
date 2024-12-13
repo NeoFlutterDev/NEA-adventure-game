@@ -4,7 +4,7 @@ import math
 import database
 
 class GameUI:
-    def __init__(self, screen_scale, fontSizes, studentName):
+    def __init__(self, screen_scale, fontSizes, studentName, mainSubroutines):
         self.screenScale = screen_scale
         self.buttons = {}
         self.font = pygame.font.Font(None, fontSizes['large'])
@@ -17,6 +17,7 @@ class GameUI:
         self.characterName = ''
         self.running = True
         self.studentName = studentName
+        self.mainSubroutines = mainSubroutines
 
     def initialize_buttons(self, connect_to_network):
         self.buttons = {
@@ -54,7 +55,7 @@ class GameUI:
             ],
             'networking': [
                 [True, [1, 98], [self.go_back, 'start menu'], 'sprites/buttons/back arrow.png'],
-                [False, [1173, 1187], lambda: connect_to_network(self), 'sprites/buttons/upload password.png'],
+                [False, [1173, 1187], self.mainSubroutines[0], 'sprites/buttons/upload password.png'],
             ],
         }
     #all buttons, ordered by the screen, saved as the key
@@ -205,10 +206,11 @@ class GameUI:
 
         self.characterName = database.load_account_attribute('characterName', accountKey)[0]
 
-        #if self.characterName == 'Unknown':
-            #tutorial.load_tutorial(accountKey)
-        #else:
-            #load_save_state(accountKey)
+        '''if self.characterName == 'Unknown':
+            tutorial_call = self.mainSubroutines[1]
+            tutorial_call(self, accountKey)
+        else:
+            load_save_state(accountKey)'''
 
         self.render()
 
