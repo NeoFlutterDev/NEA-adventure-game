@@ -9,10 +9,10 @@ screenScale = [pygame.display.Info().current_w / 1920, pygame.display.Info().cur
 fontSizes = {'large': 130, 'small': 60}
 studentName = input('Enter your name')
 
-def connect_to_network():
+def connect_to_network(ui):
     global networkPin, uniqueID, studentName, characterName
 
-    success, uniqueID = student_communication.first_connection(networkPin, studentName, characterName)
+    success, uniqueID = student_communication.first_connection(ui.networkPin, ui.studentName, ui.characterName)
 
 ui = GameUI(screenScale, fontSizes, studentName)
 ui.initialize_buttons(connect_to_network)

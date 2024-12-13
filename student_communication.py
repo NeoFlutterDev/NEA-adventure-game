@@ -27,7 +27,7 @@ def connect_to_server(attempted_port):
 
 #client_program()
 
-def first_connection(port, student_name, character_name):
+def first_connection(port, studentName, characterName):
 
     host = socket.gethostbyname(socket.gethostname())
     port = int(port)
@@ -45,13 +45,13 @@ def first_connection(port, student_name, character_name):
     
     #make a JSON string to send
     data = {
-        'student_name': student_name,
-        'character_name': character_name,
-        'last_connected': seconds_since_midnight
+        'student_name': studentName,
+        'character_name': characterName,
+        'last_connected': secondsSinceMidnight
     }
 
-    data_JSON = json.dumps(data)
+    dataJSON = json.dumps(data, indent=4)
 
-    client_socket.send()
+    client_socket.send(dataJSON.encode('utf-8'))
     
 print(seconds_since_midnight())
