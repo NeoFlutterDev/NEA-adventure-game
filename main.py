@@ -17,7 +17,7 @@ def connect_to_network(ui):
 def tutorial_call(ui, accountKey):
     tutorial.load_tutorial(ui, accountKey)
 
-mainSubroutines = [lambda: connect_to_network(self), lambda: tutorial_call(self)]
+mainSubroutines = [lambda: connect_to_network(ui), lambda: tutorial_call(ui)]
 ui = GameUI(screenScale, fontSizes, studentName, mainSubroutines)
 ui.initialize_buttons(connect_to_network)
 ui.initialize_window()

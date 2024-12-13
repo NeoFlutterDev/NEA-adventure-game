@@ -206,11 +206,11 @@ class GameUI:
 
         self.characterName = database.load_account_attribute('characterName', accountKey)[0]
 
-        '''if self.characterName == 'Unknown':
+        if self.characterName == 'Unknown':
             tutorial_call = self.mainSubroutines[1]
             tutorial_call(self, accountKey)
         else:
-            load_save_state(accountKey)'''
+            load_save_state(accountKey)
 
         self.render()
 
