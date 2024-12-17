@@ -208,7 +208,8 @@ class GameUI:
 
         if self.characterName == 'Unknown':
             tutorial_call = self.mainSubroutines[1]
-            tutorial_call(self, accountKey)
+            tutorial_call(accountKey)
+            #self, accountKey
         else:
             load_save_state(accountKey)
 
