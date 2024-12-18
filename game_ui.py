@@ -2,6 +2,8 @@ import pygame
 import sys
 import math
 import database
+import time
+import threading
 
 class GameUI:
     def __init__(self, screen_scale, fontSizes, studentName, mainSubroutines):
@@ -259,6 +261,13 @@ class GameUI:
         #draw password text if on the password creator, load account or networking screen
       
         pygame.display.update()
+
+    def loop_animation(timeDelay, loops, name, states):
+        threading.Thread()
+        for i in range(loops):
+            for j in range(states):
+                pygame.image.load(f'sprites/animations/{name}/state {j+1}')
+                time.sleep(timeDelay)
 
     def handle_event(self, event):
         if event.type == pygame.QUIT:
