@@ -262,6 +262,14 @@ class GameUI:
         #draw password text if on the password creator, load account or networking screen
       
         pygame.display.update()
+    
+    def render_text(self, text, font, startQuadrant, colour):
+        x, y = self.quadrant_to_coordinates(startQuadrant)
+        for line in text:
+            textSurface = font.render(line, True, colour)
+            self.window.blit(textSurface, (x, y))
+            y += font.get_height()
+            pygame.display.update()
 
     def handle_event(self, event):
         if event.type == pygame.QUIT:
@@ -383,3 +391,51 @@ class AnimationController():
         for animation, stopEvent in self.threads:
             stopEvent.set()
     
+class TextController:
+    def __init__(self):
+        self.threads = [] #list to store current text
+
+    def typewriter_text(self, game_ui, font, text, startQuadrant, maxWidth, colour=(256, 256, 256)):
+        stopEvent = threading.Event()
+
+        def start_typewriter_text():
+            currentIndex = 0
+            self.text = []
+            for line in lines:
+                self.text.append('')
+                for char in line:
+                    self.text[-1] += char
+                    currentIndex += 1
+                    game_ui.render_text(self.text, font, startQuadrant, colour)
+                    time.sleep(0.1)
+
+                    if stopEvent.is_set():
+                        self.check_threads()
+            self.check_threads()
+        
+        lines = self.wrap_text(text, font, maxWidth)
+        thread = threading.Thread(target=start_typewriter_text, daemon=True)
+        thread.start()
+        self.threads.append((thread, stopEvent))
+    
+    def wrap_text(self, text, font, maxWidth):
+        words = text.split(' ')
+        lines = []
+        currentLine = ''
+
+        for word in words:
+            test = f'{currentLine} {word}'.strip()
+            if font.size(test)[0] <= maxWidth:
+                currentLine = test
+            else:
+                lines.append(currentLine)
+                currentLine = word
+        lines.append(currentLine)
+
+        return lines    
+    
+    def check_threads(self):
+        for i in range(len(self.threads)-1, -1, -1):
+            thread, stop_event = self.threads[i]
+            if not thread.is_alive():
+                self.threads.pop(i)
