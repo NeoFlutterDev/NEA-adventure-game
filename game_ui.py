@@ -262,13 +262,6 @@ class GameUI:
       
         pygame.display.update()
 
-    def loop_animation(timeDelay, loops, name, states):
-        threading.Thread()
-        for i in range(loops):
-            for j in range(states):
-                pygame.image.load(f'sprites/animations/{name}/state {j+1}')
-                time.sleep(timeDelay)
-
     def handle_event(self, event):
         if event.type == pygame.QUIT:
             self.quit_game()
@@ -344,3 +337,48 @@ class GameUI:
                 self.handle_event(event)
             self.render()
         self.quit_game()
+
+class AnimationController():
+    def __init__(self):
+        self.threads = [] #list to store stop events
+
+    def start_loop_animation(self, timeDelay, loops, name, states, quadrant, game_ui):
+        def loop_animation_thread():
+            for i in range(loops):
+                for state in range(states):
+                    image = pygame.image.load(f'sprites/animations/{name}/state {state+1}')
+                    scaledImage = game_ui.scale_sprite(image)
+                    game_ui.window.blit(scaledImage, game_ui.quadrant_to_coordinates(quadrant))
+                    pygame.display.update()
+                    time.sleep(timeDelay)
+        
+        thread = threading.Thread(target=loop_animation_thread, daemon=True)
+        thread.start()
+
+    def start_continuous_animation(self, timeDelay, name, states, quadrant, game_ui):
+        stopEvent = threading.Event()
+
+        def animation_thread():
+            while not stopEvent.is_set():
+                for state in range(states):
+                    if stopEvent.is_set():
+                        return 
+                    image = pygame.image.load(f'sprites/animations/{name}/state {state+1}')
+                    scaledImage = self.scale_sprite(image)
+                    game_ui.window.blit(scaledImage, game_ui.quadrant_to_coordinates(quadrant))
+                    pygame.display.update()
+                    time.sleep(timeDelay)
+
+        thread = threading.Thread(target=animation_thread, daemon=True)
+        thread.start()
+        self.threads.append((thread, stopEvent))
+
+    def stop_animation(self, index):
+        if -1 < index < len(self.threads):
+            animation, stopEvent = self.threads[index]
+            stopEvent.set()
+    
+    def stop_all_animations(self):
+        for animation, stopEvent in self.threads:
+            stopEvent.set()
+    

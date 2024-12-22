@@ -1,7 +1,8 @@
 import pygame
 import student_communication
 import tutorial
-from game_ui import GameUI
+import game_ui
+import sys
 
 pygame.init()
 
@@ -19,7 +20,9 @@ def tutorial_call(ui, accountKey):
 
 mainSubroutines = [lambda: connect_to_network(ui), lambda accountKey: tutorial_call(ui, accountKey)]
 
-ui = GameUI(screenScale, fontSizes, studentName, mainSubroutines)
+controller = game_ui.AnimationController()
+
+ui = game_ui(screenScale, fontSizes, studentName, mainSubroutines)
 ui.initialize_buttons(connect_to_network)
 ui.initialize_window()
 ui.run()
