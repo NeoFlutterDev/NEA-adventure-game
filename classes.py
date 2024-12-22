@@ -95,31 +95,10 @@ class PlayableCharacter:
 
     def get_currentStm(self):
         return self.currentStm
-        
-        
-class Human(PlayableCharacter):
-    def __init__(self, exp):
-        super().__init__(exp)
-        self.maxHp = self.maxHp * 1.5
 
-    def special():
-        pass     
-
-class Elf(PlayableCharacter):
-    def special():
-        pass  
-
-class Insectoid(PlayableCharacter):
-    def special():
-        pass  
-
-class Warrior(PlayableCharacter):
-    def special():
-        pass  
-
-human = Human(25)
-print(human.get_maxHp())
-print(human.get_lvl())
+player = PlayableCharacter(25)
+print(player.get_maxHp())
+print(player.get_lvl())
 
 weapon = ['sword', 'axe', 'halberd', 'hammer', 'spear']
 armour = ['chain', 'plate', 'fur']

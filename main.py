@@ -11,9 +11,10 @@ fontSizes = {'large': 130, 'small': 60}
 studentName = input('Enter your name')
 
 def connect_to_network(ui):
-    global networkPin, uniqueID, studentName, characterName
-
     success, uniqueID = student_communication.first_connection(ui.networkPin, ui.studentName, ui.characterName)
+    
+    if success == True:
+        ui.uniqueID = uniqueID
 
 def tutorial_call(ui, accountKey):
     tutorial.load_tutorial(ui, accountKey)
@@ -23,7 +24,7 @@ mainSubroutines = [lambda: connect_to_network(ui), lambda accountKey: tutorial_c
 controller = game_ui.AnimationController()
 
 ui = game_ui(screenScale, fontSizes, studentName, mainSubroutines)
-ui.initialize_buttons(connect_to_network)
+ui.initialize_buttons()
 ui.initialize_window()
 ui.run()
 

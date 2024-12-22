@@ -6,7 +6,7 @@ import time
 import threading
 
 class GameUI:
-    def __init__(self, screen_scale, fontSizes, studentName, mainSubroutines):
+    def __init__(self, screen_scale, fontSizes, studentName, mainSubroutines, controller):
         self.screenScale = screen_scale
         self.buttons = {}
         self.font = pygame.font.Font(None, fontSizes['large'])
@@ -20,8 +20,9 @@ class GameUI:
         self.running = True
         self.studentName = studentName
         self.mainSubroutines = mainSubroutines
+        self.animationController = controller
 
-    def initialize_buttons(self, connect_to_network):
+    def initialize_buttons(self):
         self.buttons = {
             'start menu': [
                 [True, [1946, 2569], self.start_game, 'sprites/buttons/start button.png'],
