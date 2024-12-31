@@ -16,14 +16,15 @@ def connect_to_network(ui):
     if success == True:
         ui.uniqueID = uniqueID
 
-def tutorial_call(ui, accountKey):
-    tutorial.load_tutorial(ui, accountKey)
+def tutorial_call(ui, accountKey, animationController, textController):
+    tutorial.load_tutorial(ui, accountKey, animationController, textController)
 
-mainSubroutines = [lambda: connect_to_network(ui), lambda accountKey: tutorial_call(ui, accountKey)]
+mainSubroutines = [lambda ui: connect_to_network(ui), lambda ui, accountKey, animationController, textController: tutorial_call(ui, accountKey, animationController, textController)]
 
-controller = game_ui.AnimationController()
+animationController = game_ui.AnimationController()
+textController = game_ui.TextController()
 
-ui = game_ui(screenScale, fontSizes, studentName, mainSubroutines)
+ui = game_ui.GameUI(screenScale, fontSizes, studentName, mainSubroutines, animationController, textController)
 ui.initialize_buttons()
 ui.initialize_window()
 ui.run()

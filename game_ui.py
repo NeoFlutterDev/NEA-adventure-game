@@ -6,8 +6,8 @@ import time
 import threading
 
 class GameUI:
-    def __init__(self, screen_scale, fontSizes, studentName, mainSubroutines, controller):
-        self.screenScale = screen_scale
+    def __init__(self, screenScale, fontSizes, studentName, mainSubroutines, animationController, textController):
+        self.screenScale = screenScale
         self.buttons = {}
         self.font = pygame.font.Font(None, fontSizes['large'])
         self.smallFont = pygame.font.Font(None, fontSizes['small'])
@@ -20,7 +20,8 @@ class GameUI:
         self.running = True
         self.studentName = studentName
         self.mainSubroutines = mainSubroutines
-        self.animationController = controller
+        self.animationController = animationController
+        self.textController = textController
 
     def initialize_buttons(self):
         self.buttons = {
@@ -211,8 +212,7 @@ class GameUI:
 
         if self.characterName == 'Unknown':
             tutorial_call = self.mainSubroutines[1]
-            tutorial_call(accountKey)
-            #self, accountKey
+            tutorial_call(self, accountKey, self.animationController, self.textController)
         else:
             load_save_state(accountKey)
 
