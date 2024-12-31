@@ -61,6 +61,9 @@ class GameUI:
                 [True, [1, 98], [self.go_back, 'start menu'], 'sprites/buttons/back arrow.png'],
                 [False, [1173, 1187], self.mainSubroutines[0], 'sprites/buttons/upload password.png'],
             ],
+            'tutorial start': [
+
+            ],
         }
     #all buttons, ordered by the screen, saved as the key
     #order of button, whether it is visible, bounds, what to run when pressed, sprite path
@@ -351,14 +354,14 @@ class AnimationController():
     def __init__(self):
         self.threads = [] #list to store stop events
 
-    def start_loop_animation(self, timeDelay, loops, name, states, quadrant, game_ui):
+    def start_loop_animation(self, timeDelay, loops, name, states, startQuadrant, endQuadrant, game_ui):
         def loop_animation_thread():
             for i in range(loops):
                 for state in range(states):
                     image = pygame.image.load(f'sprites/animations/{name}/state {state+1}')
                     scaledImage = game_ui.scale_sprite(image)
-                    game_ui.window.blit(scaledImage, game_ui.quadrant_to_coordinates(quadrant))
-                    pygame.display.update()
+                    game_ui.window.blit(scaledImage, game_ui.quadrant_to_coordinates(startQuadrant))
+                    pygame.display.update(pygame.rect())
                     time.sleep(timeDelay)
         
         thread = threading.Thread(target=loop_animation_thread, daemon=True)
@@ -372,24 +375,24 @@ class AnimationController():
                 for state in range(states):
                     if stopEvent.is_set():
                         return 
-                    image = pygame.image.load(f'sprites/animations/{name}/state {state+1}')
-                    scaledImage = self.scale_sprite(image)
+                    image = pygame.image.load(f'sprites/animations/{name}/state {state+1}.png')
+                    scaledImage = game_ui.scale_sprite(image)
                     game_ui.window.blit(scaledImage, game_ui.quadrant_to_coordinates(quadrant))
-                    pygame.display.update()
+                    #pygame.display.update()
                     time.sleep(timeDelay)
 
         thread = threading.Thread(target=animation_thread, daemon=True)
         thread.start()
-        self.threads.append((thread, stopEvent))
+        self.threads.append((name, stopEvent))
 
     def stop_animation(self, index):
         if -1 < index < len(self.threads):
-            animation, stopEvent = self.threads[index]
+            stopEvent = self.threads[index][1]
             stopEvent.set()
     
     def stop_all_animations(self):
-        for animation, stopEvent in self.threads:
-            stopEvent.set()
+        for stopEvent in self.threads:
+            stopEvent[1].set()
     
 class TextController:
     def __init__(self):
@@ -416,7 +419,7 @@ class TextController:
         lines = self.wrap_text(text, font, maxWidth)
         thread = threading.Thread(target=start_typewriter_text, daemon=True)
         thread.start()
-        self.threads.append((thread, stopEvent))
+        self.threads.append((text, stopEvent))
     
     def wrap_text(self, text, font, maxWidth):
         words = text.split(' ')
@@ -436,6 +439,6 @@ class TextController:
     
     def check_threads(self):
         for i in range(len(self.threads)-1, -1, -1):
-            thread, stop_event = self.threads[i]
+            thread = self.threads[i][0]
             if not thread.is_alive():
                 self.threads.pop(i)
