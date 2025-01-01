@@ -360,8 +360,11 @@ class AnimationController():
                 for state in range(states):
                     image = pygame.image.load(f'sprites/animations/{name}/state {state+1}')
                     scaledImage = game_ui.scale_sprite(image)
-                    game_ui.window.blit(scaledImage, game_ui.quadrant_to_coordinates(startQuadrant))
-                    pygame.display.update(pygame.rect())
+                    coords1 = game_ui.quadrant_to_coordinates(startQuadrant)
+                    coords2 = game_ui.quadrant_to_coordinates(endQuadrant)
+                    difference  = ((coords1[0] - coords2[0]), (coords1[1] - coords2[1]))
+                    game_ui.window.blit(scaledImage, coords1)
+                    pygame.display.update(pygame.rect(coords1, difference))
                     time.sleep(timeDelay)
         
         thread = threading.Thread(target=loop_animation_thread, daemon=True)
