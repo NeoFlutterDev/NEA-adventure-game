@@ -191,6 +191,37 @@ def delete_account(accountKey):
         con.close()
         #close the connection
 
+def delete_all_accounts():
+    try:
+        con = sqlite3.connect('storage.db')
+        cur = con.cursor()
+        #connect to the database
+
+        # Enable foreign key constraints
+        con.execute("PRAGMA foreign_keys = ON")
+        
+        cur.execute('''
+            DELETE FROM accounts
+        ''')
+        #delete the account with the entered key
+
+        con.commit()
+        #commit changes
+
+        if cur.rowcount == 0:
+            print('No account deleted')
+        else:
+            print(f'{cur.rowcount} accounts deleted')
+        #checks if any rows where affected, if any where, nothing happens. If not it prints that no accounts where deleted
+
+    except sqlite3.Error as e:
+        print('Error:', e)
+        #if any errors occur, print them
+
+    finally:
+        con.close()
+        #close the connection
+
 def load_accounts():
     
     try:

@@ -18,6 +18,7 @@ class GameUI:
         self.uniqueID = ''
         self.characterName = ''
         self.running = True
+        self.sound = True
         self.studentName = studentName
         self.mainSubroutines = mainSubroutines
         self.animationController = animationController
@@ -29,6 +30,12 @@ class GameUI:
                 [True, [1946, 2569], self.start_game, 'sprites/buttons/start button.png'],
                 [True, [2906, 3529], self.options_start_menu, 'sprites/buttons/options button start menu.png'],
                 [True, [3866, 4489], self.statistics_start_menu, 'sprites/buttons/statistics button start menu.png']
+            ],
+            'options menu': [
+                [False, [1266, 1557], self.sound_off, 'sprites/buttons/sound on.png'],
+                [False, [1266, 1557], self.sound_on, 'sprites/buttons/sound off.png'],
+                [True, [1971, 2262], database.delete_all_accounts, 'sprites/buttons/delete button.png'],
+                [True, [1, 98], [self.go_back, 'start menu'], 'sprites/buttons/back arrow.png'],
             ],
             'character select menu': [
                 [False, [1146, 1243], [self.bin_account, 1], 'sprites/buttons/bin.png'],
@@ -130,7 +137,25 @@ class GameUI:
         self.render()
     
     def options_start_menu(self):
-        pass
+        self.screen = 'options menu'
+        if self.sound:
+            self.buttons['options menu'][0][0] = True
+        else:
+            self.buttons['options menu'][0][0] = False
+
+    def sound_off(self):
+        self.buttons['options menu'][0][0] = False
+        self.buttons['options menu'][1][0] = True
+        self.sound = False
+
+        self.render()
+
+    def sound_on(self):
+        self.buttons['options menu'][0][0] = True
+        self.buttons['options menu'][1][0] = False
+        self.sound = True
+        
+        self.render()
 
     def statistics_start_menu(self):
         pass
