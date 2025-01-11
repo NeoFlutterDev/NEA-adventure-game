@@ -370,7 +370,7 @@ class AnimationController():
         thread = threading.Thread(target=loop_animation_thread, daemon=True)
         thread.start()
 
-    def start_continuous_animation(self, timeDelay, name, states, quadrant, game_ui):
+    def start_continuous_animation(self, timeDelay, name, states, startQuadrant, endQuadrant, game_ui):
         stopEvent = threading.Event()
 
         def animation_thread():
@@ -380,8 +380,11 @@ class AnimationController():
                         return 
                     image = pygame.image.load(f'sprites/animations/{name}/state {state+1}.png')
                     scaledImage = game_ui.scale_sprite(image)
-                    game_ui.window.blit(scaledImage, game_ui.quadrant_to_coordinates(quadrant))
-                    #pygame.display.update()
+                    coords1 = game_ui.quadrant_to_coordinates(startQuadrant)
+                    coords2 = game_ui.quadrant_to_coordinates(endQuadrant)
+                    difference  = ((coords1[0] - coords2[0]), (coords1[1] - coords2[1]))
+                    game_ui.window.blit(scaledImage, game_ui.quadrant_to_coordinates(startQuadrant))
+                    pygame.display.update(pygame.Rect(coords1, difference))
                     time.sleep(timeDelay)
 
         thread = threading.Thread(target=animation_thread, daemon=True)
