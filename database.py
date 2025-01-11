@@ -21,9 +21,11 @@ def createDatabase():
             level INTEGER NOT NULL, 
             money INTEGER NOT NULL, 
             armour TEXT,
-            armourModifier REAL,
+            armourModifier REAL NOT NULL,
             weapon TEXT,
-            weaponModifier REAL)
+            weaponModifier REAL NOT NULL,
+            kills INTEGER NOT NULL,
+            deaths INTEGER NOT NULL)
         ''')
         
         # Create the 'questions' table
@@ -62,7 +64,7 @@ def createDatabase():
         con.close()
         #close the connection
 
-def table_accounts_insertion(name, password, lvl, money, weapon, armour):
+def table_accounts_insertion(name, password, lvl, money, armour, armourModifier, weapon, weaponModifier, kills, deaths):
     try:
         con = sqlite3.connect('storage.db')
         cur = con.cursor()
@@ -72,12 +74,12 @@ def table_accounts_insertion(name, password, lvl, money, weapon, armour):
         con.execute("PRAGMA foreign_keys = ON")
 
         query = '''
-        INSERT INTO accounts (characterName, encryptedPassword, level, money, weapon, armour)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO accounts (characterName, encryptedPassword, level, money, armour, armourModifier, weapon, weaponModifier, kills, deaths)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         '''
         #define the query, with placeholders
 
-        data = (name, password, lvl, money, weapon, armour)
+        data = (name, password, lvl, money, armour, armourModifier, weapon, weaponModifier, kills, deaths)
         #enter the data that is to be inserted
         cur.execute(query, data)
      #execute the parameterised query
@@ -85,6 +87,39 @@ def table_accounts_insertion(name, password, lvl, money, weapon, armour):
         con.commit()
         #commit the query
 
+    except sqlite3.Error as e:
+        print('Error:', e)
+        #if any errors occur, print them
+
+    finally:
+        con.close()
+        #close the connection
+
+def load_all_accounts():
+    try:
+        con = sqlite3.connect('storage.db')
+        cur = con.cursor()
+        #connect to the database
+
+        # Enable foreign key constraints
+        con.execute("PRAGMA foreign_keys = ON")
+
+        query = '''
+        SELECT *
+        FROM accounts
+        '''
+        #define the query
+
+        cur.execute(query)
+        #execute the query
+
+        accounts = cur.fetchall()
+
+        con.commit()
+        #commit the query
+
+        return accounts
+    
     except sqlite3.Error as e:
         print('Error:', e)
         #if any errors occur, print them

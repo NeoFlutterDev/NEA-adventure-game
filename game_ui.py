@@ -35,7 +35,26 @@ class GameUI:
                 [False, [1266, 1557], self.sound_off, 'sprites/buttons/sound on.png'],
                 [False, [1266, 1557], self.sound_on, 'sprites/buttons/sound off.png'],
                 [True, [1971, 2262], database.delete_all_accounts, 'sprites/buttons/delete button.png'],
-                [True, [1, 98], [self.go_back, 'start menu'], 'sprites/buttons/back arrow.png'],
+                [True, [1, 98], [self.new_screen, 'start menu'], 'sprites/buttons/back arrow.png'],
+            ],
+            'combined stats': [
+                [True, [572, 863], [self.new_screen, 'account 1 stats'], 'sprites/buttons/right one.png'],
+                [True, [1, 98], [self.new_screen, 'start menu'], 'sprites/buttons/back arrow.png'],
+                [False, [10000, 10001], [], 'sprites/buttons/empty sprite.png'],
+            ],
+            'account 1 stats': [
+                [True, [481, 772], [self.new_screen, 'combined stats'], 'sprites/buttons/left combined.png'],
+                [True, [572, 863], [self.new_screen, 'account 2 stats'], 'sprites/buttons/right two.png'],
+                [True, [1, 98], [self.new_screen, 'start menu'], 'sprites/buttons/back arrow.png'],
+            ],
+            'account 2 stats': [
+                [True, [481, 772], [self.new_screen, 'account 1 stats'], 'sprites/buttons/left one.png'],
+                [True, [572, 863], [self.new_screen, 'account 3 stats'], 'sprites/buttons/right three.png'],
+                [True, [1, 98], [self.new_screen, 'start menu'], 'sprites/buttons/back arrow.png'],
+            ],
+            'account 3 stats': [
+                [True, [481, 772], [self.new_screen, 'account 2 stats'], 'sprites/buttons/left two.png'],
+                [True, [1, 98], [self.new_screen, 'start menu'], 'sprites/buttons/back arrow.png'],
             ],
             'character select menu': [
                 [False, [1146, 1243], [self.bin_account, 1], 'sprites/buttons/bin.png'],
@@ -47,7 +66,7 @@ class GameUI:
                 [True, [711, 1114], self.make_save, 'sprites/buttons/new game.png'],
                 [True, [2439, 2842], self.make_save, 'sprites/buttons/new game.png'],
                 [True, [4167, 4570], self.make_save, 'sprites/buttons/new game.png'],
-                [True, [1, 98], [self.go_back, 'start menu'], 'sprites/buttons/back arrow.png']
+                [True, [1, 98], [self.new_screen, 'start menu'], 'sprites/buttons/back arrow.png']
             ],
             'password creator': [
                 [True, [2505, 2519], self.empty_def, 'sprites/buttons/password too short.png'],
@@ -56,16 +75,16 @@ class GameUI:
                 [False, [2505, 2519], self.empty_def, 'sprites/buttons/no capital letter.png'],
                 [False, [2505, 2519], self.empty_def, 'sprites/buttons/no numbers.png'],
                 [False, [2505, 2519], self.upload_password, 'sprites/buttons/upload password.png'],
-                [True, [1, 98], [self.go_back, 'character select menu'], 'sprites/buttons/back arrow.png']
+                [True, [1, 98], [self.new_screen, 'character select menu'], 'sprites/buttons/back arrow.png']
             ],
             'load account': [
                 [True, [2505, 2519], [self.check_password, 1], 'sprites/buttons/upload password.png'],
                 [False, [2505, 2519], self.empty_def, 'sprites/buttons/incorrect password.png'],
                 [False, [2505, 2519], self.empty_def, 'sprites/buttons/correct password.png'],
-                [True, [1, 98], [self.go_back, 'character select menu'], 'sprites/buttons/back arrow.png']
+                [True, [1, 98], [self.new_screen, 'character select menu'], 'sprites/buttons/back arrow.png']
             ],
             'networking': [
-                [True, [1, 98], [self.go_back, 'start menu'], 'sprites/buttons/back arrow.png'],
+                [True, [1, 98], [self.new_screen, 'start menu'], 'sprites/buttons/back arrow.png'],
                 [False, [1173, 1187], self.mainSubroutines[0], 'sprites/buttons/upload password.png'],
             ],
             'tutorial start': [
@@ -158,7 +177,16 @@ class GameUI:
         self.render()
 
     def statistics_start_menu(self):
-        pass
+        self.screen = 'combined stats'
+        accounts = database.load_all_accounts()
+        accountsNumber = len(accounts)
+        placement = [100, 100, 100, 100, 100, 100, 100, 100, 100, 1000, 100]
+        for i in range(3, 11):
+            if i == 5 or i == 7: 
+                pass
+            else:
+                self.render_text(str((float(accounts[0][i] + accounts[1][i] + accounts[2][i])) / 3), self.smallFont, placement[i], (0, 255, 0))
+        self.render()
     
     def bin_account(self, accountKey):
         database.delete_account(accountKey)
@@ -179,8 +207,9 @@ class GameUI:
         self.screen = 'password creator'
         #move to the password screen
     
-    def go_back(self, newScreen):
+    def new_screen(self, newScreen):
         self.screen = newScreen
+        self.render()
     #return to previous screen
     
     def password_buttons_false(self):
@@ -248,7 +277,7 @@ class GameUI:
 
     def upload_password(self):
         hashedPassword = database.hashing_algorithm(self.password)
-        database.table_accounts_insertion('Unknown', hashedPassword, 1, 1, None, None)
+        database.table_accounts_insertion('Unknown', hashedPassword, 1, 1, None, 1, None, 1, 1, 1)
         self.password = ''
         self.buttons['password creator'][5][0] = False
         self.buttons['password creator'][0][0] = True
