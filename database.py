@@ -21,9 +21,11 @@ def createDatabase():
             level INTEGER NOT NULL, 
             money INTEGER NOT NULL, 
             armour TEXT,
-            armourModifier REAL,
+            armourModifier REAL NOT NULL,
             weapon TEXT,
-            weaponModifier REAL)
+            weaponModifier REAL NOT NULL,
+            kills INTEGER NOT NULL,
+            deaths INTEGER NOT NULL)
         ''')
         
         # Create the 'questions' table
@@ -31,7 +33,10 @@ def createDatabase():
             CREATE TABLE IF NOT EXISTS questions(
             questionKey INTEGER PRIMARY KEY AUTOINCREMENT, 
             question TEXT NOT NULL,
-            answer TEXT NOT NULL)
+            answer TEXT NOT NULL,
+            incorrect1 TEXT NOT NULL,
+            incorrect2 TEXT NOT NULL,
+            incorrect3 TEXT NOT NULL)
         ''')
         
         # Create the 'weights' table
@@ -59,7 +64,7 @@ def createDatabase():
         con.close()
         #close the connection
 
-def table_accounts_insertion(name, password, lvl, money, weapon, armour):
+def table_accounts_insertion(name, password, lvl, money, armour, armourModifier, weapon, weaponModifier, kills, deaths):
     try:
         con = sqlite3.connect('storage.db')
         cur = con.cursor()
@@ -69,12 +74,12 @@ def table_accounts_insertion(name, password, lvl, money, weapon, armour):
         con.execute("PRAGMA foreign_keys = ON")
 
         query = '''
-        INSERT INTO accounts (characterName, encryptedPassword, level, money, weapon, armour)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO accounts (characterName, encryptedPassword, level, money, armour, armourModifier, weapon, weaponModifier, kills, deaths)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         '''
         #define the query, with placeholders
 
-        data = (name, password, lvl, money, weapon, armour)
+        data = (name, password, lvl, money, armour, armourModifier, weapon, weaponModifier, kills, deaths)
         #enter the data that is to be inserted
         cur.execute(query, data)
      #execute the parameterised query
@@ -82,6 +87,39 @@ def table_accounts_insertion(name, password, lvl, money, weapon, armour):
         con.commit()
         #commit the query
 
+    except sqlite3.Error as e:
+        print('Error:', e)
+        #if any errors occur, print them
+
+    finally:
+        con.close()
+        #close the connection
+
+def load_all_accounts():
+    try:
+        con = sqlite3.connect('storage.db')
+        cur = con.cursor()
+        #connect to the database
+
+        # Enable foreign key constraints
+        con.execute("PRAGMA foreign_keys = ON")
+
+        query = '''
+        SELECT *
+        FROM accounts
+        '''
+        #define the query
+
+        cur.execute(query)
+        #execute the query
+
+        accounts = cur.fetchall()
+
+        con.commit()
+        #commit the query
+
+        return accounts
+    
     except sqlite3.Error as e:
         print('Error:', e)
         #if any errors occur, print them
@@ -188,6 +226,37 @@ def delete_account(accountKey):
         con.close()
         #close the connection
 
+def delete_all_accounts():
+    try:
+        con = sqlite3.connect('storage.db')
+        cur = con.cursor()
+        #connect to the database
+
+        # Enable foreign key constraints
+        con.execute("PRAGMA foreign_keys = ON")
+        
+        cur.execute('''
+            DELETE FROM accounts
+        ''')
+        #delete the account with the entered key
+
+        con.commit()
+        #commit changes
+
+        if cur.rowcount == 0:
+            print('No account deleted')
+        else:
+            print(f'{cur.rowcount} accounts deleted')
+        #checks if any rows where affected, if any where, nothing happens. If not it prints that no accounts where deleted
+
+    except sqlite3.Error as e:
+        print('Error:', e)
+        #if any errors occur, print them
+
+    finally:
+        con.close()
+        #close the connection
+
 def load_accounts():
     
     try:
@@ -235,6 +304,58 @@ def calculate_weight(correct, incorrect):
 
     return min(maxWeight, max(minWeight, weightScale * (incorrect / totalAnswers)))
     #calculates weight based upon the ratio of incorrect answers to the total answers, and ensures that it is is within the bounds of 1-100
+    
+def input_questions():
+
+    questions = ['Name of the flow of charged particles',
+                'Unit of charge measurement',
+                'Current flow if 10C flows past in 2 minutes',
+                'Another name for potential difference',
+                '25C of charge shifts 50J of energy between 2 points, what is the voltage',
+                'Current flow of a 100 ohm resistor with 5V across it',
+                'Type of condductor is a fixed resistor',
+                'Total resistance of a 2 and 3 ohm resistor in series',
+                'Power transmitted by 2A flowing across 5V',
+                'Power transmitted by 2A flowing through a 6 ohm resistor']
+
+    answers = [['Current', 'Potential difference', 'Resistance', 'Power'],
+              ['Coulomb', 'Volt', 'Amp', 'Watt'], 
+              ['0.083 A', '5 A', '20 A', '1200 A'], 
+              ['Voltage', 'Current', 'Resistance', 'Power'], 
+              ['2 V', '0.5 V', '5 V', '1250 V'], 
+              ['0.05 A', '20 A', '500 A', '105 A'], 
+              ['Ohmic conductor', 'Non-ohmic conductor', 'Poor conductor', 'Good conductor'], 
+              ['5 ohms', '6 ohms', '1 ohm', '1.2 ohms'],
+              ['10 W', '2.5 W', '0.4 W', '20 W'], 
+              ['24 W', '12 W', '3 W', '1.5 W']]
+
+    try:
+        # Connect to the database
+        con = sqlite3.connect('storage.db')
+        cur = con.cursor()
+        con.execute("PRAGMA foreign_keys = ON")
+
+        for i in range(10):
+            query = '''INSERT INTO questions (question, answer, incorrect1, incorrect2, incorrect3)
+            VALUES (?, ?, ?, ?, ?)'''
+
+            data = (questions[i], answers[i][0], answers[i][1], answers[i][2], answers[i][3])
+            #enter the data that is to be inserted
+            cur.execute(query, data)
+            #execute the parameterised query
+    
+            con.commit()
+            #commit the query
+
+    except sqlite3.Error as e:
+        print('Error:', e)
+        #if any errors occur, print them
+
+    finally:
+        con.close()
+        #close the connection
+
+
 
 def update_question(answer, weightKey, accountKey):
     try:
@@ -425,3 +546,6 @@ def hashing_algorithm(text):
 
 #print(load_account_attribute('characterName', 41)[0])
 #print(load_account_attribute('encryptedPassword', 41)[0])
+#print(get_question(43))
+createDatabase()
+input_questions()
