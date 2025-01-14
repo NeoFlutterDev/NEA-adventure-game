@@ -7,7 +7,7 @@ import sys
 pygame.init()
 
 screenScale = [pygame.display.Info().current_w / 1920, pygame.display.Info().current_h / 1080]
-fontSizes = {'large': 130, 'small': 60}
+fontSizes = {'large': 130, 'small': 60, 'stats':100}
 studentName = input('Enter your name')
 
 def connect_to_network(ui):

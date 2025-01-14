@@ -11,6 +11,7 @@ class GameUI:
         self.buttons = {}
         self.font = pygame.font.Font(None, fontSizes['large'])
         self.smallFont = pygame.font.Font(None, fontSizes['small'])
+        self.statsFont = pygame.font.Font(None, fontSizes['stats'])
         self.window = None
         self.screen = 'start menu'
         self.password = ''
@@ -19,6 +20,7 @@ class GameUI:
         self.characterName = ''
         self.running = True
         self.sound = True
+        self.statsText = {'combined stats':[], 'account 1 stats':[], 'account 2 stats':[], 'account 3 stats':[]}
         self.studentName = studentName
         self.mainSubroutines = mainSubroutines
         self.animationController = animationController
@@ -180,12 +182,31 @@ class GameUI:
         self.screen = 'combined stats'
         accounts = database.load_all_accounts()
         accountsNumber = len(accounts)
-        placement = [100, 100, 100, 100, 100, 100, 100, 100, 100, 1000, 100]
+        placement = [9999, 9999, 9999, 1188, 1669, 9999, 2159, 9999, 2735, 3107, 3591]
         for i in range(3, 11):
             if i == 5 or i == 7: 
                 pass
             else:
-                self.render_text(str((float(accounts[0][i] + accounts[1][i] + accounts[2][i])) / 3), self.smallFont, placement[i], (0, 255, 0))
+                if accountsNumber == 3:
+                    self.statsText['combined stats'].append([[str((float(accounts[0][i] + accounts[1][i] + accounts[2][i])) / 3)], self.statsFont, placement[i], (255, 255, 255)])
+                    self.statsText['account 1 stats'].append([[str(float(accounts[0][i]))], self.statsFont, placement[i], (255, 255, 255)])
+                    self.statsText['account 2 stats'].append([[str(float(accounts[1][i]))], self.statsFont, placement[i], (255, 255, 255)])
+                    self.statsText['account 3 stats'].append([[str(float(accounts[2][i]))], self.statsFont, placement[i], (255, 255, 255)])
+                elif accountsNumber == 2:
+                    self.statsText['combined stats'].append([[str((float(accounts[0][i] + accounts[1][i])) / 2)], self.statsFont, placement[i], (255, 255, 255)])
+                    self.statsText['account 1 stats'].append([[str(float(accounts[0][i]))], self.statsFont, placement[i], (255, 255, 255)])
+                    self.statsText['account 2 stats'].append([[str(float(accounts[1][i]))], self.statsFont, placement[i], (255, 255, 255)])
+                    self.statsText['account 3 stats'].append([['N/A'], self.statsFont, placement[i], (255, 255, 255)])
+                elif accountsNumber == 1:
+                    self.statsText['combined stats'].append([[str(float(accounts[0][i]))], self.statsFont, placement[i], (255, 255, 255)])
+                    self.statsText['account 1 stats'].append([[str(float(accounts[0][i]))], self.statsFont, placement[i], (255, 255, 255)])
+                    self.statsText['account 2 stats'].append([['N/A'], self.statsFont, placement[i], (255, 255, 255)])
+                    self.statsText['account 3 stats'].append([['N/A'], self.statsFont, placement[i], (255, 255, 255)])
+                else:
+                    self.statsText['combined stats'].append([['N/A'], self.statsFont, placement[i], (255, 255, 255)])
+                    self.statsText['account 1 stats'].append([['N/A'], self.statsFont, placement[i], (255, 255, 255)])
+                    self.statsText['account 2 stats'].append([['N/A'], self.statsFont, placement[i], (255, 255, 255)])
+                    self.statsText['account 3 stats'].append([['N/A'], self.statsFont, placement[i], (255, 255, 255)])
         self.render()
     
     def bin_account(self, accountKey):
@@ -208,6 +229,8 @@ class GameUI:
         #move to the password screen
     
     def new_screen(self, newScreen):
+        if newScreen == 'start menu':
+            self.statsText = {'combined stats':[], 'account 1 stats':[], 'account 2 stats':[], 'account 3 stats':[]}
         self.screen = newScreen
         self.render()
     #return to previous screen
@@ -277,7 +300,7 @@ class GameUI:
 
     def upload_password(self):
         hashedPassword = database.hashing_algorithm(self.password)
-        database.table_accounts_insertion('Unknown', hashedPassword, 1, 1, None, 1, None, 1, 1, 1)
+        database.table_accounts_insertion('Unknown', hashedPassword, 1, 2, None, 3, None, 4, 5, 6)
         self.password = ''
         self.buttons['password creator'][5][0] = False
         self.buttons['password creator'][0][0] = True
@@ -317,6 +340,11 @@ class GameUI:
             password_text = self.smallFont.render(self.networkPin, True, (255, 255, 255))
             self.window.blit(password_text, (rectangle.x + 5, rectangle.y + 5))
         #draw password text if on the password creator, load account or networking screen
+
+        if self.screen in ['combined stats', 'account 1 stats', 'account 2 stats', 'account 3 stats']:
+            textToBlit = self.statsText[self.screen]
+            for lines in textToBlit:
+                self.render_text(lines[0], lines[1], lines[2], lines[3])
       
         pygame.display.update()
     
@@ -326,7 +354,6 @@ class GameUI:
             textSurface = font.render(line, True, colour)
             self.window.blit(textSurface, (x, y))
             y += font.get_height()
-            pygame.display.update()
 
     def handle_event(self, event):
         if event.type == pygame.QUIT:
