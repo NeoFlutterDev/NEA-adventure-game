@@ -92,12 +92,21 @@ class GameUI:
             'tutorial start': [
 
             ],
+            'question screen': [
+                [True, [2600, 3597], [self.question_checker, 'A'], 'sprites/buttons/question box a.png'],
+                [True, [2644, 3641], [self.question_checker, 'B'], 'sprites/buttons/question box b.png'],
+                [True, [4040, 5037], [self.question_checker, 'C'], 'sprites/buttons/question box c.png'],
+                [True, [4084, 5081], [self.question_checker, 'D'], 'sprites/buttons/question box d.png']
+            ],
         }
     #all buttons, ordered by the screen, saved as the key
     #order of button, whether it is visible, bounds, what to run when pressed, sprite path
 
     def empty_def(self):
         pass
+
+    def question_checker(pressed):
+        print('checker')
     
     def initialize_window(self):
         info_object = pygame.display.Info()
