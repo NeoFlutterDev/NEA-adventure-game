@@ -17,6 +17,7 @@ class GameUI:
         self.password = ''
         self.networkPin = ''
         self.uniqueID = ''
+        self.accountKey = 0
         self.characterName = ''
         self.running = True
         self.sound = True
@@ -217,6 +218,9 @@ class GameUI:
                     self.statsText['account 2 stats'].append([['N/A'], self.statsFont, placement[i], (255, 255, 255)])
                     self.statsText['account 3 stats'].append([['N/A'], self.statsFont, placement[i], (255, 255, 255)])
         self.render()
+
+    def questions():
+        pass
     
     def bin_account(self, accountKey):
         database.delete_account(accountKey)
@@ -292,6 +296,7 @@ class GameUI:
         if hashedPassword == database.load_account_attribute('encryptedPassword', accountKey)[0]:
             self.buttons['load account'][0][0] = False
             self.buttons['load account'][2][0] = True
+            self.accountKey = accountKey
         else: 
             self.buttons['load account'][0][0] = False
             self.buttons['load account'][1][0] = True
@@ -309,12 +314,13 @@ class GameUI:
 
     def upload_password(self):
         hashedPassword = database.hashing_algorithm(self.password)
-        database.table_accounts_insertion('Unknown', hashedPassword, 1, 2, None, 3, None, 4, 5, 6)
+        accountKey = database.table_accounts_insertion('Unknown', hashedPassword, 1, 2, None, 3, None, 4, 5, 6)
+        database.weight_insertion(accountKey)
         self.password = ''
         self.buttons['password creator'][5][0] = False
         self.buttons['password creator'][0][0] = True
         self.start_game()
-    #upload the hashed password to the database
+    #upload the hashed password to the database and update the weights table
     
     def network_pin_enterer(self, key):
         if key == 'backspace':
