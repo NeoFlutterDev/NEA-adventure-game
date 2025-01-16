@@ -451,7 +451,7 @@ def pull_question(questionKey):
         con.execute("PRAGMA foreign_keys = ON")
 
         query = '''
-        SELECT question, answer
+        SELECT question, answer, incorrect1, incorrect2, incorrect3
         FROM questions
         WHERE questionKey = ?'''
 
@@ -485,7 +485,7 @@ def get_question(accountKey):
         FROM weights
         WHERE accountKey = ?'''
 
-        cur.execute(query, (accountKey, ))
+        cur.execute(query, (accountKey,))
 
         questions = cur.fetchall()
         
@@ -496,10 +496,10 @@ def get_question(accountKey):
         chosenQuestion = random.uniform(1, sumWeights)
 
         for i in range(len(questions)):
-            chosenQuestion -= question[i][0]
+            chosenQuestion -= questions[i][0]
             if chosenQuestion <= 0:
-                return pull_question(question[i][1])
-
+                return pull_question(questions[i][1]), questions[i][1]
+            
     except sqlite3.Error as e:
         print('Database Error:', e)
 
@@ -569,5 +569,5 @@ def hashing_algorithm(text):
 
 #print(load_account_attribute('characterName', 41)[0])
 #print(load_account_attribute('encryptedPassword', 41)[0])
-weight_insertion(4)
+#weight_insertion(4)
 createDatabase()

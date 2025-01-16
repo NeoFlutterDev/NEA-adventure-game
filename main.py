@@ -27,6 +27,8 @@ textController = game_ui.TextController()
 ui = game_ui.GameUI(screenScale, fontSizes, studentName, mainSubroutines, animationController, textController)
 ui.initialize_buttons()
 ui.initialize_window()
+ui.accountKey = 4
+ui.questions()
 ui.run()
 
 #quit Pygame and program

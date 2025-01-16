@@ -4,6 +4,7 @@ import math
 import database
 import time
 import threading
+import random
 
 class GameUI:
     def __init__(self, screenScale, fontSizes, studentName, mainSubroutines, animationController, textController):
@@ -22,6 +23,7 @@ class GameUI:
         self.running = True
         self.sound = True
         self.statsText = {'combined stats':[], 'account 1 stats':[], 'account 2 stats':[], 'account 3 stats':[]}
+        self.questionText = {'question screen':[], 'questionKey':0}
         self.studentName = studentName
         self.mainSubroutines = mainSubroutines
         self.animationController = animationController
@@ -94,10 +96,10 @@ class GameUI:
 
             ],
             'question screen': [
-                [True, [2600, 3597], [self.question_checker, 'A'], 'sprites/buttons/question box a.png'],
-                [True, [2644, 3641], [self.question_checker, 'B'], 'sprites/buttons/question box b.png'],
-                [True, [4040, 5037], [self.question_checker, 'C'], 'sprites/buttons/question box c.png'],
-                [True, [4084, 5081], [self.question_checker, 'D'], 'sprites/buttons/question box d.png']
+                [True, [2600, 3597], [self.question_checker, 'incorrect'], 'sprites/buttons/question box a.png'],
+                [True, [2644, 3641], [self.question_checker, 'incorrect'], 'sprites/buttons/question box b.png'],
+                [True, [4040, 5037], [self.question_checker, 'incorrect'], 'sprites/buttons/question box c.png'],
+                [True, [4084, 5081], [self.question_checker, 'incorrect'], 'sprites/buttons/question box d.png']
             ],
         }
     #all buttons, ordered by the screen, saved as the key
@@ -219,8 +221,31 @@ class GameUI:
                     self.statsText['account 3 stats'].append([['N/A'], self.statsFont, placement[i], (255, 255, 255)])
         self.render()
 
-    def questions():
-        pass
+    def questions(self):
+        slots = [1, 2, 3, 4]
+        placement = [1000, 2500, 3000, 4000, 4500]
+        self.screen = 'question screen'
+
+        question, questionKey = database.get_question(self.accountKey)
+
+        self.questionText['question screen'].append([[question[0]], self.font, placement[0], (255, 255, 255)])
+        placement.pop(0)
+        self.questionText['questionKey'] = questionKey
+
+        correctSlot = random.randint(0, 3)
+        self.buttons['question screen'][slots[correctSlot]][2][1] = 'correct'
+        self.questionText['question screen'].append([[question[1]], self.font, placement[correctSlot + 1], (255, 255, 255)])
+        slots.pop(correctSlot)
+        placement.pop(correctSlot + 1)
+
+        incorrect = [question[2], question[3], question[4]]
+
+        print(slots)
+
+        for i in range(3):
+            randomSlot = random.randint(0, 2-i)
+            self.questionText[slots[randomSlot]].append([[incorrect[0]], self.font, placement[i], (255, 255, 255)])
+            slots.pop(randomSlot)
     
     def bin_account(self, accountKey):
         database.delete_account(accountKey)
@@ -360,6 +385,9 @@ class GameUI:
             textToBlit = self.statsText[self.screen]
             for lines in textToBlit:
                 self.render_text(lines[0], lines[1], lines[2], lines[3])
+
+        if self.screen == 'question screen':
+            textToBlit = self.questionText
       
         pygame.display.update()
     
