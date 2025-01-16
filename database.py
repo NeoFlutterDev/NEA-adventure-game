@@ -333,7 +333,7 @@ def load_accounts():
 def calculate_weight(correct, incorrect):
     
     weightScale = 100
-    minWeight = 1
+    minWeight = 25
     maxWeight = 100
     #the starting weight, the minimum and maximum weights (all constants)
 
@@ -348,7 +348,7 @@ def calculate_weight(correct, incorrect):
     return min(maxWeight, max(minWeight, weightScale * (incorrect / totalAnswers)))
     #calculates weight based upon the ratio of incorrect answers to the total answers, and ensures that it is is within the bounds of 1-100
 
-def update_question(answer, weightKey, accountKey):
+def update_question(answer, questionKey, accountKey):
     try:
         # Connect to the database
         con = sqlite3.connect('storage.db')
@@ -369,12 +369,12 @@ def update_question(answer, weightKey, accountKey):
         cur.execute('''
             SELECT correct, incorrect
             FROM weights
-            WHERE weightKey = ? and accountKey = ?
-        ''', (weightKey, accountKey))
+            WHERE questionKey = ? and accountKey = ?
+        ''', (questionKey, accountKey))
         result = cur.fetchone()
 
         if result is None:
-            raise ValueError(f"No data found for weightKey {weightKey}")
+            raise ValueError(f"No data found for weightKey {questionKey}")
 
         # Get current values for correct and incorrect answers
         correct, incorrect = result
@@ -392,8 +392,8 @@ def update_question(answer, weightKey, accountKey):
         cur.execute(f'''
             UPDATE weights
             SET {answerColumn} = ?, weight = ?
-            WHERE weightKey = ? and accountKey = ?
-        ''', (correct if option == 0 else incorrect, newWeight, weightKey, accountKey))
+            WHERE questionKey = ? and accountKey = ?
+        ''', (correct if option == 0 else incorrect, newWeight, questionKey, accountKey))
 
         # Commit the changes
         con.commit()
