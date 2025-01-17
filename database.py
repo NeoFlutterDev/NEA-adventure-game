@@ -18,7 +18,7 @@ def createDatabase():
             accountKey INTEGER PRIMARY KEY AUTOINCREMENT, 
             encryptedPassword TEXT NOT NULL,
             characterName TEXT NOT NULL,
-            level INTEGER NOT NULL, 
+            exp INTEGER NOT NULL, 
             money INTEGER NOT NULL, 
             armour TEXT,
             armourModifier REAL NOT NULL,
@@ -101,7 +101,7 @@ def createDatabase():
         con.close()
         #close the connection
 
-def table_accounts_insertion(name, password, lvl, money, armour, armourModifier, weapon, weaponModifier, kills, deaths):
+def table_accounts_insertion(name, password, exp, money, armour, armourModifier, weapon, weaponModifier, kills, deaths):
     accountKey = None
     
     try:
@@ -113,12 +113,12 @@ def table_accounts_insertion(name, password, lvl, money, armour, armourModifier,
         con.execute("PRAGMA foreign_keys = ON")
 
         query = '''
-        INSERT INTO accounts (characterName, encryptedPassword, level, money, armour, armourModifier, weapon, weaponModifier, kills, deaths)
+        INSERT INTO accounts (characterName, encryptedPassword, exp, money, armour, armourModifier, weapon, weaponModifier, kills, deaths)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         '''
         #define the query, with placeholders
 
-        data = (name, password, lvl, money, armour, armourModifier, weapon, weaponModifier, kills, deaths)
+        data = (name, password, exp, money, armour, armourModifier, weapon, weaponModifier, kills, deaths)
         #enter the data that is to be inserted
         cur.execute(query, data)
      #execute the parameterised query
@@ -206,7 +206,7 @@ def load_account_attribute(attribute, accountKey):
         con.close()
         #close the connection
 
-def update_account_info(lvl, money, weapon, armour, accountKey):
+def update_account_info(exp, money, weapon, armour, accountKey):
     try:
         con = sqlite3.connect('storage.db')
         cur = con.cursor()
@@ -217,12 +217,12 @@ def update_account_info(lvl, money, weapon, armour, accountKey):
 
         query = '''
         UPDATE accounts
-        SET level = ?, money = ?, weapon = ?, armour = ?
+        SET exp = ?, money = ?, weapon = ?, armour = ?
         WHERE accountKey = ?
         '''
         #define the query, with placeholders
 
-        data = (lvl, money, weapon, armour, accountKey)
+        data = (exp, money, weapon, armour, accountKey)
         #enter data that is to replace the old data
         cur.execute(query, data)
         #execute the parameterised query
@@ -311,7 +311,7 @@ def load_accounts():
         con.execute("PRAGMA foreign_keys = ON")
         
         cur.execute('''
-            SELECT accountKey, characterName, level
+            SELECT accountKey, characterName, exp
             FROM accounts
         ''')
 

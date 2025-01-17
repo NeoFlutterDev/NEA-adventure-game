@@ -10,6 +10,9 @@ screenScale = [pygame.display.Info().current_w / 1920, pygame.display.Info().cur
 fontSizes = {'large': 130, 'small': 60, 'stats':100}
 studentName = input('Enter your name')
 
+pygame.SCALED
+pygame.display.set_mode(vsync = 1)
+
 def connect_to_network(ui):
     success, uniqueID = student_communication.first_connection(ui.networkPin, ui.studentName, ui.characterName)
     
@@ -27,8 +30,6 @@ textController = game_ui.TextController()
 ui = game_ui.GameUI(screenScale, fontSizes, studentName, mainSubroutines, animationController, textController)
 ui.initialize_buttons()
 ui.initialize_window()
-ui.accountKey = 2
-ui.questions()
 ui.run()
 
 #quit Pygame and program

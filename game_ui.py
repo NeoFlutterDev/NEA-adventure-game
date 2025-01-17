@@ -200,7 +200,7 @@ class GameUI:
         self.screen = 'combined stats'
         accounts = database.load_all_accounts()
         accountsNumber = len(accounts)
-        placement = [9999, 9999, 9999, 1188, 1669, 9999, 2159, 9999, 2735, 3107, 3591]
+        placement = [9999, 9999, 9999, 1183, 1669, 9999, 2159, 9999, 2735, 3107, 3591]
         for i in range(3, 11):
             if i == 5 or i == 7: 
                 pass
@@ -348,7 +348,7 @@ class GameUI:
 
     def upload_password(self):
         hashedPassword = database.hashing_algorithm(self.password)
-        accountKey = database.table_accounts_insertion('Unknown', hashedPassword, 1, 2, None, 3, None, 4, 5, 6)
+        accountKey = database.table_accounts_insertion('Unknown', hashedPassword, 25, 1, None, 1, None, 1, 1, 1)
         database.weight_insertion(accountKey)
         self.password = ''
         self.buttons['password creator'][5][0] = False
