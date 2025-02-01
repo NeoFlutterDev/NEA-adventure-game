@@ -22,7 +22,7 @@ def connect_to_network(ui):
 def tutorial_call(ui, accountKey, animationController, textController):
     tutorial.load_tutorial(ui, accountKey, animationController, textController)
 
-mainSubroutines = [lambda ui: connect_to_network(ui), lambda ui, accountKey, animationController, textController: tutorial_call(ui, accountKey)]
+mainSubroutines = [lambda ui: connect_to_network(ui), lambda ui, accountKey: tutorial_call(ui, accountKey)]
 
 animationController = game_ui.AnimationController()
 textController = game_ui.TextController()
