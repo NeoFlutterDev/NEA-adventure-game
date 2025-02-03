@@ -4,6 +4,7 @@ import math
 import database
 import time
 import threading
+import random
 
 class GameUI:
     def __init__(self, screenScale, fontSizes, studentName, mainSubroutines, animationController, textController):
@@ -17,10 +18,12 @@ class GameUI:
         self.password = ''
         self.networkPin = ''
         self.uniqueID = ''
+        self.accountKey = 0
         self.characterName = ''
         self.running = True
         self.sound = True
         self.statsText = {'combined stats':[], 'account 1 stats':[], 'account 2 stats':[], 'account 3 stats':[]}
+        self.questionText = {'question screen':[[], [], [], [], []], 'questionKey':0}
         self.studentName = studentName
         self.mainSubroutines = mainSubroutines
         self.animationController = animationController
@@ -92,12 +95,27 @@ class GameUI:
             'tutorial start': [
 
             ],
+            'question screen': [
+                [True, [2600, 3597], [self.question_checker, 'incorrect'], 'sprites/buttons/question box a.png'],
+                [True, [2644, 3641], [self.question_checker, 'incorrect'], 'sprites/buttons/question box b.png'],
+                [True, [4040, 5037], [self.question_checker, 'incorrect'], 'sprites/buttons/question box c.png'],
+                [True, [4084, 5081], [self.question_checker, 'incorrect'], 'sprites/buttons/question box d.png'],
+                [False, [9999, 9999], [self.new_screen, ''], 'sprites/buttons/empty sprite.png']
+            ],
         }
     #all buttons, ordered by the screen, saved as the key
     #order of button, whether it is visible, bounds, what to run when pressed, sprite path
 
     def empty_def(self):
         pass
+
+    def question_checker(self, answer):
+        if answer == 'incorrect':
+            database.update_question('incorrect', self.questionText['questionKey'], self.accountKey)
+            self.questions()
+        else:
+            database.update_question('correct', self.questionText['questionKey'], self.accountKey)
+            self.new_screen(self.buttons['question screen'][4][2][1])
     
     def initialize_window(self):
         info_object = pygame.display.Info()
@@ -182,7 +200,7 @@ class GameUI:
         self.screen = 'combined stats'
         accounts = database.load_all_accounts()
         accountsNumber = len(accounts)
-        placement = [9999, 9999, 9999, 1188, 1669, 9999, 2159, 9999, 2735, 3107, 3591]
+        placement = [9999, 9999, 9999, 1183, 1669, 9999, 2159, 9999, 2735, 3107, 3591]
         for i in range(3, 11):
             if i == 5 or i == 7: 
                 pass
@@ -208,6 +226,35 @@ class GameUI:
                     self.statsText['account 2 stats'].append([['N/A'], self.statsFont, placement[i], (255, 255, 255)])
                     self.statsText['account 3 stats'].append([['N/A'], self.statsFont, placement[i], (255, 255, 255)])
         self.render()
+
+    def questions(self):
+        
+        if self.screen != 'question screen':
+            self.buttons['question screen'][4][2][1] = self.screen
+            self.screen = 'question screen'
+        
+        slots = [1, 2, 3, 4]
+        placement = [296, 2895, 2938, 4431, 4378]
+
+        question, questionKey = database.get_question(self.accountKey)
+
+        self.questionText['question screen'][0] = [TextController.wrap_text(TextController, question[0], self.smallFont, 1600), self.smallFont, placement[0], (255, 255, 255)]
+        placement.pop(0)
+        self.questionText['questionKey'] = questionKey
+
+        correctSlot = random.randint(0, 3)
+        self.buttons['question screen'][correctSlot][2][1] = 'correct'
+        self.questionText['question screen'][slots[correctSlot]] = [TextController.wrap_text(TextController, question[1], self.smallFont, 600), self.smallFont, placement[correctSlot], (255, 255, 255)]
+        slots.pop(correctSlot)
+        placement.pop(correctSlot)
+
+        incorrect = [question[2], question[3], question[4]]
+
+        for i in range(3):
+            randomSlot = random.randint(0, 2-i)
+            self.questionText['question screen'][slots[randomSlot]] = [TextController.wrap_text(TextController, incorrect[randomSlot], self.smallFont, 600), self.smallFont, placement[i], (255, 255, 255)]
+            slots.pop(randomSlot)
+            incorrect.pop(randomSlot)
     
     def bin_account(self, accountKey):
         database.delete_account(accountKey)
@@ -283,6 +330,7 @@ class GameUI:
         if hashedPassword == database.load_account_attribute('encryptedPassword', accountKey)[0]:
             self.buttons['load account'][0][0] = False
             self.buttons['load account'][2][0] = True
+            self.accountKey = accountKey
         else: 
             self.buttons['load account'][0][0] = False
             self.buttons['load account'][1][0] = True
@@ -292,7 +340,7 @@ class GameUI:
 
         if self.characterName == 'Unknown':
             tutorial_call = self.mainSubroutines[1]
-            tutorial_call(self, accountKey, self.animationController, self.textController)
+            tutorial_call(self, accountKey)
         else:
             load_save_state(accountKey)
 
@@ -300,12 +348,13 @@ class GameUI:
 
     def upload_password(self):
         hashedPassword = database.hashing_algorithm(self.password)
-        database.table_accounts_insertion('Unknown', hashedPassword, 1, 2, None, 3, None, 4, 5, 6)
+        accountKey = database.table_accounts_insertion('Unknown', hashedPassword, 25, 1, None, 1, None, 1, 1, 1)
+        database.weight_insertion(accountKey)
         self.password = ''
         self.buttons['password creator'][5][0] = False
         self.buttons['password creator'][0][0] = True
         self.start_game()
-    #upload the hashed password to the database
+    #upload the hashed password to the database and update the weights table
     
     def network_pin_enterer(self, key):
         if key == 'backspace':
@@ -343,6 +392,11 @@ class GameUI:
 
         if self.screen in ['combined stats', 'account 1 stats', 'account 2 stats', 'account 3 stats']:
             textToBlit = self.statsText[self.screen]
+            for lines in textToBlit:
+                self.render_text(lines[0], lines[1], lines[2], lines[3])
+
+        if self.screen == 'question screen':
+            textToBlit = self.questionText[self.screen]
             for lines in textToBlit:
                 self.render_text(lines[0], lines[1], lines[2], lines[3])
       

@@ -1,30 +1,30 @@
 import random
 import math
 
-def player_combat(player, monster, button_pressed, monsterDodgeValue = 75):
+def player_combat(player, monster, buttonPressed, monsterDodgeValue = 75):
     playerStm = player.get_currentStm
     playerMaxStm = player.get_maxStm
     playerAtk = player.get_atk
     playerWpnMod = player.get_weaponModifier
     monsterAmrMod = monster.get_armourModifier
-    if button_pressed == 'attack' and playerStm >= 5:
+    if buttonPressed == 'attack' and playerStm >= 5:
         player.update_currentStm(-5)
         playerStm -= 5
         if random.randint(1, 100) < monsterDodgeValue:
             monster.update_currentHp(-(playerAtk * playerWpnMod * monsterAmrMod))
         return 75
     #the player dodge value
-    elif button_pressed == 'heavy attack' and playerStm >= 15:
+    elif buttonPressed == 'heavy attack' and playerStm >= 15:
         player.update_currentStm(-15)
         if random.randint(1, 100) < monsterDodgeValue + 15:
             monster.update_currentHp(-(playerAtk * 1.5 * playerWpnMod * monsterAmrMod))
         return 100
-    elif button_pressed == 'dodge':
+    elif buttonPressed == 'dodge':
         player.set_currentStm(25)
         if playerStm > playerMaxStm:
             player.set_currentStm(playerMaxStm)
         return 25
-    elif button_pressed == 'special' and playerStm >= 50:
+    elif buttonPressed == 'special' and playerStm >= 50:
         player.special_atk()
 
 def monster_combat(player, monster, playerDodgeValue = 75):

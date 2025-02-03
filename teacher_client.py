@@ -1,27 +1,28 @@
 import socket
 import threading
 import random
-import pygame 
+import pygame
 import json
+from datetime import datetime, timedelta, timezone
 
 pygame.init()
 
-characters = list("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~")
+# Global variables
+characters = list("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_{|}~")
+activeStudents = []  # Tracks all current students connected
+studentData = {}  # To store student info (name, scores, last message time)
 
-active_students = []
-#tracks all current students connected
+# Function to calculate seconds since midnight
+def seconds_since_midnight():
+    timeZone = timezone(timedelta(hours=0))
+    currentTime = datetime.now(timeZone)
+    secondsSinceMidnight = currentTime.hour * 3600 + currentTime.minute * 60 + currentTime.second
+    return secondsSinceMidnight
 
-#get display information and set up screenScale
-'''infoObject = pygame.display.Info()
-screenScale = [infoObject.current_w / 1920, infoObject.current_h / 1080]
-
-#initialize the game window
-window = pygame.display.set_mode((infoObject.current_w, infoObject.current_h), pygame.FULLSCREEN)
-pygame.display.set_caption('Teacher Display')'''
-
-def handle_client(conn, address):
+# Handle student connections
+def handle_client(conn, address, studentNumber):
     print(f"New connection from: {address}")
-    active_students.append(conn)
+    activeStudents.append(conn)
 
     while True:
         try:
@@ -32,15 +33,15 @@ def handle_client(conn, address):
 
             try:
                 data = json.loads(data)
-                data['unique_ID']
+                data['uniqueID']
             except:
                 data = json.loads(data)
-                uniqueID = ''
-                for i in range(16):
-                    uniqueID += characters[random.randint(0, 93)]
+                uniqueID = ''.join([characters[random.randint(0, 93)] for _ in range(16)])
                 conn.send(uniqueID.encode())
 
-            # Send a response to the student
+            # Update student data
+            studentName = f"Student {studentNumber}"
+            studentData[studentNumber] = [studentName, {"correct": 0, "incorrect": 0}, seconds_since_midnight()]
             response = f"Server received: {data}"
             conn.send(response.encode())
 
@@ -50,42 +51,113 @@ def handle_client(conn, address):
 
     # Remove connection and close
     print(f"Connection closed from: {address}")
-    active_students.remove(conn)
+    activeStudents.remove(conn)
     conn.close()
 
+# Update scores in the server's display window
+def update_scores():
+    while True:
+        # This function can be used to update the score data periodically, if needed
+        pass
 
+# Server program to manage connections, pygame window, and data display
 def server_program():
     host = '0.0.0.0'  # Bind to all available interfaces allowing for easier server creation
-    port = random.randint(49125, 65535) #creates a random port for students to join to chosen from a list of always empty ports
+    port = random.randint(49125, 65535)  # Create a random port for students to join
 
     students = int(input("How many students are in the class\n-> "))
 
+    # Initialize the game window after getting the number of students
+    infoObject = pygame.display.Info()
+    screenScale = [infoObject.current_w / 1920, infoObject.current_h / 1080]
+    window = pygame.display.set_mode((infoObject.current_w, infoObject.current_h), pygame.FULLSCREEN)
+    pygame.display.set_caption('Teacher Display')
+
+    # Load and scale the background image
+    backgroundImage = pygame.image.load('sprites/backdrops/teacher screen.png')
+    backgroundImage = pygame.transform.scale(
+        backgroundImage, (int(backgroundImage.get_width() * screenScale[0]), int(backgroundImage.get_height() * screenScale[1]))
+    )
+
     # Create a socket object
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind((host, port))
+    serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    serverSocket.bind((host, port))
 
     # Server listens for incoming connections
-    server_socket.listen(students)  # Allow enough connections in the queue for all the students
+    serverSocket.listen(students)  # Allow enough connections in the queue for all the students
     print(f"Server is listening on port {port}...")
 
-    # Main server loop to accept clients
-    while True:
-        if len(active_students) < students:
-            # Accept a new student connection
-            conn, address = server_socket.accept()
-            # Start a new thread for each student to allow for all of them to be connected at the same time
-            client_thread = threading.Thread(target=handle_client, args=(conn, address))
-            client_thread.start()
+    # Start the score update thread
+    scoreThread = threading.Thread(target=update_scores, daemon=True)
+    scoreThread.start()
+
+    studentNumber = 1
+    running = True
+    while running:
+        # Handle pygame events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False  # Exit the loop if the user quits
+
+        # Draw the background image
+        window.blit(backgroundImage, (0, 0))
+
+        # Render and blit the pin code
+        font = pygame.font.Font(None, 74)
+        pinCodeText = font.render(f'{port}', True, (255, 255, 255))
+        window.blit(pinCodeText, (1650, 15))
+
+        # Render and blit the score data
+        scoreText = font.render(f"Correct: {sum([data[1].get('correct', 0) for data in studentData.values()])} "
+                                f"Incorrect: {sum([data[1].get('incorrect', 0) for data in studentData.values()])}",
+                                True, (255, 255, 255))
+        window.blit(scoreText, (50, 15))
+
+        # Render and blit each student's name and online/offline status
+        baseY = 10
+        incrementY = 50  # Spacing between student entries
+        for studentNumber, data in studentData.items():
+            if data:
+                name, scores, lastMessageTime = data
+                secondsNow = seconds_since_midnight()
+                status = "Online" if secondsNow - lastMessageTime <= 60 else "Offline"
+                studentText = f"{name}: {status}"
+            else:
+                studentText = f"Student {studentNumber}: Offline"
+
+            studentStatus = font.render(studentText, True, (255, 255, 255))
+            window.blit(studentStatus, (30, baseY))
+            baseY += incrementY
+
+        pygame.display.flip()
+
+        # Accept new connections if there's space
+        if len(activeStudents) < students:
+            try:
+                # Accept a new student connection
+                serverSocket.settimeout(0.5)  # Non-blocking accept with timeout
+                try:
+                    conn, address = serverSocket.accept()
+                    # Start a new thread for each student to allow for all of them to be connected at the same time
+                    clientThread = threading.Thread(target=handle_client, args=(conn, address, studentNumber))
+                    clientThread.start()
+                    studentNumber += 1
+                except socket.timeout:
+                    pass  # Continue the loop if no connection is made during the timeout
+            except Exception as e:
+                print(f"Server error: {e}")
         else:
-            print("Server has reached the maximum number of {students} active connections.")
-            break
+            print(f"Server has reached the maximum number of {students} active connections.")
+            running = False
 
+    shutdown_server()
 
+# Function to shut down the server
 def shutdown_server():
     print("Shutting down server...")
-    for conn in active_students:
+    for conn in activeStudents:
         conn.close()  # Close all active students
+    pygame.quit()
     exit()  # Close the program
-
 
 server_program()
