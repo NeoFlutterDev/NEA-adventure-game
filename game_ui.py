@@ -90,7 +90,7 @@ class GameUI:
             ],
             'networking': [
                 [True, [1, 98], [self.new_screen, 'start menu'], 'sprites/buttons/back arrow.png'],
-                [False, [1173, 1187], self.mainSubroutines[0], 'sprites/buttons/upload password.png'],
+                [False, [1173, 1187], [self.mainSubroutines[0], self], 'sprites/buttons/upload password.png'],
             ],
             'tutorial start': [
 

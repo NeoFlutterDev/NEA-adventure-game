@@ -8,10 +8,7 @@ pygame.init()
 
 screenScale = [pygame.display.Info().current_w / 1920, pygame.display.Info().current_h / 1080]
 fontSizes = {'large': 130, 'small': 60, 'stats':100}
-studentName = input('Enter your name')
-
-pygame.SCALED
-pygame.display.set_mode(vsync = 1)
+studentName = input('Enter your name: ')
 
 def connect_to_network(ui):
     success, uniqueID = student_communication.first_connection(ui.networkPin, ui.studentName, ui.characterName)
@@ -19,8 +16,8 @@ def connect_to_network(ui):
     if success == True:
         ui.uniqueID = uniqueID
 
-def tutorial_call(ui, accountKey, animationController, textController):
-    tutorial.load_tutorial(ui, accountKey, animationController, textController)
+def tutorial_call(ui, accountKey):
+    tutorial.load_tutorial(ui, accountKey)
 
 mainSubroutines = [lambda ui: connect_to_network(ui), lambda ui, accountKey: tutorial_call(ui, accountKey)]
 
