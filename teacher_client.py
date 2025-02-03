@@ -57,8 +57,7 @@ def handle_client(conn, address, studentNumber):
 # Update scores in the server's display window
 def update_scores():
     while True:
-        # This function can be used to update the score data periodically, if needed
-        pass
+        pass  # Placeholder function for updating scores periodically
 
 # Server program to manage connections, pygame window, and data display
 def server_program():
@@ -108,10 +107,25 @@ def server_program():
         window.blit(pinCodeText, (1650, 15))
 
         # Render and blit the score data
-        scoreText = font.render(f"Correct: {sum([data[1].get('correct', 0) for data in studentData.values()])} "
-                                f"Incorrect: {sum([data[1].get('incorrect', 0) for data in studentData.values()])}",
-                                True, (255, 255, 255))
-        window.blit(scoreText, (50, 15))
+        question_id = 1  # Change this to the specific question you want to track
+        startX1, startY1 = 1500, 210  # Start position
+        startX2, startY2 = 1700, 210  # Start position
+        incrementY = 75  # Moves the text down by 75 pixels per iteration
+
+        for i in range(10):
+            yOffset1 = startY1 + (i * incrementY)
+            yOffset2 = startY2 + (i * incrementY)
+            
+            scoreText1 = font.render(
+                f"{sum([data[1].get('correct', 0) for key, data in studentData.items() if key == question_id])} ",
+                True, (255, 255, 255)
+            )
+            scoreText2 = font.render(
+                f"{sum([data[1].get('incorrect', 0) for key, data in studentData.items() if key == question_id])}",
+                True, (255, 255, 255)
+            )
+            window.blit(scoreText1, (startX1, yOffset1))
+            window.blit(scoreText2, (startX2, yOffset2))
 
         # Render and blit each student's name and online/offline status
         baseY = 10
