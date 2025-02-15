@@ -25,6 +25,7 @@ animationController = game_ui.AnimationController()
 textController = game_ui.TextController()
 
 ui = game_ui.GameUI(screenScale, fontSizes, studentName, mainSubroutines, animationController, textController)
+ui.screen = 'battle'
 ui.initialize_buttons()
 ui.initialize_window()
 ui.run()

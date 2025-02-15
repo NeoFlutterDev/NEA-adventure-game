@@ -5,6 +5,7 @@ import database
 import time
 import threading
 import random
+import combat
 
 class GameUI:
     def __init__(self, screenScale, fontSizes, studentName, mainSubroutines, animationController, textController):
@@ -25,6 +26,8 @@ class GameUI:
         self.statsText = {'combined stats':[], 'account 1 stats':[], 'account 2 stats':[], 'account 3 stats':[]}
         self.questionText = {'question screen':[[], [], [], [], []], 'questionKey':0}
         self.studentName = studentName
+        self.character = combat.PlayableCharacter(studentName, 25)
+        self.monster = combat.Monster(1, 'grunt')
         self.mainSubroutines = mainSubroutines
         self.animationController = animationController
         self.textController = textController
@@ -101,6 +104,12 @@ class GameUI:
                 [True, [4040, 5037], [self.question_checker, 'incorrect'], 'sprites/buttons/question box c.png'],
                 [True, [4084, 5081], [self.question_checker, 'incorrect'], 'sprites/buttons/question box d.png'],
                 [False, [9999, 9999], [self.new_screen, ''], 'sprites/buttons/empty sprite.png']
+            ],
+            'battle': [
+                [True, [4044, 4265], None, 'sprites/buttons/normal attack.png'],
+                [True, [4087, 4308], None, 'sprites/buttons/heavy attack.png'],
+                [True, [4620, 4841], None, 'sprites/buttons/dodge.png'],
+                [True, [4663, 4884], self.empty_def, 'sprites/buttons/special attack.png'],
             ],
         }
     #all buttons, ordered by the screen, saved as the key
@@ -399,6 +408,17 @@ class GameUI:
             textToBlit = self.questionText[self.screen]
             for lines in textToBlit:
                 self.render_text(lines[0], lines[1], lines[2], lines[3])
+        
+        if self.screen == 'battle':
+            enemyStamina = [f'Stm: {self.monster.get_currentStm()}']
+            enemyHp = [f'Hp: {self.monster.get_currentHp()}']
+            playerStamina = [f'Stm: {self.character.get_currentStm()}']
+            playerHp = [f'{self.character.get_currentHp()}']
+
+            self.render_text(enemyStamina, self.smallFont, 500, (255, 255, 255))
+            self.render_text(enemyHp, self.smallFont, 1000, (255, 255, 255))
+            self.render_text(playerStamina, self.smallFont, 1500, (255, 255, 255))
+            self.render_text(playerHp, self.smallFont, 2000, (255, 255, 255))
       
         pygame.display.update()
     

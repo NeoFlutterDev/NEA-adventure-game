@@ -54,15 +54,15 @@ def monster_combat(player, monster, playerDodgeValue = 75):
             monster.set_currentStm(monsterMaxStm)
 
 class PlayableCharacter:
-    def __init__(self, name, exp):
+    def __init__(self, name, exp, armour = None, armourModifier = 1, weapon = None, weaponModifier = 1):
         self.name = name
         self.exp = exp
         self.lvl = math.trunc(2.5 * (math.sqrt(self.exp) - 5))
         self.money = 0
-        self.armour = None
-        self.armourModifier = 1
-        self.weapon = None
-        self.weaponModifier = 1
+        self.armour = armour
+        self.armourModifier = armourModifier
+        self.weapon = weapon
+        self.weaponModifier = weaponModifier
         self.atk = math.trunc(1.5 * self.lvl + 100)
         self.maxHp = math.trunc(((self.lvl / 4.624) + 10)**2)
         self.currentHp = self.maxHp
