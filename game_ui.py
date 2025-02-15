@@ -26,7 +26,7 @@ class GameUI:
         self.statsText = {'combined stats':[], 'account 1 stats':[], 'account 2 stats':[], 'account 3 stats':[]}
         self.questionText = {'question screen':[[], [], [], [], []], 'questionKey':0}
         self.studentName = studentName
-        self.character = combat.PlayableCharacter(studentName, 25)
+        self.character = [combat.PlayableCharacter(studentName, 25), 'idle']
         self.monster = combat.Monster(1, 'grunt')
         self.mainSubroutines = mainSubroutines
         self.animationController = animationController
@@ -412,13 +412,27 @@ class GameUI:
         if self.screen == 'battle':
             enemyStamina = [f'Stm: {self.monster.get_currentStm()}']
             enemyHp = [f'Hp: {self.monster.get_currentHp()}']
-            playerStamina = [f'Stm: {self.character.get_currentStm()}']
-            playerHp = [f'{self.character.get_currentHp()}']
+            playerStamina = [f'Stm: {self.character[0].get_currentStm()}']
+            playerHp = [f'Hp: {self.character[0].get_currentHp()}']
 
-            self.render_text(enemyStamina, self.smallFont, 500, (255, 255, 255))
-            self.render_text(enemyHp, self.smallFont, 1000, (255, 255, 255))
-            self.render_text(playerStamina, self.smallFont, 1500, (255, 255, 255))
-            self.render_text(playerHp, self.smallFont, 2000, (255, 255, 255))
+            self.render_text(enemyStamina, self.smallFont, 194, (255, 255, 255))
+            self.render_text(enemyHp, self.smallFont, 674, (255, 255, 255))
+            self.render_text(playerStamina, self.smallFont, 2949, (255, 255, 255))
+            self.render_text(playerHp, self.smallFont, 3333, (255, 255, 255))
+
+            if (self.monster.get_currentHp() / self.monster.get_maxHp()) > 0.5:
+                x, y = self.quadrant_to_coordinates(68)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/{self.monster.get_type()} slime.png')), (x, y))
+            elif (self.monster.get_currentHp() / self.monster.get_maxHp()) > 0:
+                x, y = self.quadrant_to_coordinates(68)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/{self.monster.get_type()} slime hurt.png')), (x, y))
+            else:
+                x, y = self.quadrant_to_coordinates(68)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/{self.monster.get_type()} slime dead.png')), (x, y))
+
+            if self.character[1] == 'idle':
+                x, y = self.quadrant_to_coordinates(2320)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/character idle.png')), (x, y))
       
         pygame.display.update()
     

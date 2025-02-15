@@ -153,7 +153,7 @@ class PlayableCharacter:
 weapon = ['sword', 'axe', 'halberd', 'hammer', 'spear']
 armour = ['chain', 'plate', 'fur']
 rarity = ['novice', 'standard', 'great', 'legendary']
-typeConverter = {'grunt':[[1, 2], -30], 'miniboss':[[2, 3], -15], 'boss':[[4, 4], 15]}
+typeConverter = {'grunt':[[1, 2], -30], 'elite':[[2, 3], -15], 'boss':[[4, 4], 15]}
 rarityConverter = {'n': 1.05, 's':1.15, 'g':1.25, 'l':1.4}
 
 class Monster:
@@ -170,7 +170,7 @@ class Monster:
         self.maxStm = math.trunc(4 * self.lvl + 100)
         self.currentStm = self.maxStm
         self.type = type
-        #whether the enemy is a grunt, miniboss or boss
+        #whether the enemy is a grunt, elite or boss
     
     def get_lvl(self):
         return self.lvl
@@ -236,3 +236,6 @@ class Monster:
 
     def get_currentStm(self):
         return self.currentStm
+    
+    def get_type(self):
+        return self.type
