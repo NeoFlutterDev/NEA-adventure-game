@@ -44,11 +44,11 @@ def first_connection(port, studentName, characterName):
     secondsSinceMidnight = seconds_since_midnight()
     
     #make a JSON string to send
-    data = {
-        'student_name': studentName,
-        'character_name': characterName,
-        'last_connected': secondsSinceMidnight
-    }
+    data = """{
+       "student_name": studentName,
+       "character_name": characterName,
+       "last_connected": secondsSinceMidnight
+    }"""
 
     dataJSON = json.dumps(data, indent=4)
 
