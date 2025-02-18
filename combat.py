@@ -169,7 +169,7 @@ rarityConverter = {'n': 1.05, 's':1.15, 'g':1.25, 'l':1.4}
 
 class Monster:
     def __init__(self, playerLvl, type):
-        self.lvl = playerLvl + random.randint(-5, 5)
+        self.lvl = max(1, playerLvl + random.randint(-5, -1))
         self.armour = f'{rarity[random.randint((typeConverter[type][0])[0], (typeConverter[type][0])[1])]} {armour[random.randint(0, 2)]}'
         self.armourModifier = 2 - rarityConverter[self.armour[0]] 
         self.weapon = f'{rarity[random.randint((typeConverter[type][0])[0], (typeConverter[type][0])[1])]} {weapon[random.randint(0, 4)]}'
