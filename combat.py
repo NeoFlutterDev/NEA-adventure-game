@@ -1,57 +1,61 @@
 import random
 import math
 
-def player_combat(player, monster, buttonPressed, monsterDodgeValue = 75):
-    playerStm = player.get_currentStm
-    playerMaxStm = player.get_maxStm
-    playerAtk = player.get_atk
-    playerWpnMod = player.get_weaponModifier
-    monsterAmrMod = monster.get_armourModifier
-    if buttonPressed == 'attack' and playerStm >= 5:
+def player_combat(player, monster, buttonPressed):
+    playerStm = int(player.get_currentStm())
+    playerMaxStm = int(player.get_maxStm())
+    playerAtk = float(player.get_atk())
+    playerWpnMod = float(player.get_weaponModifier())
+    monsterAmrMod = float(monster.get_armourModifier())
+    monsterDodgeValue = int(monster.get_monsterDodgeValue())
+    if buttonPressed == 'normal attack' and playerStm >= 5:
         player.update_currentStm(-5)
-        playerStm -= 5
         if random.randint(1, 100) < monsterDodgeValue:
             monster.update_currentHp(-(playerAtk * playerWpnMod * monsterAmrMod))
-        return 75
+        player.update_playerDodgeValue(75)
     #the player dodge value
     elif buttonPressed == 'heavy attack' and playerStm >= 15:
         player.update_currentStm(-15)
         if random.randint(1, 100) < monsterDodgeValue + 15:
             monster.update_currentHp(-(playerAtk * 1.5 * playerWpnMod * monsterAmrMod))
-        return 100
+        player.update_playerDodgeValue(100)
     elif buttonPressed == 'dodge':
-        player.set_currentStm(25)
+        player.update_currentStm(25)
         if playerStm > playerMaxStm:
-            player.set_currentStm(playerMaxStm)
-        return 25
+            player.update_currentStm(-(playerStm+25))
+            player.update_currentStm(playerMaxStm)
+        player.update_playerDodgeValue(25)
     elif buttonPressed == 'special' and playerStm >= 50:
         player.special_atk()
 
-def monster_combat(player, monster, playerDodgeValue = 75):
-    bias = monster.get_bias
-    monsterStm = monster.get_currentStm
-    monsterMaxStm = monster.get_maxStm
-    monsterAtk = monster.get_atk
-    monsterWpnMod = monster.get_weaponModifier
-    playerAmrMod = player.get_armourModifier
+def monster_combat(player, monster):
+    bias = int(monster.get_bias())
+    monsterStm = int(monster.get_currentStm())
+    monsterMaxStm = int(monster.get_maxStm())
+    monsterAtk = float(monster.get_atk())
+    monsterWpnMod = float(monster.get_weaponModifier())
+    playerAmrMod = float(player.get_armourModifier())
+    playerDodgeValue = float(player.get_playerDodgeValue())
     #changes the chance, higher bias = more likely to use specials/heavy attacks
     #lower bias = more likely to dodge or attack, monsters with no special will have a bias of -25 or lower
-    randomSelector = random.randint(1, 100) + bias
-    monsterStm = monster.get_currentStm
+    randomSelector = int(random.randint(1, 100)) + bias
     if randomSelector > 75 and monsterStm >= 50:
-        monster.special()
+        monster.update_monsterDodgeValue(0)
     elif randomSelector > 50 and monsterStm >= 15:
-        monsterStm -= 15
+        monster.update_currentStm(-15)
         if random.randint(1, 100) < playerDodgeValue + 15:
             player.update_currentHp(-(monsterAtk * 1.5 * monsterWpnMod * playerAmrMod))
+        monster.update_monsterDodgeValue(100)
     elif randomSelector < 26 and monsterStm >= 5:
-        monsterStm -= 5
+        monster.update_currentStm(-15)
         if random.randint(1, 100) < playerDodgeValue:
             player.update_currentHp(-(monsterAtk * monsterWpnMod * playerAmrMod))
+        monster.update_monsterDodgeValue(75)
     else:
-        player.set_currentStm(25)
+        player.update_currentStm(25)
         if monsterStm > monsterMaxStm:
-            monster.set_currentStm(monsterMaxStm)
+            monster.update_currentStm(monsterMaxStm)
+        monster.update_monsterDodgeValue(25)
 
 class PlayableCharacter:
     def __init__(self, name, exp, armour = None, armourModifier = 1, weapon = None, weaponModifier = 1):
@@ -68,6 +72,7 @@ class PlayableCharacter:
         self.currentHp = self.maxHp
         self.maxStm = math.trunc(4 * self.lvl + 100)
         self.currentStm = self.maxStm
+        self.playerDodgeValue = 75
         #defines the base stats of the player
         #as levels go up, health increases the most, followed by stamina, followed by attack
 
@@ -147,6 +152,12 @@ class PlayableCharacter:
 
     def get_currentStm(self):
         return self.currentStm
+    
+    def get_playerDodgeValue(self):
+        return self.playerDodgeValue
+    
+    def update_playerDodgeValue(self, playerDodgeValue):
+        self.playerDodgeValue = playerDodgeValue
 
 #25 xp is lvl 1 (baseline)
 
@@ -170,6 +181,7 @@ class Monster:
         self.maxStm = math.trunc(4 * self.lvl + 100)
         self.currentStm = self.maxStm
         self.type = type
+        self.monsterDodgeValue = 75
         #whether the enemy is a grunt, elite or boss
     
     def get_lvl(self):
@@ -239,3 +251,9 @@ class Monster:
     
     def get_type(self):
         return self.type
+    
+    def get_monsterDodgeValue(self):
+        return self.monsterDodgeValue
+    
+    def update_monsterDodgeValue(self, monsterDodgeValue):
+        self.monsterDodgeValue = monsterDodgeValue

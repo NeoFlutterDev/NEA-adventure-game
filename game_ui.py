@@ -27,7 +27,7 @@ class GameUI:
         self.questionText = {'question screen':[[], [], [], [], []], 'questionKey':0}
         self.studentName = studentName
         self.character = [combat.PlayableCharacter(studentName, 25), 'idle']
-        self.monster = combat.Monster(1, 'grunt')
+        self.monster = None
         self.mainSubroutines = mainSubroutines
         self.animationController = animationController
         self.textController = textController
@@ -106,9 +106,9 @@ class GameUI:
                 [False, [9999, 9999], [self.new_screen, ''], 'sprites/buttons/empty sprite.png']
             ],
             'battle': [
-                [True, [4044, 4265], None, 'sprites/buttons/normal attack.png'],
-                [True, [4087, 4308], None, 'sprites/buttons/heavy attack.png'],
-                [True, [4620, 4841], None, 'sprites/buttons/dodge.png'],
+                [True, [4044, 4265], [self.combat_phase, 'normal attack'], 'sprites/buttons/normal attack.png'],
+                [True, [4087, 4308], [self.combat_phase, 'heavy attack'], 'sprites/buttons/heavy attack.png'],
+                [True, [4620, 4841], [self.combat_phase, 'dodge'], 'sprites/buttons/dodge.png'],
                 [True, [4663, 4884], self.empty_def, 'sprites/buttons/special attack.png'],
             ],
         }
@@ -125,6 +125,14 @@ class GameUI:
         else:
             database.update_question('correct', self.questionText['questionKey'], self.accountKey)
             self.new_screen(self.buttons['question screen'][4][2][1])
+
+    def start_combat(self, type):
+        self.screen = 'battle'
+        self.monster = combat.Monster(self.character[0].get_lvl(), type)
+    
+    def combat_phase(self, button):
+        combat.player_combat(self.character[0], self.monster, button)
+        combat.monster_combat(self.character[0], self.monster)
     
     def initialize_window(self):
         info_object = pygame.display.Info()
