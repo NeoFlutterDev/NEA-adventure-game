@@ -2,62 +2,70 @@ import random
 import math
 
 def player_combat(player, monster, buttonPressed):
-    playerStm = int(player.get_currentStm())
-    playerMaxStm = int(player.get_maxStm())
-    playerAtk = float(player.get_atk())
-    playerWpnMod = float(player.get_weaponModifier())
-    monsterAmrMod = float(monster.get_armourModifier())
-    monsterDodgeValue = int(monster.get_monsterDodgeValue())
-    monsterMultiplier = float(monster.get_multiplier())
+    playerStm = int(player[0].get_currentStm())
+    playerMaxStm = int(player[0].get_maxStm())
+    playerAtk = float(player[0].get_atk())
+    playerWpnMod = float(player[0].get_weaponModifier())
+    monsterAmrMod = float(monster[0].get_armourModifier())
+    monsterDodgeValue = int(monster[0].get_monsterDodgeValue())
+    monsterMultiplier = float(monster[0].get_multiplier())
     if buttonPressed == 'normal attack' and playerStm >= 5:
-        player.update_currentStm(-5)
+        player[0].update_currentStm(-5)
         if random.randint(1, 100) < monsterDodgeValue:
-            monster.update_currentHp(-(playerAtk * playerWpnMod * monsterAmrMod * (1 / monsterMultiplier)))
-        player.update_playerDodgeValue(75)
+            monster[0].update_currentHp(-(playerAtk * playerWpnMod * monsterAmrMod * (1 / monsterMultiplier)))
+        player[0].update_playerDodgeValue(75)
+        return [[player[0], 'normal'], [monster[0], monster[1]]]
     #the player dodge value
     elif buttonPressed == 'heavy attack' and playerStm >= 15:
-        player.update_currentStm(-15)
+        player[0].update_currentStm(-15)
         if random.randint(1, 100) < monsterDodgeValue + 15:
-            monster.update_currentHp(-(playerAtk * 1.5 * playerWpnMod * monsterAmrMod * (1 / monsterMultiplier)))
-        player.update_playerDodgeValue(100)
+            monster[0].update_currentHp(-(playerAtk * 1.5 * playerWpnMod * monsterAmrMod * (1 / monsterMultiplier)))
+        player[0].update_playerDodgeValue(100)
+        return [[player[0], 'heavy'], [monster[0], monster[1]]]
     elif buttonPressed == 'dodge':
-        player.update_currentStm(25)
+        player[0].update_currentStm(25)
         if playerStm > playerMaxStm:
-            player.update_currentStm(-(playerStm+25))
-            player.update_currentStm(playerMaxStm)
-        player.update_playerDodgeValue(25)
+            player[0].update_currentStm(-(playerStm+25))
+            player[0].update_currentStm(playerMaxStm)
+        player[0].update_playerDodgeValue(25)
+        return [[player[0], 'dodge'], [monster[0], monster[1]]]
     elif buttonPressed == 'special' and playerStm >= 50:
-        player.special_atk()
+        player[0].special_atk()
+        return [[player[0], 'special'], [monster[0], monster[1]]]
 
 def monster_combat(player, monster):
-    bias = int(monster.get_bias())
-    monsterStm = int(monster.get_currentStm())
-    monsterMaxStm = int(monster.get_maxStm())
-    monsterAtk = float(monster.get_atk())
-    monsterWpnMod = float(monster.get_weaponModifier())
-    monsterMultiplier = float(monster.get_multiplier())
-    playerAmrMod = float(player.get_armourModifier())
-    playerDodgeValue = float(player.get_playerDodgeValue())
+    bias = int(monster[0].get_bias())
+    monsterStm = int(monster[0].get_currentStm())
+    monsterMaxStm = int(monster[0].get_maxStm())
+    monsterAtk = float(monster[0].get_atk())
+    monsterWpnMod = float(monster[0].get_weaponModifier())
+    monsterMultiplier = float(monster[0].get_multiplier())
+    playerAmrMod = float(player[0].get_armourModifier())
+    playerDodgeValue = float(player[0].get_playerDodgeValue())
     #changes the chance, higher bias = more likely to use specials/heavy attacks
     #lower bias = more likely to dodge or attack, monsters with no special will have a bias of -25 or lower
     randomSelector = int(random.randint(1, 100)) + bias
     if randomSelector > 75 and monsterStm >= 50:
-        monster.update_monsterDodgeValue(0)
+        monster[0].update_monsterDodgeValue(0)
+        return [[player[0], player[1]], [monster[0], 'special']]
     elif randomSelector > 50 and monsterStm >= 15:
-        monster.update_currentStm(-15)
+        monster[0].update_currentStm(-15)
         if random.randint(1, 100) < playerDodgeValue + 15:
-            player.update_currentHp(-(monsterAtk * 1.5 * monsterWpnMod * playerAmrMod * monsterMultiplier))
-        monster.update_monsterDodgeValue(100)
+            player[0].update_currentHp(-(monsterAtk * 1.5 * monsterWpnMod * playerAmrMod * monsterMultiplier))
+        monster[0].update_monsterDodgeValue(100)
+        return [[player[0], player[1]], [monster[0], 'heavy']]
     elif randomSelector < 26 and monsterStm >= 5:
-        monster.update_currentStm(-15)
+        monster[0].update_currentStm(-15)
         if random.randint(1, 100) < playerDodgeValue:
-            player.update_currentHp(-(monsterAtk * monsterWpnMod * playerAmrMod * monsterMultiplier))
-        monster.update_monsterDodgeValue(75)
+            player[0].update_currentHp(-(monsterAtk * monsterWpnMod * playerAmrMod * monsterMultiplier))
+        monster[0].update_monsterDodgeValue(75)
+        return [[player[0], player[1]], [monster[0], 'normal']]
     else:
-        player.update_currentStm(25)
+        player[0].update_currentStm(25)
         if monsterStm > monsterMaxStm:
-            monster.update_currentStm(monsterMaxStm)
-        monster.update_monsterDodgeValue(25)
+            monster[0].update_currentStm(monsterMaxStm)
+        monster[0].update_monsterDodgeValue(25)
+        return [[player[0], player[1]], [monster[0], 'dodge']]
 
 class PlayableCharacter:
     def __init__(self, name, exp, armour = None, armourModifier = 1, weapon = None, weaponModifier = 1):

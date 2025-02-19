@@ -442,6 +442,19 @@ class GameUI:
             if self.character[1] == 'idle':
                 x, y = self.quadrant_to_coordinates(2320)
                 self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/character idle.png')), (x, y))
+
+            if self.monster[1] == 'normal':
+                x, y = self.quadrant_to_coordinates(841)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.monster[0].get_type()} normal.png')), (x, y))
+            elif self.monster[1] == 'heavy':
+                x, y = self.quadrant_to_coordinates(841)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.monster[0].get_type()} heavy.png')), (x, y))
+            elif self.monster[1] == 'dodge':
+                x, y = self.quadrant_to_coordinates(841)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/dodge.png')), (x, y))
+            elif self.monster[1] == 'special':
+                x, y = self.quadrant_to_coordinates(841)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/special.png')), (x, y))
       
         pygame.display.update()
     
