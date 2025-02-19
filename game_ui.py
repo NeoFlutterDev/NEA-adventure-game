@@ -128,11 +128,12 @@ class GameUI:
 
     def start_combat(self, type):
         self.screen = 'battle'
-        self.monster = combat.Monster(self.character[0].get_lvl(), type)
+        self.monster = [combat.Monster(self.character[0].get_lvl(), type), 'idle']
     
     def combat_phase(self, button):
-        combat.player_combat(self.character[0], self.monster, button)
-        combat.monster_combat(self.character[0], self.monster)
+        self.player, self.monster = combat.player_combat(self.character, self.monster, button)
+        if self.monster[0].get_currentHp() > 0:
+            self.player, self.monster = combat.monster_combat(self.character, self.monster)
     
     def initialize_window(self):
         info_object = pygame.display.Info()
@@ -418,25 +419,25 @@ class GameUI:
                 self.render_text(lines[0], lines[1], lines[2], lines[3])
         
         if self.screen == 'battle':
-            enemyStamina = [f'Stm: {self.monster.get_currentStm()}']
-            enemyHp = [f'Hp: {self.monster.get_currentHp()}']
-            playerStamina = [f'Stm: {self.character[0].get_currentStm()}']
-            playerHp = [f'Hp: {self.character[0].get_currentHp()}']
+            enemyStamina = [f'Stm: {int(self.monster[0].get_currentStm())}']
+            enemyHp = [f'Hp: {int(self.monster[0].get_currentHp())}']
+            playerStamina = [f'Stm: {int(self.character[0].get_currentStm())}']
+            playerHp = [f'Hp: {int(self.character[0].get_currentHp())}']
 
             self.render_text(enemyStamina, self.smallFont, 194, (255, 255, 255))
             self.render_text(enemyHp, self.smallFont, 674, (255, 255, 255))
             self.render_text(playerStamina, self.smallFont, 2949, (255, 255, 255))
             self.render_text(playerHp, self.smallFont, 3333, (255, 255, 255))
 
-            if (self.monster.get_currentHp() / self.monster.get_maxHp()) > 0.5:
+            if (self.monster[0].get_currentHp() / self.monster[0].get_maxHp()) > 0.5:
                 x, y = self.quadrant_to_coordinates(68)
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/{self.monster.get_type()} slime.png')), (x, y))
-            elif (self.monster.get_currentHp() / self.monster.get_maxHp()) > 0:
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/{self.monster[0].get_type()} slime.png')), (x, y))
+            elif (self.monster[0].get_currentHp() / self.monster[0].get_maxHp()) > 0:
                 x, y = self.quadrant_to_coordinates(68)
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/{self.monster.get_type()} slime hurt.png')), (x, y))
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/{self.monster[0].get_type()} slime hurt.png')), (x, y))
             else:
                 x, y = self.quadrant_to_coordinates(68)
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/{self.monster.get_type()} slime dead.png')), (x, y))
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/{self.monster[0].get_type()} slime dead.png')), (x, y))
 
             if self.character[1] == 'idle':
                 x, y = self.quadrant_to_coordinates(2320)
