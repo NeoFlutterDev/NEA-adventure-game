@@ -26,7 +26,7 @@ class GameUI:
         self.statsText = {'combined stats':[], 'account 1 stats':[], 'account 2 stats':[], 'account 3 stats':[]}
         self.questionText = {'question screen':[[], [], [], [], []], 'questionKey':0}
         self.studentName = studentName
-        self.character = [combat.PlayableCharacter(studentName, 25), 'idle']
+        self.character = [combat.PlayableCharacter(studentName, 25, None, 1, 'fist', 1), 'idle']
         self.monster = None
         self.mainSubroutines = mainSubroutines
         self.animationController = animationController
@@ -131,9 +131,9 @@ class GameUI:
         self.monster = [combat.Monster(self.character[0].get_lvl(), type), 'idle']
     
     def combat_phase(self, button):
-        self.player, self.monster = combat.player_combat(self.character, self.monster, button)
+        self.character, self.monster = combat.player_combat(self.character, self.monster, button)
         if self.monster[0].get_currentHp() > 0:
-            self.player, self.monster = combat.monster_combat(self.character, self.monster)
+            self.character, self.monster = combat.monster_combat(self.character, self.monster)
     
     def initialize_window(self):
         info_object = pygame.display.Info()
@@ -439,19 +439,37 @@ class GameUI:
                 x, y = self.quadrant_to_coordinates(68)
                 self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/{self.monster[0].get_type()} slime dead.png')), (x, y))
 
-            if self.character[1] == 'idle':
-                x, y = self.quadrant_to_coordinates(2320)
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/character idle.png')), (x, y))
+            x, y = self.quadrant_to_coordinates(2320)
+            self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/character combat.png')), (x, y))
+
+            if self.character[1] == 'normal':
+                x, y = self.quadrant_to_coordinates(2901)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.character[0].get_weapon()} normal.png')), (x, y))
+
+            elif self.character[1] == 'heavy':
+                x, y = self.quadrant_to_coordinates(2901)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.character[0].get_weapon()} heavy.png')), (x, y))
+            
+            elif self.character[1] == 'dodge':
+                x, y = self.quadrant_to_coordinates(2901)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/dodge.png')), (x, y))
+            
+            elif self.character[1] == 'special':
+                x, y = self.quadrant_to_coordinates(2901)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.character[0].get_weapon()} special.png')), (x, y))
 
             if self.monster[1] == 'normal':
                 x, y = self.quadrant_to_coordinates(841)
                 self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.monster[0].get_type()} normal.png')), (x, y))
+
             elif self.monster[1] == 'heavy':
                 x, y = self.quadrant_to_coordinates(841)
                 self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.monster[0].get_type()} heavy.png')), (x, y))
+
             elif self.monster[1] == 'dodge':
                 x, y = self.quadrant_to_coordinates(841)
                 self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/dodge.png')), (x, y))
+
             elif self.monster[1] == 'special':
                 x, y = self.quadrant_to_coordinates(841)
                 self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/special.png')), (x, y))
