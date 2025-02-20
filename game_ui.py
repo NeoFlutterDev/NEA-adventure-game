@@ -386,10 +386,10 @@ class GameUI:
     def tutorial_name_enterer(self, key):
         if key == 'backspace':
             self.characterName = self.characterName[:-1]
-        elif len(self.characterName) < 12:
-            self.characterName += key
         elif key == 'enter':
             self.character[0].name = self.characterName
+        elif isinstance(key, str) and len(self.characterName) < 12:
+            self.characterName += key
         self.render()
     
     def render(self):
@@ -418,9 +418,8 @@ class GameUI:
             password_text = self.smallFont.render(self.networkPin, True, (255, 255, 255))
             self.window.blit(password_text, (rectangle.x + 5, rectangle.y + 5))
         #draw password text if on the password creator, load account or networking screen
-        elif self.screen == 'tutorial' and any(threads[2] == text for threads in self.textController.threads):
-            rectangle = pygame.Rect(400, 170, 1450, 50)
-            pygame.draw.rect(self.window, (180, 180, 180), rectangle)
+        elif self.screen == 'tutorial start' and any(threads[2] == text for threads in self.textController.threads):
+            rectangle = pygame.Rect(10, 400, 1450, 50)
             password_text = self.smallFont.render(self.characterName, True, (255, 255, 255))
             self.window.blit(password_text, (rectangle.x + 5, rectangle.y + 5))
 
@@ -539,7 +538,7 @@ class GameUI:
             'password creator': self.handle_password_creator_key,
             'load account': self.handle_load_account_key,
             'networking': self.handle_networking_key,
-            'tutorial': self.handle_tutorial_name,
+            'tutorial start': self.handle_tutorial_name,
         }
         handle = screenKeyHandlers.get(self.screen)
         if handle:
@@ -571,16 +570,13 @@ class GameUI:
     
     def handle_tutorial_name(self, event):
         text = 'Your memory is foggy, what is your name again?'
-        if any(threads[2] == text for threads in self.textController.threads):
+        if any(threads[2] == text for threads in self.textController.threads) and event.type == pygame.KEYDOWN:
             if event.key == pygame.K_BACKSPACE:
                 self.tutorial_name_enterer('backspace')
-            elif event.key == pygame.K_KP_ENTER:
+            elif event.key == pygame.K_RETURN:
                 self.tutorial_name_enterer('enter')
-            else:
-                if pygame.key.get_mods() & pygame.KMOD_SHIFT:
-                    self.password_text_field_checking(event.unicode.upper())
-                else:
-                    self.password_text_field_checking(event.unicode)
+            elif event.unicode.isprintable():
+                self.tutorial_name_enterer(event.unicode)
 
     def run(self):
         while self.running:
