@@ -612,31 +612,46 @@ class AnimationController():
     
 class TextController:
     def __init__(self):
-        self.threads = [] #list to store current text
+        self.threads = []
 
-    def typewriter_text(self, game_ui, font, text, startQuadrant, maxWidth, colour=(256, 256, 256)):
+    def typewriter_text(self, game_ui, font, text, startQuadrant, maxWidth, colour=(255, 255, 255)):
         stopEvent = threading.Event()
 
         def start_typewriter_text():
             currentIndex = 0
             self.text = []
+            
             for line in lines:
+                if stopEvent.is_set():
+                    break  
+
                 self.text.append('')
                 for char in line:
-                    self.text[-1] += char
-                    currentIndex += 1
-                    game_ui.render_text(self.text, font, startQuadrant, colour)
-                    time.sleep(0.1)
-
                     if stopEvent.is_set():
-                        self.check_threads()
+                        break  
+
+                    for count in range(6):
+                        if count == 0:
+                            self.text[-1] += char
+                            currentIndex += 1
+
+                        game_ui.render_text(self.text, font, startQuadrant, colour)
+                        pygame.display.update() 
+                        time.sleep(1/120)
+
+                        if stopEvent.is_set():
+                            break 
+
+                if stopEvent.is_set():
+                    break 
+
             self.check_threads()
-        
+
         lines = self.wrap_text(text, font, maxWidth)
         thread = threading.Thread(target=start_typewriter_text, daemon=True)
         thread.start()
-        self.threads.append((text, stopEvent))
-    
+        self.threads.append((thread, stopEvent))
+
     def wrap_text(self, text, font, maxWidth):
         words = text.split(' ')
         lines = []
@@ -652,9 +667,18 @@ class TextController:
         lines.append(currentLine)
 
         return lines    
-    
+
     def check_threads(self):
         for i in range(len(self.threads)-1, -1, -1):
-            thread = self.threads[i][0]
+            thread, _ = self.threads[i]
             if not thread.is_alive():
                 self.threads.pop(i)
+
+    def stop_all_text(self):
+        for thread, stopEvent in self.threads:
+            stopEvent.set()  
+
+        for thread, stopEvent in self.threads:
+            thread.join()
+
+        self.threads.clear()
