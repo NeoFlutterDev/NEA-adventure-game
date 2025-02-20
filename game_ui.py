@@ -354,9 +354,9 @@ class GameUI:
             self.buttons['load account'][1][0] = True
         #check for character name to see if the tutorial needs to be ran
 
-        self.characterName = database.load_account_attribute('characterName', accountKey)[0]
+        self.character[0].name = database.load_account_attribute('characterName', accountKey)[0]
 
-        if self.characterName == 'Unknown':
+        if self.character[0].name == 'Unknown':
             tutorial_call = self.mainSubroutines[1]
             tutorial_call(self, accountKey)
         else:
@@ -383,6 +383,15 @@ class GameUI:
         if len(self.networkPin) == 5:
             self.buttons['networking'][1][0] = True
     
+    def tutorial_name_enterer(self, key):
+        if key == 'backspace':
+            self.characterName = self.characterName[:-1]
+        elif len(self.characterName) < 12:
+            self.characterName += key
+        elif key == 'enter':
+            self.character[0].name = self.characterName
+        self.render()
+    
     def render(self):
         self.window.fill((0, 0, 0))
         self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/backdrops/{self.screen}.png')), (0, 0))
@@ -396,6 +405,8 @@ class GameUI:
         elif self.characterName != '':
             self.window.blit(self.scale_sprite(pygame.image.load('sprites/buttons/connection.png')), self.quadrant_to_coordinates(3))  
         
+        text = 'Your memory is foggy, what is your name again?'
+
         if self.screen == 'password creator' or self.screen == 'load account':
             rectangle = pygame.Rect(150, 370, 1580, 100)
             pygame.draw.rect(self.window, (180, 180, 180), rectangle)
@@ -407,6 +418,11 @@ class GameUI:
             password_text = self.smallFont.render(self.networkPin, True, (255, 255, 255))
             self.window.blit(password_text, (rectangle.x + 5, rectangle.y + 5))
         #draw password text if on the password creator, load account or networking screen
+        elif self.screen == 'tutorial' and any(threads[2] == text for threads in self.textController.threads):
+            rectangle = pygame.Rect(400, 170, 1450, 50)
+            pygame.draw.rect(self.window, (180, 180, 180), rectangle)
+            password_text = self.smallFont.render(self.characterName, True, (255, 255, 255))
+            self.window.blit(password_text, (rectangle.x + 5, rectangle.y + 5))
 
         if self.screen in ['combined stats', 'account 1 stats', 'account 2 stats', 'account 3 stats']:
             textToBlit = self.statsText[self.screen]
@@ -522,7 +538,8 @@ class GameUI:
         screenKeyHandlers = {
             'password creator': self.handle_password_creator_key,
             'load account': self.handle_load_account_key,
-            'networking': self.handle_networking_key
+            'networking': self.handle_networking_key,
+            'tutorial': self.handle_tutorial_name,
         }
         handle = screenKeyHandlers.get(self.screen)
         if handle:
@@ -551,6 +568,19 @@ class GameUI:
             self.network_pin_enterer('backspace')
         elif event.unicode.isdigit():
             self.network_pin_enterer(event.unicode)
+    
+    def handle_tutorial_name(self, event):
+        text = 'Your memory is foggy, what is your name again?'
+        if any(threads[2] == text for threads in self.textController.threads):
+            if event.key == pygame.K_BACKSPACE:
+                self.tutorial_name_enterer('backspace')
+            elif event.key == pygame.K_KP_ENTER:
+                self.tutorial_name_enterer('enter')
+            else:
+                if pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                    self.password_text_field_checking(event.unicode.upper())
+                else:
+                    self.password_text_field_checking(event.unicode)
 
     def run(self):
         while self.running:
@@ -649,8 +679,8 @@ class TextController:
 
         lines = self.wrap_text(text, font, maxWidth)
         thread = threading.Thread(target=start_typewriter_text, daemon=True)
-        thread.start()
-        self.threads.append((thread, stopEvent))
+        thread.start()  
+        self.threads.append((thread, stopEvent, text))
 
     def wrap_text(self, text, font, maxWidth):
         words = text.split(' ')
@@ -670,15 +700,15 @@ class TextController:
 
     def check_threads(self):
         for i in range(len(self.threads)-1, -1, -1):
-            thread, _ = self.threads[i]
+            thread, stopEvent, text = self.threads[i]
             if not thread.is_alive():
                 self.threads.pop(i)
 
     def stop_all_text(self):
-        for thread, stopEvent in self.threads:
+        for thread, stopEvent, text in self.threads:
             stopEvent.set()  
 
-        for thread, stopEvent in self.threads:
+        for thread, stopEvent, text in self.threads:
             thread.join()
 
         self.threads.clear()
