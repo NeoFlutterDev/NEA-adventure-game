@@ -28,5 +28,13 @@ def load_tutorial(ui, accountKey):
     text = f'{ui.character[0].name} is a fine name. You sit up noticing a small slime approaching. You raise your fists, and get ready for a battle'
     ui.textController.typewriter_text(ui, ui.smallFont, text, 870, 500)
     time.sleep(5)
-    ui.animationController.start_continuous_animation((1/120), 'campfire character', 1, 1, 4781, 4879, ui)
+    ui.animationController.start_continuous_animation((1/120), 'campfire slime', 6, 20, 4731, 4829, ui)
+    time.sleep(3)
     ui.textController.stop_all_text()
+    ui.animationController.stop_all_animations()
+    ui.buttons['battle'][4][2][1] = tutorial_part2
+    ui.start_combat('grunt')
+
+def tutorial_part2(ui):
+    ui.screen = 'tutorial part2'
+    ui.render()

@@ -96,7 +96,8 @@ class GameUI:
                 [False, [1173, 1187], [self.mainSubroutines[0], self], 'sprites/buttons/upload password.png'],
             ],
             'tutorial start': [
-
+            ],
+            'tutorial part2': [
             ],
             'question screen': [
                 [True, [2600, 3597], [self.question_checker, 'incorrect'], 'sprites/buttons/question box a.png'],
@@ -110,6 +111,9 @@ class GameUI:
                 [True, [4087, 4308], [self.combat_phase, 'heavy attack'], 'sprites/buttons/heavy attack.png'],
                 [True, [4620, 4841], [self.combat_phase, 'dodge'], 'sprites/buttons/dodge.png'],
                 [True, [4663, 4884], self.empty_def, 'sprites/buttons/special attack.png'],
+                [False, [9999, 9999], [self.new_screen, ''], 'sprites/buttons/empty sprite.png'],
+                [False, [2049, 2255], self.empty_def, 'sprites/buttons/victory.png'],
+                [False, [2049, 2255], self.empty_def, 'sprites/buttons/defeat.png']
             ],
         }
     #all buttons, ordered by the screen, saved as the key
@@ -127,6 +131,9 @@ class GameUI:
             self.new_screen(self.buttons['question screen'][4][2][1])
 
     def start_combat(self, type):
+        self.buttons['battle'][4][2][1] = self.screen
+        self.buttons['battle'][5][0] = False
+        self.buttons['battle'][6][0] = False
         self.screen = 'battle'
         self.monster = [combat.Monster(self.character[0].get_lvl(), type), 'idle']
     
@@ -134,6 +141,21 @@ class GameUI:
         self.character, self.monster = combat.player_combat(self.character, self.monster, button)
         if self.monster[0].get_currentHp() > 0:
             self.character, self.monster = combat.monster_combat(self.character, self.monster)
+        elif self.monster[0].get_currentHp() <= 0:
+            self.buttons['battle'][5][0] = True
+            time.sleep(3)
+            if isinstance(self.buttons['battle'][4][2][1], str):
+                self.new_screen(self.buttons['battle'][4][2][1])
+            else:
+                self.buttons['battle'][4][2][1](self)
+        
+        if self.character[0].get_currentHp() <= 0:
+            self.buttons['battle'][6][0] = True
+            time.sleep(3)
+            if isinstance(self.buttons['battle'][4][2][1], str):
+                self.new_screen(self.buttons['battle'][4][2][1])
+            else:
+                self.buttons['battle'][4][2][1](self)
     
     def initialize_window(self):
         info_object = pygame.display.Info()
