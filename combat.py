@@ -188,8 +188,8 @@ class PlayableCharacter:
 
 #25 xp is lvl 1 (baseline)
 
-weapon = ['sword', 'axe', 'halberd', 'hammer', 'spear']
-armour = ['chain', 'plate', 'fur']
+weapon = ['sword', 'fist', 'bow']
+armour = ['nanoplate', 'titanweave', 'plasmaweave']
 rarity = ['novice', 'standard', 'great', 'legendary']
 typeConverter = {'grunt':[[0, 1], -30, 0.2], 'elite':[[1, 2], -15, 0.4], 'boss':[[3, 3], 15, 0.6]}
 rarityConverter = {'n': 1.05, 's':1.15, 'g':1.25, 'l':1.4}
