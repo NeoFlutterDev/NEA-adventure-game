@@ -238,6 +238,38 @@ def update_account_info(exp, money, weapon, weaponModifier, armour, armourModifi
         con.close()
         #close the connection
 
+def update_characterName(characterName, accountKey):
+    try:
+        con = sqlite3.connect('storage.db')
+        cur = con.cursor()
+        #connect to the database
+
+        # Enable foreign key constraints
+        con.execute("PRAGMA foreign_keys = ON")
+
+        query = '''
+        UPDATE accounts
+        SET characterName = ?
+        WHERE accountKey = ?
+        '''
+        #define the query, with placeholders
+
+        data = (characterName, accountKey)
+        #enter data that is to replace the old data
+        cur.execute(query, data)
+        #execute the parameterised query
+
+        con.commit()
+        #commit the query
+
+    except sqlite3.Error as e:
+        print('Error:', e)
+        #if any errors occur, print them
+
+    finally:
+        con.close()
+        #close the connection
+
 def delete_account(accountKey):
     try:
         con = sqlite3.connect('storage.db')
@@ -301,7 +333,6 @@ def delete_all_accounts():
         #close the connection
 
 def load_accounts():
-    
     try:
         con = sqlite3.connect('storage.db')
         cur = con.cursor()
@@ -314,6 +345,38 @@ def load_accounts():
             SELECT accountKey, characterName, exp
             FROM accounts
         ''')
+
+        result = cur.fetchall()
+
+        con.commit()
+
+        return result
+
+    except sqlite3.Error as e:
+        print('Error:', e)
+        #if any errors occur, print them
+
+    finally:
+        con.close()
+        #close the connection
+
+def load_account(accountKey):
+    try:
+        con = sqlite3.connect('storage.db')
+        cur = con.cursor()
+        #connect to the database
+
+        # Enable foreign key constraints
+        con.execute("PRAGMA foreign_keys = ON")
+        
+        query = '''
+            SELECT characterName, exp, armour, armourModifier, weapon, weaponModifier
+            FROM accounts
+            WHERE accountKey = ?
+        '''
+        data = accountKey
+
+        cur.execute(query, data)
 
         result = cur.fetchall()
 

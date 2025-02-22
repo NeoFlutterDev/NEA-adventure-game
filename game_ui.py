@@ -21,6 +21,7 @@ class GameUI:
         self.uniqueID = ''
         self.accountKey = 0
         self.characterName = ''
+        self.characterPOS = (0, 0)
         self.running = True
         self.sound = True
         self.statsText = {'combined stats':[], 'account 1 stats':[], 'account 2 stats':[], 'account 3 stats':[]}
@@ -120,6 +121,10 @@ class GameUI:
                 [False, [9999, 9999], [self.new_screen, ''], 'sprites/buttons/empty sprite.png'],
                 [False, [2049, 2255], self.empty_def, 'sprites/buttons/victory.png'],
                 [False, [2049, 2255], self.empty_def, 'sprites/buttons/defeat.png']
+            ],
+            'exploration': [
+            ],
+            'village1': [
             ],
         }
     #all buttons, ordered by the screen, saved as the key
@@ -445,13 +450,17 @@ class GameUI:
             tutorial_call = self.mainSubroutines[1]
             tutorial_call(self, accountKey)
         else:
-            load_save_state(accountKey)
+            self.load_save_state(accountKey)
 
         self.render()
 
+    def load_save_state(self, accountKey):
+        self.character[0] = combat.PlayableCharacter(database.load_account(accountKey))
+        self.characterPOS = (300, 900)
+
     def upload_password(self):
         hashedPassword = database.hashing_algorithm(self.password)
-        accountKey = database.table_accounts_insertion('Unknown', hashedPassword, 25, 1, None, 1, None, 1, 1, 1)
+        accountKey = database.table_accounts_insertion('Unknown', hashedPassword, 25, 1, None, 1, 'fist', 1, 1, 1)
         database.weight_insertion(accountKey)
         self.password = ''
         self.buttons['password creator'][5][0] = False

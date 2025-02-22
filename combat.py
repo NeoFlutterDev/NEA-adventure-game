@@ -188,10 +188,10 @@ class PlayableCharacter:
 
 #25 xp is lvl 1 (baseline)
 
-weapon = ['sword', 'fist', 'bow']
+weapon = ['sword', '  bow', ' fist']
 armour = ['nanoplate', 'titanweave', 'plasmaweave']
 rarity = ['novice', 'standard', 'great', 'legendary']
-typeConverter = {'grunt':[[0, 1], -30, 0.2], 'elite':[[1, 2], -15, 0.4], 'boss':[[3, 3], 15, 0.6]}
+typeConverter = {'grunt':[[0, 1], -30, 0.4], 'elite':[[1, 2], -15, 0.5], 'boss':[[3, 3], 15, 0.6]}
 rarityConverter = {'n': 1.05, 's':1.15, 'g':1.25, 'l':1.4}
 reverseWeaponRarityConverter = {1.05: 'n', 1.15:'s', 1.25:'g', 1.4:'l'}
 reverseArmourRarityConverter = {0.95: 'n', 0.85:'s', 0.75:'g', 0.6:'l'}
@@ -201,7 +201,7 @@ class Monster:
         self.lvl = max(1, playerLvl + random.randint(-5, -1))
         self.armour = f'{rarity[random.randint((typeConverter[type][0])[0], (typeConverter[type][0])[1])]} {armour[random.randint(0, 2)]}'
         self.armourModifier = 2 - rarityConverter[self.armour[0]] 
-        self.weapon = f'{rarity[random.randint((typeConverter[type][0])[0], (typeConverter[type][0])[1])]} {weapon[random.randint(0, 4)]}'
+        self.weapon = f'{rarity[random.randint((typeConverter[type][0])[0], (typeConverter[type][0])[1])]} {weapon[random.randint(0, 2)]}'
         self.weaponModifier = rarityConverter[self.armour[0]]
         self.bias = typeConverter[type][1]
         self.atk = math.trunc(1.5 * self.lvl + 100)

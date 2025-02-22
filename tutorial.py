@@ -1,4 +1,5 @@
 import time
+import database
 import pygame
 pygame.init
 
@@ -31,9 +32,8 @@ def load_tutorial(ui, accountKey):
     time.sleep(3)
     ui.textController.stop_all_text()
     ui.animationController.stop_all_animations()
-    print("Before setting:", ui.buttons['battle'][4][2][1])
     ui.buttons['battle'][4][2][1] = tutorial_part2
-    print("After setting:", ui.buttons['battle'][4][2][1])
+
     ui.start_combat('grunt')
 
 def tutorial_part2(ui):
@@ -41,6 +41,10 @@ def tutorial_part2(ui):
     ui.render()
     text = '''The sun rises as the slime splatters upon the ground. The sun illuminates the surrounding desert, far into the distance a small village is visible.
     as you approach it, you see a small shop, a dungeon and a field, filled with slimes and loot.'''
-    ui.textController.typewriter_text(ui, ui.smallFont, 300, 1500)
-    time.sleep(13)
-    
+    ui.textController.typewriter_text(ui, ui.smallFont, text, 300, 1500)
+    time.sleep(20)
+    database.update_account_info(ui.character[0].get_exp(), ui.character[0].get_money(), ui.character[0].get_weapon(), ui.character[0].get_weaponModifier(),
+                                ui.character[0].get_armour(), ui.character[0].get_armourModifier(), ui.accountKey)
+    database.update_characterName(ui.characterName, ui.accountKey)
+    ui.screen = 'village1'
+    ui.characterPOS = (300, 900)

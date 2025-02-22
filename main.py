@@ -2,6 +2,8 @@ import pygame
 import student_communication
 import tutorial
 import game_ui
+import village
+import time
 import sys
 
 pygame.init()
@@ -29,6 +31,7 @@ ui = game_ui.GameUI(screenScale, fontSizes, studentName, mainSubroutines, animat
 ui.initialize_buttons()
 ui.initialize_window()
 ui.run()
+village.exploration(ui)
 
 #quit Pygame and program
 pygame.quit()
