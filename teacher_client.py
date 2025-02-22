@@ -143,6 +143,8 @@ def server_program():
             window.blit(studentStatus, (30, baseY))
             baseY += incrementY
 
+        window.blit(pygame.image.load('sprites/buttons/graph.png'), (1590, 900))
+
         pygame.display.flip()
 
         # Accept new connections if there's space

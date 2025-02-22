@@ -32,9 +32,12 @@ def load_tutorial(ui, accountKey):
     time.sleep(3)
     ui.textController.stop_all_text()
     ui.animationController.stop_all_animations()
+    print("Before setting:", ui.buttons['battle'][4][2][1])
     ui.buttons['battle'][4][2][1] = tutorial_part2
+    print("After setting:", ui.buttons['battle'][4][2][1])
     ui.start_combat('grunt')
 
 def tutorial_part2(ui):
+    print('this loaded!!')
     ui.screen = 'tutorial part2'
     ui.render()
