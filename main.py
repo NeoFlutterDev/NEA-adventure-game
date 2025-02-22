@@ -31,7 +31,6 @@ ui = game_ui.GameUI(screenScale, fontSizes, studentName, mainSubroutines, animat
 ui.initialize_buttons()
 ui.initialize_window()
 ui.run()
-village.exploration(ui)
 
 #quit Pygame and program
 pygame.quit()

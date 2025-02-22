@@ -143,6 +143,7 @@ class GameUI:
             self.new_screen(self.buttons['question screen'][4][2][1])
 
     def start_combat(self, type):
+        self.questions()
         if self.buttons['battle'][4][2][1] == '':
             self.buttons['battle'][4][2][1] = self.screen
         self.buttons['battle'][5][0] = False
@@ -256,7 +257,7 @@ class GameUI:
             oldArmour = self.character[0].get_armour()[-11:].strip()
             oldMod = combat.rarityConverter[self.character[0].get_armour[:1]]
         except: 
-            oldWeapon = None
+            oldArmour = None
             oldMod = 1
 
         newArmour = newArmour[-11:].strip()
@@ -390,6 +391,110 @@ class GameUI:
         self.screen = newScreen
         self.render()
     #return to previous screen
+
+    def dungeon(self):
+        pass
+
+    def shop(self):
+        pass
+
+    def exploration(self):
+        returnScreen = self.screen
+        self.screen = 'exploration'
+        self.render()
+        encounter = random.randint(1, 100)
+        encounterRandomness = random.randint(1, 100)
+        x, y = self.quadrant_to_coordinates(1577)
+
+        if encounter <= 55:
+            image = pygame.image.load('sprites/characters/grunt slime.png')
+            self.window.blit(self.scale_sprite(pygame.transform.scale(image, (int(image.get_width() * (2/3)), int(image.get_height() * (2/3))))), (x, y))
+            pygame.display.flip()
+            time.sleep(5)
+            self.start_combat('grunt')
+
+        elif encounter <= 70:
+            image = pygame.image.load('sprites/characters/elite slime.png')
+            self.window.blit(self.scale_sprite(pygame.transform.scale(image, (int(image.get_width() * (2/3)), int(image.get_height() * (2/3))))), (x, y))
+            pygame.display.flip()
+            time.sleep(5)
+            self.start_combat('elite')
+
+        elif encounter <= 75:
+            image = pygame.image.load('sprites/characters/boss slime.png')
+            self.window.blit(self.scale_sprite(pygame.transform.scale(image, (int(image.get_width() * (2/3)), int(image.get_height() * (2/3))))), (x, y))
+            pygame.display.flip()
+            time.sleep(5)
+            self.start_combat('boss')
+
+
+        elif encounter <= 80:
+            weaponType = combat.weapon[random.randint(0, 1)]
+            image = pygame.image.load(f'sprites/animations/combat/{weaponType.strip()} normal.png')
+            self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
+            if encounterRandomness <= 55:
+                newWeapon = f'{combat.rarity[0]}{weaponType}'
+                rarity = combat.rarity[0]
+            elif encounterRandomness <= 75:
+                newWeapon = f'{combat.rarity[1]}{weaponType}'
+                rarity = combat.rarity[1]
+            elif encounterRandomness <= 95:
+                newWeapon = f'{combat.rarity[2]}{weaponType}'
+                rarity = combat.rarity[2]
+            else:
+                newWeapon = f'{combat.rarity[3]}{weaponType}'
+                rarity = combat.rarity[3]
+            pygame.display.flip()
+            time.sleep(5)
+            self.new_weapon(newWeapon, rarity)
+
+        elif encounter <= 85:
+            armourType = combat.armour[random.randint(0, 2)]
+            image = pygame.image.load(f'sprites/animations/combat/{armourType.strip()} normal.png')
+            self.window.blit(self.scale_sprite(pygame.transform.scale(image, (int(image.get_width() * 2), int(image.get_height() * 2)))), (x, y))
+            if encounterRandomness <= 55:
+                newArmour = f'{combat.rarity[0]}{armourType}'
+                rarity = combat.rarity[0]
+            elif encounterRandomness <= 75:
+                newArmour = f'{combat.rarity[1]}{armourType}'
+                rarity = combat.rarity[1]
+            elif encounterRandomness <= 95:
+                newArmour = f'{combat.rarity[2]}{armourType}'
+                rarity = combat.rarity[2]
+            else:
+                newArmour = f'{combat.rarity[3]}{armourType}'
+                rarity = combat.rarity[3]
+            pygame.display.flip()
+            time.sleep(5)
+            self.new_armour(newArmour, rarity)
+
+        else:
+            amount = random.randint(1, 10)
+            image = pygame.image.load(f'sprites/animations/combat/coin.png')
+            self.window.blit(self.scale_sprite(pygame.transform.scale(image, (int(image.get_width() * 2), int(image.get_height() * 2)))), (x, y))
+            pygame.display.flip()
+            time.sleep(5)
+            self.character[0].set_money(self.character[0].get_money() + amount)
+        
+        self.buttons['battle'][4][2][1] = 'village1'
+        self.screen = 'battle'
+        while self.screen == 'battle':
+            for event in pygame.event.get():
+                self.handle_event(event)
+            self.render()
+
+        database.update_account_info(
+            self.character[0].get_exp(),
+            self.character[0].get_money(),
+            self.character[0].get_weapon(),
+            self.character[0].get_weaponModifier(),
+            self.character[0].get_armour(),
+            self.character[0].get_armourModifier(),
+            self.accountKey
+        )
+
+        self.screen = returnScreen
+        self.render()
     
     def password_buttons_false(self):
         for i in range(6):
@@ -460,12 +565,12 @@ class GameUI:
         name, exp, armour, armourModifier, weapon, weaponModifier = save
         self.characterName = name
         self.character[0] = combat.PlayableCharacter(name, exp, armour, armourModifier, weapon, weaponModifier)
-        self.characterPOS = [[300, 900], 'w']
+        self.characterPOS = [[900, 1000], 'w']
         self.screen = 'village1'
 
     def upload_password(self):
         hashedPassword = database.hashing_algorithm(self.password)
-        accountKey = database.table_accounts_insertion('Unknown', hashedPassword, 25, 1, None, 1, 'fist', 1, 1, 1)
+        accountKey = database.table_accounts_insertion('Unknown', hashedPassword, 25, 1, None, 1, 'fist', 1, 0, 0)
         database.weight_insertion(accountKey)
         self.password = ''
         self.buttons['password creator'][5][0] = False
@@ -493,6 +598,7 @@ class GameUI:
     
     def render(self):
         self.window.fill((0, 0, 0))
+        if self.screen == 'battle': print(self.screen)
         self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/backdrops/{self.screen}.png')), (0, 0))
 
         self.button_blitter()
@@ -717,12 +823,15 @@ class GameUI:
             self.characterPOS[0][0] = min(1870, self.characterPOS[0][0] + 30)
 
         if self.characterPOS[0][0] <= 130 and (self.characterPOS[0][1] >= 380 and self.characterPOS[0][1] <= 610):
+            self.characterPOS = [[900, 1000], 'w']
             village.dungeon(self)
 
         elif (self.characterPOS[0][0] <= 1040 and self.characterPOS[0][0] >= 810) and self.characterPOS[0][1] <= 130:
+            self.characterPOS = [[900, 1000], 'w']
             village.shop(self)
 
-        elif self.characterPOS[0][0] >= 1780 and (self.characterPOS[0][1] >= 440 and self.characterPOS <= 550):
+        elif self.characterPOS[0][0] >= 1780 and (self.characterPOS[0][1] >= 440 and self.characterPOS[0][1] <= 550):
+            self.characterPOS = [[900, 1000], 'w']
             village.exploration(self)
 
     def run(self):
