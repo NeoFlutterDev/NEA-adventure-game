@@ -47,4 +47,4 @@ def tutorial_part2(ui):
                                 ui.character[0].get_armour(), ui.character[0].get_armourModifier(), ui.accountKey)
     database.update_characterName(ui.characterName, ui.accountKey)
     ui.screen = 'village1'
-    ui.characterPOS = (300, 900)
+    ui.characterPOS = [[300, 900], 'w']

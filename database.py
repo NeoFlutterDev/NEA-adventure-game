@@ -374,7 +374,7 @@ def load_account(accountKey):
             FROM accounts
             WHERE accountKey = ?
         '''
-        data = accountKey
+        data = (accountKey,)
 
         cur.execute(query, data)
 

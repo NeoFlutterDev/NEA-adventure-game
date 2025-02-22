@@ -6,6 +6,7 @@ import time
 import threading
 import random
 import combat
+import village
 
 class GameUI:
     def __init__(self, screenScale, fontSizes, studentName, mainSubroutines, animationController, textController):
@@ -21,7 +22,7 @@ class GameUI:
         self.uniqueID = ''
         self.accountKey = 0
         self.characterName = ''
-        self.characterPOS = (0, 0)
+        self.characterPOS = [[0, 0], 'w']
         self.running = True
         self.sound = True
         self.statsText = {'combined stats':[], 'account 1 stats':[], 'account 2 stats':[], 'account 3 stats':[]}
@@ -455,8 +456,12 @@ class GameUI:
         self.render()
 
     def load_save_state(self, accountKey):
-        self.character[0] = combat.PlayableCharacter(database.load_account(accountKey))
-        self.characterPOS = (300, 900)
+        save = database.load_account(accountKey)[0]
+        name, exp, armour, armourModifier, weapon, weaponModifier = save
+        self.characterName = name
+        self.character[0] = combat.PlayableCharacter(name, exp, armour, armourModifier, weapon, weaponModifier)
+        self.characterPOS = [[300, 900], 'w']
+        self.screen = 'village1'
 
     def upload_password(self):
         hashedPassword = database.hashing_algorithm(self.password)
@@ -517,17 +522,17 @@ class GameUI:
             password_text = self.smallFont.render(self.characterName, True, (255, 255, 255))
             self.window.blit(password_text, (rectangle.x + 5, rectangle.y + 5))
 
-        if self.screen in ['combined stats', 'account 1 stats', 'account 2 stats', 'account 3 stats']:
+        elif self.screen in ['combined stats', 'account 1 stats', 'account 2 stats', 'account 3 stats']:
             textToBlit = self.statsText[self.screen]
             for lines in textToBlit:
                 self.render_text(lines[0], lines[1], lines[2], lines[3])
 
-        if self.screen == 'question screen':
+        elif self.screen == 'question screen':
             textToBlit = self.questionText[self.screen]
             for lines in textToBlit:
                 self.render_text(lines[0], lines[1], lines[2], lines[3])
         
-        if self.screen == 'battle':
+        elif self.screen == 'battle':
             enemyStamina = [f'Stm: {int(self.monster[0].get_currentStm())}']
             enemyHp = [f'Hp: {int(self.monster[0].get_currentHp())}']
             playerStamina = [f'Stm: {int(self.character[0].get_currentStm())}']
@@ -583,7 +588,7 @@ class GameUI:
                 x, y = self.quadrant_to_coordinates(841)
                 self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/special.png')), (x, y))
         
-        if self.screen == 'newEquip':
+        elif self.screen == 'newEquip':
             x, y = self.quadrant_to_coordinates(1654)
             image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[1][0]} normal.png')
             self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
@@ -595,6 +600,16 @@ class GameUI:
             self.render_text(str(self.newEquip[1][1], self.statsFont), 3292, (255, 255, 255))
 
             self.render_text(str(self.newEquip[0][1], self.statsFont), 3335, (255, 255, 255))
+
+        elif self.screen == 'village1':
+            if self.characterPOS[1] == 'w':
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/character up.png')), (self.characterPOS[0][0], self.characterPOS[0][1]))
+            elif self.characterPOS[1] == 'a':
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/character left.png')), (self.characterPOS[0][0], self.characterPOS[0][1]))
+            elif self.characterPOS[1] == 's':
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/character down.png')), (self.characterPOS[0][0], self.characterPOS[0][1]))
+            else:
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/character right.png')), (self.characterPOS[0][0], self.characterPOS[0][1]))
       
         pygame.display.update()
     
@@ -646,6 +661,7 @@ class GameUI:
             'load account': self.handle_load_account_key,
             'networking': self.handle_networking_key,
             'tutorial start': self.handle_tutorial_name,
+            'village1': self.handle_village_movement,
         }
         handle = screenKeyHandlers.get(self.screen)
         if handle:
@@ -684,6 +700,30 @@ class GameUI:
                 self.tutorial_name_enterer('enter')
             elif event.unicode.isprintable():
                 self.tutorial_name_enterer(event.unicode)
+
+    def handle_village_movement(self, event):
+        keys = pygame.key.get_pressed()  # Get the current state of all keys
+
+        if keys[pygame.K_w]:
+            self.characterPOS[0][1] = max(0, self.characterPOS[0][1] - 30)
+        
+        if keys[pygame.K_a]:
+            self.characterPOS[0][0] = max(0, self.characterPOS[0][0] - 30)
+        
+        if keys[pygame.K_s]:
+            self.characterPOS[0][1] = min(1030, self.characterPOS[0][1] + 30)
+        
+        if keys[pygame.K_d]:
+            self.characterPOS[0][0] = min(1870, self.characterPOS[0][0] + 30)
+
+        if self.characterPOS[0][0] <= 130 and (self.characterPOS[0][1] >= 380 and self.characterPOS[0][1] <= 610):
+            village.dungeon(self)
+
+        elif (self.characterPOS[0][0] <= 1040 and self.characterPOS[0][0] >= 810) and self.characterPOS[0][1] <= 130:
+            village.shop(self)
+
+        elif self.characterPOS[0][0] >= 1780 and (self.characterPOS[0][1] >= 440 and self.characterPOS <= 550):
+            village.exploration(self)
 
     def run(self):
         while self.running:
