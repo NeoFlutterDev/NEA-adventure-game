@@ -126,6 +126,8 @@ class GameUI:
             ],
             'village1': [
             ],
+            'dungeon': [
+            ],
         }
     #all buttons, ordered by the screen, saved as the key
     #order of button, whether it is visible, bounds, what to run when pressed, sprite path
@@ -408,7 +410,20 @@ class GameUI:
     #return to previous screen
 
     def dungeon(self):
-        pass
+        rooms = ['grunt', 'grunt', 'grunt', 'elite', 'elite', 'boss']
+        for i in range(6):
+            self.screen = 'dungeon'
+            self.render()
+            self.textController.typewriter_text(self, self.font, f'Floor {i+1}', 2058, 2000)
+            image = pygame.image.load(f'sprites/characters/{rooms[i]} slime.png')
+            self.window.blit(self.scale_sprite(image), self.quadrant_to_coordinates(2500))
+            time.sleep(3)
+            self.start_combat(f'{rooms[i]}')
+            while self.screen == 'battle' or self.screen == 'question screen':
+                for event in pygame.event.get():
+                    self.handle_event(event)
+                self.render()
+
 
     def shop(self):
         pass
@@ -418,7 +433,7 @@ class GameUI:
         self.screen = 'exploration'
         self.render()
         #encounter = random.randint(1, 100)
-        encounter = 85
+        encounter = 80
         encounterRandomness = random.randint(1, 100)
         x, y = self.quadrant_to_coordinates(1577)
 
@@ -493,7 +508,7 @@ class GameUI:
             time.sleep(5)
             self.character[0].set_money(self.character[0].get_money() + amount)
 
-        while self.screen == 'battle' or self.screen == 'new equip':
+        while self.screen == 'battle' or self.screen == 'new equip' or self.screen == 'question screen':
             for event in pygame.event.get():
                 self.handle_event(event)
             self.render()
