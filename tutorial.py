@@ -1,4 +1,3 @@
-import database
 import time
 import pygame
 pygame.init
@@ -9,7 +8,7 @@ def load_tutorial(ui, accountKey):
     ui.animationController.start_continuous_animation((1/120), 'campfire', 10, 5, 4688, 5076, ui)
     ui.animationController.start_continuous_animation((1/120), 'campfire character', 1, 1, 4781, 4879, ui)
 
-    text = 'You wake with a flame dancing across your vision. You do not know where you are, how you got here, or how to escape. The bounds of the desert surrounding you is nearly endless, seemingly nothing for miles.'
+    text = 'You wake with a flame dancing across your vision. You do not know where you are, how you got here, or how to escape. The boundless desert surrounding you appears endless, seemingly nothing for miles in every direction.'
     ui.textController.typewriter_text(ui, ui.smallFont, text, 870, 500)
     time.sleep(15)
 
@@ -38,6 +37,10 @@ def load_tutorial(ui, accountKey):
     ui.start_combat('grunt')
 
 def tutorial_part2(ui):
-    print('this loaded!!')
     ui.screen = 'tutorial part2'
     ui.render()
+    text = '''The sun rises as the slime splatters upon the ground. The sun illuminates the surrounding desert, far into the distance a small village is visible.
+    as you approach it, you see a small shop, a dungeon and a field, filled with slimes and loot.'''
+    ui.textController.typewriter_text(ui, ui.smallFont, 300, 1500)
+    time.sleep(13)
+    
