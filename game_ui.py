@@ -6,7 +6,6 @@ import time
 import threading
 import random
 import combat
-import village
 
 class GameUI:
     def __init__(self, screenScale, fontSizes, studentName, mainSubroutines, animationController, textController):
@@ -103,8 +102,8 @@ class GameUI:
             'tutorial part2': [
             ],
             'new equip': [
-                [True, [3858, 4741], [self.equip, ['', 0]], 'sprites/buttons/old.png'],
-                [True, [3901, 4784], [self.equip, ['', 0]], 'sprites/buttons/new.png'],
+                [True, [3858, 4741], [self.equip, ''], 'sprites/buttons/old.png'],
+                [True, [3901, 4784], [self.equip, ''], 'sprites/buttons/new.png'],
                 [False, [9999, 9999], [self.new_screen, ''], 'sprites/buttons/empty sprite.png']
             ],
             'question screen': [
@@ -249,6 +248,8 @@ class GameUI:
 
         newWeapon = newWeapon[-5:].strip()
         newMod = combat.rarityConverter[rarity[:1]]
+        self.buttons['new equip'][0][2][1] = 'oldWeapon' + str(oldMod)
+        self.buttons['new equip'][1][2][1] = 'newWeapon' + str(newMod)
         self.newEquip = [[newWeapon, newMod], [oldWeapon, oldMod]]
     
     def new_armour(self, newArmour, rarity):
@@ -262,34 +263,48 @@ class GameUI:
 
         newArmour = newArmour[-11:].strip()
         newMod = combat.rarityConverter[rarity[:1]]
+        if oldArmour == None: 
+            oldArmour = 'None'
+
+        self.buttons['new equip'][0][2][1] = oldArmour + str(oldMod)
+        self.buttons['new equip'][1][2][1] = newArmour + str(newMod)
         self.newEquip = [[newArmour, 2-newMod], [oldArmour, 2-oldMod]]
     
     def equip(self, stats):
-        name, mod = stats
+        try:
+            mod = float(stats[-4:])
+            name = stats[:-4]
+        except:
+            mod = 1
+            name = stats[:-1]
+        
+        # For weapons
         if name == 'fist' or name == 'bow' or name == 'sword':
-            if name == 'fist': 
-                name == ' fist'
+            if name == 'fist':
+                name = ' fist' 
             elif name == 'bow':
-                name == '  bow'
+                name = '  bow' 
 
-            rarity = combat.reverseWeaponRarityConverter[mod]
+            rarity = combat.reverseWeaponRarityConverter[mod] 
             newWeapon = rarity + name
             self.character[0].set_weapon(newWeapon)
             self.character[0].set_weaponModifier(mod)
 
+        # For armor
         else:
             if name == 'nanoplate':
-                name == '  nanoplate'
+                name = '  nanoplate' 
             elif name == 'titanweave':
-                name == ' titanweave'
+                name = ' titanweave' 
 
-            rarity = combat.reverseArmourRarityConverter[mod]
+            rarity = combat.reverseArmourRarityConverter[int(mod)]  
             newArmour = rarity + name
             self.character[0].set_armour(newArmour)
-            self.character[0].set_armourModifier(2-mod)
+            self.character[0].set_armourModifier(2 - mod)  
+            
+        database.update_account_info(self.character[0].get_exp(), self.character[0].get_money(), self.character[0].get_weapon(), self.character[0].get_weaponModifier(),
+                                    self.character[0].get_armour(), self.character[0].get_armourModifier(), self.accountKey)
         
-        database.update_account_info(self.character[0].get_exp(), self.character[0].get_money(), self.character[0].get_weapon(), self.character[0].get_weaponModifer(),
-                                     self.character[0].get_armour(), self.character[0].get_armourModifier(), self.accountKey)
         
 
     def sound_off(self):
@@ -402,7 +417,8 @@ class GameUI:
         returnScreen = self.screen
         self.screen = 'exploration'
         self.render()
-        encounter = random.randint(1, 100)
+        #encounter = random.randint(1, 100)
+        encounter = 85
         encounterRandomness = random.randint(1, 100)
         x, y = self.quadrant_to_coordinates(1577)
 
@@ -410,6 +426,7 @@ class GameUI:
             image = pygame.image.load('sprites/characters/grunt slime.png')
             self.window.blit(self.scale_sprite(pygame.transform.scale(image, (int(image.get_width() * (2/3)), int(image.get_height() * (2/3))))), (x, y))
             pygame.display.flip()
+            self.start_combat('grunt')
             time.sleep(5)
             self.start_combat('grunt')
 
@@ -475,10 +492,8 @@ class GameUI:
             pygame.display.flip()
             time.sleep(5)
             self.character[0].set_money(self.character[0].get_money() + amount)
-        
-        self.buttons['battle'][4][2][1] = 'village1'
-        self.screen = 'battle'
-        while self.screen == 'battle':
+
+        while self.screen == 'battle' or self.screen == 'new equip':
             for event in pygame.event.get():
                 self.handle_event(event)
             self.render()
@@ -598,7 +613,6 @@ class GameUI:
     
     def render(self):
         self.window.fill((0, 0, 0))
-        if self.screen == 'battle': print(self.screen)
         self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/backdrops/{self.screen}.png')), (0, 0))
 
         self.button_blitter()
@@ -824,15 +838,15 @@ class GameUI:
 
         if self.characterPOS[0][0] <= 130 and (self.characterPOS[0][1] >= 380 and self.characterPOS[0][1] <= 610):
             self.characterPOS = [[900, 1000], 'w']
-            village.dungeon(self)
+            self.dungeon()
 
         elif (self.characterPOS[0][0] <= 1040 and self.characterPOS[0][0] >= 810) and self.characterPOS[0][1] <= 130:
             self.characterPOS = [[900, 1000], 'w']
-            village.shop(self)
+            self.shop()
 
         elif self.characterPOS[0][0] >= 1780 and (self.characterPOS[0][1] >= 440 and self.characterPOS[0][1] <= 550):
             self.characterPOS = [[900, 1000], 'w']
-            village.exploration(self)
+            self.exploration()
 
     def run(self):
         while self.running:

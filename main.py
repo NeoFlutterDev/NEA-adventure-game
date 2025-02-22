@@ -2,7 +2,6 @@ import pygame
 import student_communication
 import tutorial
 import game_ui
-import village
 import time
 import sys
 
