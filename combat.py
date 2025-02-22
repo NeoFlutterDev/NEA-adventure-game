@@ -85,7 +85,7 @@ def monster_combat(player, monster):
         return [[player[0], player[1]], [monster[0], 'dodge']]
 
 class PlayableCharacter:
-    def __init__(self, name, exp, armour = None, armourModifier = 1, weapon = None, weaponModifier = 1):
+    def __init__(self, name, exp, armour = None, armourModifier = 1, weapon = 'fist', weaponModifier = 1):
         self.name = name
         self.exp = exp
         self.lvl = math.trunc(2.5 * (math.sqrt(self.exp) - 5))
@@ -193,6 +193,8 @@ armour = ['nanoplate', 'titanweave', 'plasmaweave']
 rarity = ['novice', 'standard', 'great', 'legendary']
 typeConverter = {'grunt':[[0, 1], -30, 0.2], 'elite':[[1, 2], -15, 0.4], 'boss':[[3, 3], 15, 0.6]}
 rarityConverter = {'n': 1.05, 's':1.15, 'g':1.25, 'l':1.4}
+reverseWeaponRarityConverter = {1.05: 'n', 1.15:'s', 1.25:'g', 1.4:'l'}
+reverseArmourRarityConverter = {0.95: 'n', 0.85:'s', 0.75:'g', 0.6:'l'}
 
 class Monster:
     def __init__(self, playerLvl, type):

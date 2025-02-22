@@ -206,7 +206,7 @@ def load_account_attribute(attribute, accountKey):
         con.close()
         #close the connection
 
-def update_account_info(exp, money, weapon, armour, accountKey):
+def update_account_info(exp, money, weapon, weaponModifier, armour, armourModifier, accountKey):
     try:
         con = sqlite3.connect('storage.db')
         cur = con.cursor()
@@ -217,12 +217,12 @@ def update_account_info(exp, money, weapon, armour, accountKey):
 
         query = '''
         UPDATE accounts
-        SET exp = ?, money = ?, weapon = ?, armour = ?
+        SET exp = ?, money = ?, weapon = ?, weaponModifier = ?, armour = ?, armourModifier = ?
         WHERE accountKey = ?
         '''
         #define the query, with placeholders
 
-        data = (exp, money, weapon, armour, accountKey)
+        data = (exp, money, weapon, weaponModifier, armour, armourModifier, accountKey)
         #enter data that is to replace the old data
         cur.execute(query, data)
         #execute the parameterised query

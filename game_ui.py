@@ -31,6 +31,7 @@ class GameUI:
         self.mainSubroutines = mainSubroutines
         self.animationController = animationController
         self.textController = textController
+        self.newEquip = [[], []]
 
     def initialize_buttons(self):
         self.buttons = {
@@ -48,7 +49,7 @@ class GameUI:
             'combined stats': [
                 [True, [572, 863], [self.new_screen, 'account 1 stats'], 'sprites/buttons/right one.png'],
                 [True, [1, 98], [self.new_screen, 'start menu'], 'sprites/buttons/back arrow.png'],
-                [False, [10000, 10001], [], 'sprites/buttons/empty sprite.png'],
+                [False, [9999, 9999], [], 'sprites/buttons/empty sprite.png'],
             ],
             'account 1 stats': [
                 [True, [481, 772], [self.new_screen, 'combined stats'], 'sprites/buttons/left combined.png'],
@@ -98,6 +99,11 @@ class GameUI:
             'tutorial start': [
             ],
             'tutorial part2': [
+            ],
+            'new equip': [
+                [True, [3858, 4741], [self.equip, ['', 0]], 'sprites/buttons/old.png'],
+                [True, [3901, 4784], [self.equip, ['', 0]], 'sprites/buttons/new.png'],
+                [False, [9999, 9999], [self.new_screen, ''], 'sprites/buttons/empty sprite.png']
             ],
             'question screen': [
                 [True, [2600, 3597], [self.question_checker, 'incorrect'], 'sprites/buttons/question box a.png'],
@@ -224,6 +230,60 @@ class GameUI:
             self.buttons['options menu'][0][0] = True
         else:
             self.buttons['options menu'][0][0] = False
+
+    def new_weapon(self, newWeapon, rarity):
+        self.screen = 'new equip'
+        try:
+            oldWeapon = self.character[0].get_weapon()[-5:].strip()
+            oldMod = combat.rarityConverter[self.character[0].get_weapon[:1]]
+        except: 
+            oldWeapon = 'fist'
+            oldMod = 1
+
+        newWeapon = newWeapon[-5:].strip()
+        newMod = combat.rarityConverter[rarity[:1]]
+        self.newEquip = [[newWeapon, newMod], [oldWeapon, oldMod]]
+    
+    def new_armour(self, newArmour, rarity):
+        self.screen = 'new equip'
+        try:
+            oldArmour = self.character[0].get_armour()[-11:].strip()
+            oldMod = combat.rarityConverter[self.character[0].get_armour[:1]]
+        except: 
+            oldWeapon = None
+            oldMod = 1
+
+        newArmour = newArmour[-11:].strip()
+        newMod = combat.rarityConverter[rarity[:1]]
+        self.newEquip = [[newArmour, 2-newMod], [oldArmour, 2-oldMod]]
+    
+    def equip(self, stats):
+        name, mod = stats
+        if name == 'fist' or name == 'bow' or name == 'sword':
+            if name == 'fist': 
+                name == ' fist'
+            elif name == 'bow':
+                name == '  bow'
+
+            rarity = combat.reverseWeaponRarityConverter[mod]
+            newWeapon = rarity + name
+            self.character[0].set_weapon(newWeapon)
+            self.character[0].set_weaponModifier(mod)
+
+        else:
+            if name == 'nanoplate':
+                name == '  nanoplate'
+            elif name == 'titanweave':
+                name == ' titanweave'
+
+            rarity = combat.reverseArmourRarityConverter[mod]
+            newArmour = rarity + name
+            self.character[0].set_armour(newArmour)
+            self.character[0].set_armourModifier(2-mod)
+        
+        database.update_account_info(self.character[0].get_exp(), self.character[0].get_money(), self.character[0].get_weapon(), self.character[0].get_weaponModifer(),
+                                     self.character[0].get_armour(), self.character[0].get_armourModifier(), self.accountKey)
+        
 
     def sound_off(self):
         self.buttons['options menu'][0][0] = False
@@ -513,6 +573,19 @@ class GameUI:
             elif self.monster[1] == 'special':
                 x, y = self.quadrant_to_coordinates(841)
                 self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/special.png')), (x, y))
+        
+        if self.screen == 'newEquip':
+            x, y = self.quadrant_to_coordinates(1654)
+            image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[1][0]} normal.png')
+            self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
+
+            x, y = self.quadrant_to_coordinates(1697)
+            image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[0][0]} normal.png')
+            self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
+
+            self.render_text(str(self.newEquip[1][1], self.statsFont), 3292, (255, 255, 255))
+
+            self.render_text(str(self.newEquip[0][1], self.statsFont), 3335, (255, 255, 255))
       
         pygame.display.update()
     
