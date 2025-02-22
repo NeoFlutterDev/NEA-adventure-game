@@ -131,7 +131,8 @@ class GameUI:
             self.new_screen(self.buttons['question screen'][4][2][1])
 
     def start_combat(self, type):
-        self.buttons['battle'][4][2][1] = self.screen
+        if self.buttons['battle'][4][2][1] == '':
+            self.buttons['battle'][4][2][1] = self.screen
         self.buttons['battle'][5][0] = False
         self.buttons['battle'][6][0] = False
         self.screen = 'battle'
@@ -141,24 +142,22 @@ class GameUI:
         self.character, self.monster = combat.player_combat(self.character, self.monster, button)
         if self.monster[0].get_currentHp() > 0:
             self.character, self.monster = combat.monster_combat(self.character, self.monster)
-        elif self.monster[0].get_currentHp() <= 0:
+        elif self.monster[0].get_currentHp() < 1:
             self.buttons['battle'][5][0] = True
             self.render()
             time.sleep(3)
             if isinstance(self.buttons['battle'][4][2][1], str):
                 self.new_screen(self.buttons['battle'][4][2][1])
             else:
-                print("Calling tutorial_part2 function...")  # Debug message
                 self.buttons['battle'][4][2][1](self)
         
-        if self.character[0].get_currentHp() <= 0:
+        if self.character[0].get_currentHp() < 1:
             self.buttons['battle'][6][0] = True
             self.render()
             time.sleep(3)
             if isinstance(self.buttons['battle'][4][2][1], str):
                 self.new_screen(self.buttons['battle'][4][2][1])
             else:
-                print("Calling tutorial_part2 function...")  # Debug message
                 self.buttons['battle'][4][2][1](self)
     
     def initialize_window(self):

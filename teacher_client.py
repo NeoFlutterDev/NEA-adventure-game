@@ -4,6 +4,8 @@ import random
 import pygame
 import json
 from datetime import datetime, timedelta, timezone
+import matplotlib.pyplot as plt
+import numpy as np
 
 pygame.init()
 
@@ -58,6 +60,28 @@ def handle_client(conn, address, studentNumber):
 def update_scores():
     while True:
         pass  # Placeholder function for updating scores periodically
+
+def show_graph():
+    question_ids = sorted({q for data in studentData.values() for q in data[1].keys()})
+
+    correct_counts = [sum(data[1].get(q, {}).get("correct", 0) for data in studentData.values()) for q in question_ids]
+    incorrect_counts = [sum(data[1].get(q, {}).get("incorrect", 0) for data in studentData.values()) for q in question_ids]
+
+    x = np.arange(len(question_ids))
+    width = 0.35
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.bar(x - width/2, correct_counts, width, label='Correct', color='green')
+    ax.bar(x + width/2, incorrect_counts, width, label='Incorrect', color='red')
+
+    ax.set_xlabel("Question ID")
+    ax.set_ylabel("Number of Responses")
+    ax.set_title("Student Performance Per Question")
+    ax.set_xticks(x)
+    ax.set_xticklabels([f"Q{q}" for q in question_ids])
+    ax.legend()
+
+    plt.show(block=True)
 
 # Server program to manage connections, pygame window, and data display
 def server_program():
@@ -143,7 +167,13 @@ def server_program():
             window.blit(studentStatus, (30, baseY))
             baseY += incrementY
 
-        window.blit(pygame.image.load('sprites/buttons/graph.png'), (1590, 900))
+        window.blit(pygame.image.load('sprites/buttons/graph.png'), (1490, 950))
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouseX, mouseY = pygame.mouse.get_pos()
+            if (mouseX >= 1490 and mouseX <= 1790) and (mouseY >= 950 and mouseY <= 1070):
+                print("Graph button clicked!")
+                threading.Thread(target=show_graph).start()
 
         pygame.display.flip()
 
