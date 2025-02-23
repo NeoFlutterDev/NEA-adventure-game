@@ -250,36 +250,52 @@ class GameUI:
         self.screen = 'new equip'
         try:
             oldWeapon = self.character[0].get_weapon()[-5:].strip()
-            oldMod = combat.rarityConverter[self.character[0].get_weapon[:1]]
-        except: 
+            oldMod = combat.rarityConverter[self.character[0].get_weapon()[:1]]
+        except:
             oldWeapon = 'fist'
             oldMod = 1
 
         newWeapon = newWeapon[-5:].strip()
         newMod = combat.rarityConverter[rarity[:1]]
-        self.buttons['new equip'][0][2][1] = 'oldWeapon' + str(oldMod)
-        self.buttons['new equip'][1][2][1] = 'newWeapon' + str(newMod)
+
+        # Update button actions correctly
+        self.buttons['new equip'][0][2] = [self.equip, f"{oldWeapon} {oldMod}"]
+        self.buttons['new equip'][1][2] = [self.equip, f"{newWeapon} {newMod}"]
         self.newEquip = [[newWeapon, newMod], [oldWeapon, oldMod]]
+
+        self.equipRun = True
+        while self.equipRun and self.screen == 'new equip':
+            for event in pygame.event.get():
+                self.handle_event(event)
+            self.render()
     
     def new_armour(self, newArmour, rarity):
         self.screen = 'new equip'
         try:
             oldArmour = self.character[0].get_armour()[-11:].strip()
-            oldMod = combat.rarityConverter[self.character[0].get_armour[:1]]
-        except: 
+            oldMod = combat.rarityConverter[self.character[0].get_armour()[:1]]
+        except:
             oldArmour = None
             oldMod = 1
 
         newArmour = newArmour[-11:].strip()
         newMod = combat.rarityConverter[rarity[:1]]
-        if oldArmour == None: 
+        if oldArmour is None:
             oldArmour = 'None'
 
-        self.buttons['new equip'][0][2][1] = oldArmour + str(oldMod)
-        self.buttons['new equip'][1][2][1] = newArmour + str(newMod)
-        self.newEquip = [[newArmour, 2-newMod], [oldArmour, 2-oldMod]]
+        # Update button actions correctly
+        self.buttons['new equip'][0][2] = [self.equip, f"{oldArmour} {oldMod}"]
+        self.buttons['new equip'][1][2] = [self.equip, f"{newArmour} {newMod}"]
+        self.newEquip = [[newArmour, newMod], [oldArmour, oldMod]]
+
+        self.equipRun = True
+        while self.equipRun and self.screen == 'new equip':
+            for event in pygame.event.get():
+                self.handle_event(event)
+            self.render()
     
     def equip(self, stats):
+        self.equipRun = False
         try:
             mod = float(stats[-4:])
             name = stats[:-4]
@@ -314,7 +330,7 @@ class GameUI:
         database.update_account_info(self.character[0].get_exp(), self.character[0].get_money(), self.character[0].get_weapon(), self.character[0].get_weaponModifier(),
                                     self.character[0].get_armour(), self.character[0].get_armourModifier(), self.accountKey)
         
-        
+        self.new_screen('village1')
 
     def sound_off(self):
         self.buttons['options menu'][0][0] = False
@@ -460,11 +476,9 @@ class GameUI:
         pass
 
     def exploration(self):
-        returnScreen = self.screen
         self.screen = 'exploration'
         self.render()
-        #encounter = random.randint(1, 100)
-        encounter = 80
+        encounter = random.randint(1, 100)
         encounterRandomness = random.randint(1, 100)
         x, y = self.quadrant_to_coordinates(1577)
 
@@ -472,8 +486,8 @@ class GameUI:
             image = pygame.image.load('sprites/characters/grunt slime.png')
             self.window.blit(self.scale_sprite(pygame.transform.scale(image, (int(image.get_width() * (2/3)), int(image.get_height() * (2/3))))), (x, y))
             pygame.display.flip()
-            self.start_combat('grunt')
             time.sleep(5)
+            self.screen = 'village1'
             self.start_combat('grunt')
 
         elif encounter <= 70:
@@ -481,6 +495,7 @@ class GameUI:
             self.window.blit(self.scale_sprite(pygame.transform.scale(image, (int(image.get_width() * (2/3)), int(image.get_height() * (2/3))))), (x, y))
             pygame.display.flip()
             time.sleep(5)
+            self.screen = 'village1'
             self.start_combat('elite')
 
         elif encounter <= 75:
@@ -488,6 +503,7 @@ class GameUI:
             self.window.blit(self.scale_sprite(pygame.transform.scale(image, (int(image.get_width() * (2/3)), int(image.get_height() * (2/3))))), (x, y))
             pygame.display.flip()
             time.sleep(5)
+            self.screen = 'village1'
             self.start_combat('boss')
 
 
@@ -554,7 +570,7 @@ class GameUI:
             self.accountKey
         )
 
-        self.screen = returnScreen
+        self.screen = 'village1'
         self.render()
     
     def password_buttons_false(self):
@@ -724,11 +740,11 @@ class GameUI:
 
             if self.character[1] == 'normal':
                 x, y = self.quadrant_to_coordinates(2901)
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.character[0].get_weapon()} normal.png')), (x, y))
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.character[0].get_weapon()[-5:].strip()} normal.png')), (x, y))
 
             elif self.character[1] == 'heavy':
                 x, y = self.quadrant_to_coordinates(2901)
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.character[0].get_weapon()} heavy.png')), (x, y))
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.character[0].get_weapon()[-5:].strip()} heavy.png')), (x, y))
             
             elif self.character[1] == 'dodge':
                 x, y = self.quadrant_to_coordinates(2901)
@@ -736,7 +752,7 @@ class GameUI:
             
             elif self.character[1] == 'special':
                 x, y = self.quadrant_to_coordinates(2901)
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.character[0].get_weapon()} special.png')), (x, y))
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.character[0].get_weapon()[-5:].strip()} special.png')), (x, y))
 
             if self.monster[1] == 'normal':
                 x, y = self.quadrant_to_coordinates(841)
@@ -754,7 +770,7 @@ class GameUI:
                 x, y = self.quadrant_to_coordinates(841)
                 self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/special.png')), (x, y))
         
-        elif self.screen == 'newEquip':
+        elif self.screen == 'new equip':
             x, y = self.quadrant_to_coordinates(1654)
             image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[1][0]} normal.png')
             self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
@@ -763,9 +779,9 @@ class GameUI:
             image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[0][0]} normal.png')
             self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
 
-            self.render_text(str(self.newEquip[1][1], self.statsFont), 3292, (255, 255, 255))
+            self.render_text([str(self.newEquip[1][1])], self.statsFont, 3292, (255, 255, 255))
 
-            self.render_text(str(self.newEquip[0][1], self.statsFont), 3335, (255, 255, 255))
+            self.render_text([str(self.newEquip[0][1])], self.statsFont, 3336, (255, 255, 255))
 
         elif self.screen == 'village1':
             if self.characterPOS[1] == 'w':
