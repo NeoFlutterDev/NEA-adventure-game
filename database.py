@@ -251,12 +251,12 @@ def update_account_attribute(attribute, amount, accountKey):
 
         query = f'''
         UPDATE accounts
-        SET {attribute} = value
+        SET {attribute} = ?
         WHERE accountKey = ?
         '''
         #define the query, with placeholders
 
-        data = (accountKey)
+        data = (value, accountKey)
         #enter data that is to replace the old data
         cur.execute(query, data)
         #execute the parameterised query

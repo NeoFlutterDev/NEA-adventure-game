@@ -431,16 +431,18 @@ class GameUI:
                     self.handle_event(event)
                 self.render()
             if self.character[0].get_currentHp() < 1:
-                self.dungeon_failure()
+                break
 
         if self.character[0].get_currentHp() >= 1:
             self.textController.typewriter_text(self, self.font, f'Treasure Floor', 2051, 2000)
             image = pygame.image.load(f'sprites/animations/misc/macguffin1.png')
             self.window.blit(self.scale_sprite(image), self.quadrant_to_coordinates(3497))
             time.sleep(3)
+            self.textController.stop_all_text()
+            self.render()
             text = 'You pick up the mysterious item on the floor. The design and rough sides show that it is clearly part of a larger piece. Maybe exploring more dungeons will unlock more pieces.'
             self.textController.typewriter_text(self, self.smallFont, text, 2028, 1000)
-            time.sleep(15)
+            time.sleep(12)
             self.characterPOS = [[900, 1000], 'w']
             self.screen = 'village1'
         else:
@@ -448,8 +450,9 @@ class GameUI:
 
     def dungeon_failure(self):
         text = 'The slime deals the final blow and leaves you dazed on the floor. You wake up several hours later, mysteriously in the village entrance once more.'
-        self.textController.typewriter_text(self, self.font, text, 2028, 1000)
-        self.character[0].update_currentHp(self.character[0].get_maxHp() - self.character[0].get_currentHP())
+        self.textController.typewriter_text(self, self.smallFont, text, 2028, 1000)
+        time.sleep(10)
+        self.character[0].update_currentHp(self.character[0].get_maxHp() - self.character[0].get_currentHp())
         self.characterPOS = [[900, 1000], 'w']
         self.screen = 'village1'
 
