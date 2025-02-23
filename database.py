@@ -238,6 +238,40 @@ def update_account_info(exp, money, weapon, weaponModifier, armour, armourModifi
         con.close()
         #close the connection
 
+def update_account_attribute(attribute, amount, accountKey):
+    try:
+        con = sqlite3.connect('storage.db')
+        cur = con.cursor()
+        #connect to the database
+
+        # Enable foreign key constraints
+        con.execute("PRAGMA foreign_keys = ON")
+
+        value = int(load_account_attribute(attribute, accountKey)[0]) + amount
+
+        query = f'''
+        UPDATE accounts
+        SET {attribute} = value
+        WHERE accountKey = ?
+        '''
+        #define the query, with placeholders
+
+        data = (accountKey)
+        #enter data that is to replace the old data
+        cur.execute(query, data)
+        #execute the parameterised query
+
+        con.commit()
+        #commit the query
+
+    except sqlite3.Error as e:
+        print('Error:', e)
+        #if any errors occur, print them
+
+    finally:
+        con.close()
+        #close the connection
+
 def update_characterName(characterName, accountKey):
     try:
         con = sqlite3.connect('storage.db')

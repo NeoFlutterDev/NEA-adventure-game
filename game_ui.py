@@ -157,9 +157,15 @@ class GameUI:
         if self.monster[0].get_currentHp() > 0:
             self.character, self.monster = combat.monster_combat(self.character, self.monster)
         elif self.monster[0].get_currentHp() < 1:
+            gains = {'grunt':random.randint(1,3), 'elite':random.randint(2,6), 'boss':random.randint(5,10)}
             self.buttons['battle'][5][0] = True
             self.render()
             time.sleep(3)
+            database.update_account_attribute('kills', 1, self.accountKey)
+            self.character[0].set_money(self.character[0].get_money() + gains[self.monster[0].get_type()])
+            self.character[0].update_exp(gains[self.monster[0].get_type()])
+            database.update_account_info(self.character[0].get_exp(), self.character[0].get_money(), self.character[0].get_weapon(), self.character[0].get_weaponModifier(),
+                                    self.character[0].get_armour(), self.character[0].get_armourModifier(), self.accountKey)
             if isinstance(self.buttons['battle'][4][2][1], str):
                 self.new_screen(self.buttons['battle'][4][2][1])
             else:
@@ -169,6 +175,7 @@ class GameUI:
             self.buttons['battle'][6][0] = True
             self.render()
             time.sleep(3)
+            database.update_account_attribute('deaths', 1, self.accountKey)
             if isinstance(self.buttons['battle'][4][2][1], str):
                 self.new_screen(self.buttons['battle'][4][2][1])
             else:
@@ -423,16 +430,28 @@ class GameUI:
                 for event in pygame.event.get():
                     self.handle_event(event)
                 self.render()
-        if self.character[0].get_currentHP >= 1:
-            self.textController.typewriter_text(self, self.font, f'Treasure Floor', 2053, 2000)
+            if self.character[0].get_currentHp() < 1:
+                self.dungeon_failure()
+
+        if self.character[0].get_currentHp() >= 1:
+            self.textController.typewriter_text(self, self.font, f'Treasure Floor', 2051, 2000)
             image = pygame.image.load(f'sprites/animations/misc/macguffin1.png')
             self.window.blit(self.scale_sprite(image), self.quadrant_to_coordinates(3497))
             time.sleep(3)
             text = 'You pick up the mysterious item on the floor. The design and rough sides show that it is clearly part of a larger piece. Maybe exploring more dungeons will unlock more pieces.'
-            self.textController.typewriter_text(self, self.font, text, 2028, 1000)
+            self.textController.typewriter_text(self, self.smallFont, text, 2028, 1000)
+            time.sleep(15)
             self.characterPOS = [[900, 1000], 'w']
             self.screen = 'village1'
+        else:
+            self.dungeon_failure()
 
+    def dungeon_failure(self):
+        text = 'The slime deals the final blow and leaves you dazed on the floor. You wake up several hours later, mysteriously in the village entrance once more.'
+        self.textController.typewriter_text(self, self.font, text, 2028, 1000)
+        self.character[0].update_currentHp(self.character[0].get_maxHp() - self.character[0].get_currentHP())
+        self.characterPOS = [[900, 1000], 'w']
+        self.screen = 'village1'
 
     def shop(self):
         pass
