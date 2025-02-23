@@ -416,13 +416,22 @@ class GameUI:
             self.render()
             self.textController.typewriter_text(self, self.font, f'Floor {i+1}', 2058, 2000)
             image = pygame.image.load(f'sprites/characters/{rooms[i]} slime.png')
-            self.window.blit(self.scale_sprite(image), self.quadrant_to_coordinates(2500))
+            self.window.blit(self.scale_sprite(image), self.quadrant_to_coordinates(3497))
             time.sleep(3)
             self.start_combat(f'{rooms[i]}')
             while self.screen == 'battle' or self.screen == 'question screen':
                 for event in pygame.event.get():
                     self.handle_event(event)
                 self.render()
+        if self.character[0].get_currentHP >= 1:
+            self.textController.typewriter_text(self, self.font, f'Treasure Floor', 2053, 2000)
+            image = pygame.image.load(f'sprites/animations/misc/macguffin1.png')
+            self.window.blit(self.scale_sprite(image), self.quadrant_to_coordinates(3497))
+            time.sleep(3)
+            text = 'You pick up the mysterious item on the floor. The design and rough sides show that it is clearly part of a larger piece. Maybe exploring more dungeons will unlock more pieces.'
+            self.textController.typewriter_text(self, self.font, text, 2028, 1000)
+            self.characterPOS = [[900, 1000], 'w']
+            self.screen = 'village1'
 
 
     def shop(self):
@@ -502,7 +511,7 @@ class GameUI:
 
         else:
             amount = random.randint(1, 10)
-            image = pygame.image.load(f'sprites/animations/combat/coin.png')
+            image = pygame.image.load(f'sprites/animations/misc/coin.png')
             self.window.blit(self.scale_sprite(pygame.transform.scale(image, (int(image.get_width() * 2), int(image.get_height() * 2)))), (x, y))
             pygame.display.flip()
             time.sleep(5)
