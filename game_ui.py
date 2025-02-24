@@ -487,6 +487,7 @@ class GameUI:
         self.textController.typewriter_text(self, self.smallFont, text, 2028, 1000)
         time.sleep(10)
         self.character[0].update_currentHp(self.character[0].get_maxHp() - self.character[0].get_currentHp())
+        self.character[0].update_currentStm(self.character[0].get_maxStm() - self.character[0].get_currentStm())
         self.characterPOS = [[900, 1000], 'w']
         self.screen = 'village1'
 
@@ -528,7 +529,7 @@ class GameUI:
             self.window.blit(self.scale_sprite(pygame.transform.scale(image, (int(image.get_width() * (2/3)), int(image.get_height() * (2/3))))), (x, y))
             pygame.display.flip()
             time.sleep(5)
-            self.screen = 'village1'
+            self.buttons['battle'][4][2][1] == 'village1'
             self.start_combat('grunt')
 
         elif encounter <= 70:
@@ -536,7 +537,7 @@ class GameUI:
             self.window.blit(self.scale_sprite(pygame.transform.scale(image, (int(image.get_width() * (2/3)), int(image.get_height() * (2/3))))), (x, y))
             pygame.display.flip()
             time.sleep(5)
-            self.screen = 'village1'
+            self.buttons['battle'][4][2][1] == 'village1'
             self.start_combat('elite')
 
         elif encounter <= 75:
@@ -544,7 +545,7 @@ class GameUI:
             self.window.blit(self.scale_sprite(pygame.transform.scale(image, (int(image.get_width() * (2/3)), int(image.get_height() * (2/3))))), (x, y))
             pygame.display.flip()
             time.sleep(5)
-            self.screen = 'village1'
+            self.buttons['battle'][4][2][1] == 'village1'
             self.start_combat('boss')
 
 
@@ -610,6 +611,9 @@ class GameUI:
             self.character[0].get_weaponModifier(),
             self.accountKey
         )
+
+        self.character[0].update_currentHp(self.character[0].get_maxHp() - self.character[0].get_currentHp())
+        self.character[0].update_currentStm(self.character[0].get_maxStm() - self.character[0].get_currentStm())
 
         self.screen = 'village1'
         self.render()
