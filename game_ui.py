@@ -128,6 +128,17 @@ class GameUI:
             ],
             'dungeon': [
             ],
+            'shop': [
+                [True, [2214, 2602], [self.shop_weapon, 'n'], 'sprites/animations/combat/ normal.png'],
+                [True, [2224, 2612], [self.shop_weapon, 's'], 'sprites/animations/combat/ normal.png'],
+                [True, [2237, 2625], [self.shop_weapon, 'g'], 'sprites/animations/combat/ normal.png'],
+                [True, [2250, 2638], [self.shop_weapon, 'l'], 'sprites/animations/combat/ normal.png'],
+                [True, [2261, 2649], [self.shop_armour, 'n'], 'sprites/animations/combat/ normal.png'],
+                [True, [2270, 2658], [self.shop_armour, 's'], 'sprites/animations/combat/ normal.png'],
+                [True, [2281, 2669], [self.shop_armour, 'g'], 'sprites/animations/combat/ normal.png'],
+                [True, [2292, 2680], [self.shop_armour, 'l'], 'sprites/animations/combat/ normal.png'],
+                [True, [1, 98], [self.new_screen, 'village1'], 'sprites/buttons/back arrow.png']
+            ],
         }
     #all buttons, ordered by the screen, saved as the key
     #order of button, whether it is visible, bounds, what to run when pressed, sprite path
@@ -327,8 +338,15 @@ class GameUI:
             self.character[0].set_armour(newArmour)
             self.character[0].set_armourModifier(2 - mod)  
             
-        database.update_account_info(self.character[0].get_exp(), self.character[0].get_money(), self.character[0].get_weapon(), self.character[0].get_weaponModifier(),
-                                    self.character[0].get_armour(), self.character[0].get_armourModifier(), self.accountKey)
+        database.update_account_info(
+            self.character[0].get_exp(),
+            self.character[0].get_money(),
+            self.character[0].get_armour(),
+            self.character[0].get_armourModifier(),
+            self.character[0].get_weapon(),
+            self.character[0].get_weaponModifier(),
+            self.accountKey
+        )
         
         self.new_screen('village1')
 
@@ -473,7 +491,30 @@ class GameUI:
         self.screen = 'village1'
 
     def shop(self):
-        pass
+        for i in range(8):
+            if i <= 3:
+                item = combat.weapon[random.randint(0, 1)].strip()
+                self.buttons['shop'][i][2][1] = f'n{item}'
+                self.buttons['shop'][i][3] = f'sprites/animations/combat/{item} normal.png'
+            else:
+                item = combat.armour[random.randint(0, 2)].strip()
+                self.buttons['shop'][i][2][1] = f'n{item}'
+                self.buttons['shop'][i][3] = f'sprites/animations/combat/{item} normal.png'
+        self.screen = 'shop'
+
+    def shop_armour(self, armour):
+        moneyCost = {'n':10, 's':25, 'g':50, 'l':100}
+        characterMoney = self.character[0].get_money()
+        if characterMoney >= moneyCost[armour[:1]]:
+            self.character[0].set_money(characterMoney - moneyCost[armour[:1]])
+            self.new_armour(armour[1:], armour[:1])
+    
+    def shop_weapon(self, weapon):
+        moneyCost = {'n':10, 's':25, 'g':50, 'l':100}
+        characterMoney = self.character[0].get_money()
+        if characterMoney >= moneyCost[weapon[:1]]:
+            self.character[0].set_money(characterMoney - moneyCost[weapon[:1]])
+            self.new_weapon(weapon[1:], weapon[:1])
 
     def exploration(self):
         self.screen = 'exploration'
@@ -563,10 +604,10 @@ class GameUI:
         database.update_account_info(
             self.character[0].get_exp(),
             self.character[0].get_money(),
-            self.character[0].get_weapon(),
-            self.character[0].get_weaponModifier(),
             self.character[0].get_armour(),
             self.character[0].get_armourModifier(),
+            self.character[0].get_weapon(),
+            self.character[0].get_weaponModifier(),
             self.accountKey
         )
 
