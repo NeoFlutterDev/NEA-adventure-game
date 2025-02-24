@@ -12,7 +12,7 @@ fontSizes = {'large': 130, 'small': 60, 'stats':100}
 studentName = input('Enter your name: ')
 
 def connect_to_network(ui):
-    success, uniqueID = student_communication.first_connection(ui.networkPin, ui.studentName, ui.characterName)
+    success, uniqueID = student_communication.first_connection(ui.networkPin, ui.studentName, ui.characterName, ui.accountKey)
     
     if success == True:
         ui.uniqueID = uniqueID

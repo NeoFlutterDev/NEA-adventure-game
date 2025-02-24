@@ -1,3 +1,6 @@
+import threading
+import time
+import database
 import socket
 import json
 from datetime import datetime, timedelta, timezone
@@ -8,50 +11,45 @@ def seconds_since_midnight():
     secondsSinceMidnight = currentTime.hour * 3600 + currentTime.minute * 60 + currentTime.second 
     return secondsSinceMidnight
 
-def connect_to_server(attempted_port):
-    
+def send_heartbeat(uniqueID, port, accountKey):
+    host = socket.gethostbyname(socket.gethostname())  # Server address
+    while True:
+        try:
+            questionData = database.questions_for_communication(accountKey)
+            clientSocket = socket.socket()
+            clientSocket.connect((host, port))  # Reconnect to server
+            heartbeatData = json.dumps({"uniqueID": uniqueID, "ping": True, 'questionData':questionData})
+            clientSocket.send(heartbeatData.encode('utf-8'))
+            clientSocket.close()
+
+        except Exception as e:
+            print(f"Failed to send heartbeat: {e}")
+        time.sleep(60)  # Wait for 60 seconds
+
+def first_connection(port, studentName, characterName, accountKey):
     host = socket.gethostbyname(socket.gethostname())
-    port = int(attempted_port)  # The port the server is listening on
 
-    # Create a socket object
-    client_socket = socket.socket()
-
-    # Connect to the server using the LAN IP
+    clientSocket = socket.socket()
     try:
-        client_socket.connect((host, port))
-    except:
-        print('incorrect port')
-
-    # Close the client connection
-    client_socket.close()
-
-#client_program()
-
-def first_connection(port, studentName, characterName):
-
-    host = socket.gethostbyname(socket.gethostname())
-    port = int(port)
-
-    # Create a socket object
-    client_socket = socket.socket()
-
-    # Connect to the server using the LAN IP
-    try:
-        client_socket.connect((host, port))
+        clientSocket.connect((host, port))
     except:
         return False, ''
 
-    secondsSinceMidnight = seconds_since_midnight()
-    
-    #make a JSON string to send
-    data = """{
-       "student_name": studentName,
-       "character_name": characterName,
-       "last_connected": secondsSinceMidnight
-    }"""
+    data = {
+        "student_name": studentName,
+        "character_name": characterName,
+        "last_connected": time.time()
+    }
+    dataJSON = json.dumps(data)
 
-    dataJSON = json.dumps(data, indent=4)
+    clientSocket.send(dataJSON.encode('utf-8'))
 
-    client_socket.send(dataJSON.encode('utf-8'))
-    
-print(seconds_since_midnight())
+    # Receive unique ID
+    uniqueID = clientSocket.recv(1024).decode()
+    clientSocket.close()  # Close initial connection
+
+    # Start heartbeat thread
+    heartbeat_thread = threading.Thread(target=send_heartbeat, args=(uniqueID, port, accountKey), daemon=True)
+    heartbeat_thread.start()
+
+    return True, uniqueID

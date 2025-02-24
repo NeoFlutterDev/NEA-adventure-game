@@ -610,6 +610,44 @@ def get_question(accountKey):
         if con:
             con.close()
 
+def questions_for_communication(accountKey):
+    storage = []
+    try:
+        # Connect to the database
+        con = sqlite3.connect('storage.db')
+        cur = con.cursor()
+        con.execute("PRAGMA foreign_keys = ON")
+    
+        for i in range(10):
+            query = '''
+            SELECT correct, incorrect
+            FROM weights
+            WHERE accountKey = ? and questionKey = ?'''
+        
+            data = (accountKey, i+1)
+
+            cur.execute(query, data)
+
+            data = cur.fetchall()
+
+            storage.append({'questionKey':i+1, 'correct':data[0][0], 'incorrect':[0][1]})
+        
+        return storage
+    
+    except sqlite3.Error as e:
+        print('Database Error:', e)
+
+    except ValueError as ve:
+        print('Value Error:', ve)
+    
+    finally:
+        # Close the connection and cursor
+        if cur:
+            cur.close()
+        if con:
+            con.close()
+
+
 def loop_length(text):
     loopLength = 0
     for char in text:

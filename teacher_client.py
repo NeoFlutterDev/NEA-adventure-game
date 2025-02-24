@@ -28,30 +28,56 @@ def handle_client(conn, address, studentNumber):
 
     while True:
         try:
-            # Receive data from the client
-            data = conn.recv(1024).decode()
+            data = conn.recv(4096).decode()  # Increased buffer size for larger messages
             if not data:
-                break  # Student disconnected and leaves the queue
+                break  # Client disconnected
 
             try:
                 data = json.loads(data)
-                data['uniqueID']
-            except:
-                data = json.loads(data)
-                uniqueID = ''.join([characters[random.randint(0, 93)] for _ in range(16)])
-                conn.send(uniqueID.encode())
 
-            # Update student data
-            studentName = f"Student {studentNumber}"
-            studentData[studentNumber] = [studentName, {"correct": 0, "incorrect": 0}, seconds_since_midnight()]
-            response = f"Server received: {data}"
-            conn.send(response.encode())
+                # Handle heartbeat (ping)
+                if "ping" in data and "uniqueID" in data:
+                    studentData[studentNumber][2] = seconds_since_midnight()
+
+                    # Store question data
+                    if "questionData" in data:
+                        for question in data["questionData"]:
+                            questionKey = question["questionKey"]
+                            correct = question["correct"]
+                            incorrect = question["incorrect"]
+
+                            # Store/update student performance
+                            if questionKey not in studentData[studentNumber][1]:
+                                studentData[studentNumber][1][questionKey] = {"correct": correct, "incorrect": incorrect}
+                            else:
+                                studentData[studentNumber][1][questionKey]["correct"] = correct
+                                studentData[studentNumber][1][questionKey]["incorrect"] = incorrect
+
+                    continue  # No need to send a response for a ping
+
+                # Handle first-time connection (assign uniqueID)
+                if "uniqueID" not in data:
+                    uniqueID = ''.join([characters[random.randint(0, 93)] for _ in range(16)])
+                    conn.send(uniqueID.encode())
+
+                # Update student data
+                studentName = f"Student {studentNumber}"
+                studentData[studentNumber] = [studentName, {}, seconds_since_midnight()]
+                response = f"Server received: {data}"
+                conn.send(response.encode())
+            
+            except Exception as e:
+                print(f"Error with student {address}: {e}")
+                break
 
         except Exception as e:
             print(f"Error with student {address}: {e}")
             break
 
-    # Remove connection and close
+    print(f"Connection closed from: {address}")
+    activeStudents.remove(conn)
+    conn.close()
+
     print(f"Connection closed from: {address}")
     activeStudents.remove(conn)
     conn.close()
@@ -62,12 +88,12 @@ def update_scores():
         pass  # Placeholder function for updating scores periodically
 
 def show_graph():
-    question_ids = sorted({q for data in studentData.values() for q in data[1].keys()})
+    questionIds = sorted({q for data in studentData.values() for q in data[1].keys()})
 
-    correct_counts = [sum(data[1].get(q, {}).get("correct", 0) for data in studentData.values()) for q in question_ids]
-    incorrect_counts = [sum(data[1].get(q, {}).get("incorrect", 0) for data in studentData.values()) for q in question_ids]
+    correct_counts = [sum(data[1].get(q, {}).get("correct", 0) for data in studentData.values()) for q in questionIds]
+    incorrect_counts = [sum(data[1].get(q, {}).get("incorrect", 0) for data in studentData.values()) for q in questionIds]
 
-    x = np.arange(len(question_ids))
+    x = np.arange(len(questionIds))
     width = 0.35
 
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -78,7 +104,7 @@ def show_graph():
     ax.set_ylabel("Number of Responses")
     ax.set_title("Student Performance Per Question")
     ax.set_xticks(x)
-    ax.set_xticklabels([f"Q{q}" for q in question_ids])
+    ax.set_xticklabels([f"Q{q}" for q in questionIds])
     ax.legend()
 
     plt.show(block=True)
