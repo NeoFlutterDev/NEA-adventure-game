@@ -283,8 +283,12 @@ class GameUI:
     def new_armour(self, newArmour, rarity):
         self.screen = 'new equip'
         try:
-            oldArmour = self.character[0].get_armour()[-11:].strip()
-            oldMod = combat.rarityConverter[self.character[0].get_armour()[:1]]
+            if self.character[0].get_armour():
+                oldArmour = self.character[0].get_armour().strip()[-11:]
+                oldMod = combat.rarityConverter.get(self.character[0].get_armour()[0], 1)
+            else:
+                oldArmour = 'None'
+                oldMod = 1
         except:
             oldArmour = None
             oldMod = 1
@@ -307,12 +311,16 @@ class GameUI:
     
     def equip(self, stats):
         self.equipRun = False
+        print(stats)
         try:
             mod = float(stats[-4:])
-            name = stats[:-4]
+            name = stats[:-4].strip()
         except:
             mod = 1
-            name = stats[:-1]
+            name = stats[:-1].strip()
+
+        print(mod)
+        print(name)
         
         # For weapons
         if name == 'fist' or name == 'bow' or name == 'sword':
@@ -521,7 +529,7 @@ class GameUI:
         self.screen = 'exploration'
         self.render()
         #encounter = random.randint(1, 100)
-        encounter = 80
+        encounter = 85
         encounterRandomness = random.randint(1, 100)
         x, y = self.quadrant_to_coordinates(1577)
 
