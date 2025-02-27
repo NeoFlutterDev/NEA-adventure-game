@@ -25,7 +25,7 @@ def send_heartbeat(uniqueID, port, accountKey):
 
         except Exception as e:
             print(f"Failed to send heartbeat: {e}")
-        time.sleep(60)  # Wait for 60 seconds
+        time.sleep(5)  # Wait for 5 seconds, would be 60 in the real application
 
 def first_connection(port, studentName, characterName, accountKey):
     host = socket.gethostbyname(socket.gethostname())

@@ -171,15 +171,19 @@ def server_program():
         for i in range(10):
             yOffset1 = startY1 + (i * incrementY)
             yOffset2 = startY2 + (i * incrementY)
-            
-            scoreText1 = font.render(
-                f"{sum([data[1].get('correct', 0) for key, data in studentData.items() if key == question_id])} ",
-                True, (255, 255, 255)
+
+            question_id = i + 1  # Ensure the question number matches stored data
+
+            correct_answers = sum(
+                [data[1].get(question_id, {}).get("correct", 0) for key, data in studentData.items()]
             )
-            scoreText2 = font.render(
-                f"{sum([data[1].get('incorrect', 0) for key, data in studentData.items() if key == question_id])}",
-                True, (255, 255, 255)
+            incorrect_answers = sum(
+                [data[1].get(question_id, {}).get("incorrect", 0) for key, data in studentData.items()]
             )
+
+            scoreText1 = font.render(f"{correct_answers}", True, (255, 255, 255))
+            scoreText2 = font.render(f"{incorrect_answers}", True, (255, 255, 255))
+
             window.blit(scoreText1, (startX1, yOffset1))
             window.blit(scoreText2, (startX2, yOffset2))
 
