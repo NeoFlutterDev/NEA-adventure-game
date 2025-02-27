@@ -57,14 +57,16 @@ def handle_client(conn, address, studentNumber):
 
                 # Handle first-time connection (assign uniqueID)
                 if "uniqueID" not in data:
+
                     uniqueID = ''.join([characters[random.randint(0, 93)] for _ in range(16)])
                     conn.send(uniqueID.encode())
+                    studentData
 
-                # Update student data
-                studentName = f"Student {studentNumber}"
-                studentData[studentNumber] = [studentName, {}, seconds_since_midnight()]
-                response = f"Server received: {data}"
-                conn.send(response.encode())
+                    # Update student data
+                    studentName = data['student_name']
+                    studentData[uniqueID] = [studentName, {}, seconds_since_midnight()]
+                    #response = f"Server received: {data}"
+                    #conn.send(response.encode())
             
             except Exception as e:
                 print(f"Error with student {address}: {e}")

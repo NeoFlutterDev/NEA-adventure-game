@@ -28,6 +28,7 @@ def send_heartbeat(uniqueID, port, accountKey):
 
 def first_connection(port, studentName, characterName, accountKey):
     host = socket.gethostbyname(socket.gethostname())
+    print(host)
 
     clientSocket = socket.socket()
     try:
@@ -38,7 +39,7 @@ def first_connection(port, studentName, characterName, accountKey):
     data = {
         "student_name": studentName,
         "character_name": characterName,
-        "last_connected": time.time()
+        "last_connected": seconds_since_midnight()
     }
     dataJSON = json.dumps(data)
 

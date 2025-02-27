@@ -13,6 +13,7 @@ studentName = input('Enter your name: ')
 
 def connect_to_network(ui):
     success, uniqueID = student_communication.first_connection(ui.networkPin, ui.studentName, ui.characterName, ui.accountKey)
+    print(success)
     
     if success == True:
         ui.uniqueID = uniqueID
