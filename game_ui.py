@@ -520,7 +520,8 @@ class GameUI:
     def exploration(self):
         self.screen = 'exploration'
         self.render()
-        encounter = random.randint(1, 100)
+        #encounter = random.randint(1, 100)
+        encounter = 80
         encounterRandomness = random.randint(1, 100)
         x, y = self.quadrant_to_coordinates(1577)
 

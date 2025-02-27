@@ -630,7 +630,7 @@ def questions_for_communication(accountKey):
 
             data = cur.fetchall()
 
-            storage.append({'questionKey':i+1, 'correct':data[0][0], 'incorrect':[0][1]})
+            storage.append({'questionKey':i+1, 'correct':data[0][0], 'incorrect':data[0][1]})
         
         return storage
     

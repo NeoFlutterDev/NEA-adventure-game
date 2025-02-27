@@ -60,7 +60,6 @@ def handle_client(conn, address, studentNumber):
 
                     uniqueID = ''.join([characters[random.randint(0, 93)] for _ in range(16)])
                     conn.send(uniqueID.encode())
-                    studentData
 
                     # Update student data
                     studentName = data['student_name']
@@ -77,12 +76,17 @@ def handle_client(conn, address, studentNumber):
             break
 
     print(f"Connection closed from: {address}")
-    activeStudents.remove(conn)
-    conn.close()
 
-    print(f"Connection closed from: {address}")
-    activeStudents.remove(conn)
-    conn.close()
+    # Only remove if conn is still in activeStudents
+    if conn in activeStudents:
+        activeStudents.remove(conn)
+    else:
+        print(f"Warning: Connection {conn} was not found in activeStudents.")
+
+    try:
+        conn.close()
+    except Exception as e:
+        print(f"Error closing connection: {e}")
 
 # Update scores in the server's display window
 def update_scores():

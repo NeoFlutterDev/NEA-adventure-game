@@ -12,6 +12,7 @@ def seconds_since_midnight():
     return secondsSinceMidnight
 
 def send_heartbeat(uniqueID, port, accountKey):
+    port = int(port)
     host = socket.gethostbyname(socket.gethostname())  # Server address
     while True:
         try:
@@ -29,11 +30,17 @@ def send_heartbeat(uniqueID, port, accountKey):
 def first_connection(port, studentName, characterName, accountKey):
     host = socket.gethostbyname(socket.gethostname())
     print(host)
+    port = int(port)
 
     clientSocket = socket.socket()
     try:
+        clientSocket.settimeout(5)  # Wait max 5 sec
         clientSocket.connect((host, port))
-    except:
+    except socket.timeout:
+        print("Connection timed out. Server may be down.")
+        return False, ''
+    except Exception as e:
+        print(f"Connection error: {e}")
         return False, ''
 
     data = {
