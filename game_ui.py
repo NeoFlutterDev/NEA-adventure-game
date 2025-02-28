@@ -764,10 +764,10 @@ class GameUI:
                 self.render_text(lines[0], lines[1], lines[2], lines[3])
         
         elif self.screen == 'battle':
-            enemyStamina = [f'Stm: {int(self.monster[0].get_currentStm())}']
-            enemyHp = [f'Hp: {int(self.monster[0].get_currentHp())}']
-            playerStamina = [f'Stm: {int(self.character[0].get_currentStm())}']
-            playerHp = [f'Hp: {int(self.character[0].get_currentHp())}']
+            enemyStamina = [f'Stm: {min(0, int(self.monster[0].get_currentStm()))}']
+            enemyHp = [f'Hp: {min(0, int(self.monster[0].get_currentHp()))}']
+            playerStamina = [f'Stm: {min(0, int(self.character[0].get_currentStm()))}']
+            playerHp = [f'Hp: {min(0, int(self.character[0].get_currentHp()))}']
 
             self.render_text(enemyStamina, self.smallFont, 194, (255, 255, 255))
             self.render_text(enemyHp, self.smallFont, 674, (255, 255, 255))
