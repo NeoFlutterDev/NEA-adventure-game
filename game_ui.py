@@ -334,6 +334,8 @@ class GameUI:
             self.character[0].set_weapon(newWeapon)
             self.character[0].set_weaponModifier(mod)
 
+            database.update_account_equipment('weapon', newWeapon, mod, self.accountKey)
+
         # For armor
         else:
             if name == 'nanoplate':
@@ -345,16 +347,9 @@ class GameUI:
             newArmour = rarity + name
             self.character[0].set_armour(newArmour)
             self.character[0].set_armourModifier(2 - mod)  
+
+            database.update_account_equipment('armour', newArmour, mod, self.accountKey)
             
-        database.update_account_info(
-            self.character[0].get_exp(),
-            self.character[0].get_money(),
-            self.character[0].get_armour(),
-            self.character[0].get_armourModifier(),
-            self.character[0].get_weapon(),
-            self.character[0].get_weaponModifier(),
-            self.accountKey
-        )
         
         self.new_screen('village1')
 
@@ -825,13 +820,19 @@ class GameUI:
                 self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/special.png')), (x, y))
         
         elif self.screen == 'new equip':
-            x, y = self.quadrant_to_coordinates(1654)
-            image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[1][0]} normal.png')
-            self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
+            if self.newEquip[1][0] != 'None':
+                x, y = self.quadrant_to_coordinates(1654)
+                image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[1][0]} normal.png')
+                self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
 
-            x, y = self.quadrant_to_coordinates(1697)
-            image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[0][0]} normal.png')
-            self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
+            if self.newEquip[0][0] not in ['fist', 'sword', 'bow', 'nanoplate', 'titanweave', 'plasmaweave']:
+                x, y = self.quadrant_to_coordinates(1697)
+                image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[0][0][1:]} normal.png')
+                self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
+            else:
+                x, y = self.quadrant_to_coordinates(1697)
+                image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[0][0]} normal.png')
+                self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
 
             self.render_text([str(self.newEquip[1][1])], self.statsFont, 3292, (255, 255, 255))
 
