@@ -321,35 +321,25 @@ class GameUI:
 
         print(mod)
         print(name)
-        
-        # For weapons
-        if name == 'fist' or name == 'bow' or name == 'sword':
-            if name == 'fist':
-                name = ' fist' 
-            elif name == 'bow':
-                name = '  bow' 
 
-            rarity = combat.reverseWeaponRarityConverter[mod] 
+        weapons = ['fist', 'bow', 'sword']
+        armors = ['nanoplate', 'titanweave', 'plasmaweave']
+
+        if name in weapons:
+            rarity = combat.reverseWeaponRarityConverter[mod]
             newWeapon = rarity + name
             self.character[0].set_weapon(newWeapon)
             self.character[0].set_weaponModifier(mod)
 
             database.update_account_equipment('weapon', newWeapon, mod, self.accountKey)
 
-        # For armor
-        else:
-            if name == 'nanoplate':
-                name = '  nanoplate' 
-            elif name == 'titanweave':
-                name = ' titanweave' 
-
-            rarity = combat.reverseArmourRarityConverter[int(mod)]  
+        elif name in armors:
+            rarity = combat.reverseArmourRarityConverter[2-mod]
             newArmour = rarity + name
             self.character[0].set_armour(newArmour)
             self.character[0].set_armourModifier(2 - mod)  
 
-            database.update_account_equipment('armour', newArmour, mod, self.accountKey)
-            
+            database.update_account_equipment('armour', newArmour, mod, self.accountKey)          
         
         self.new_screen('village1')
 
@@ -764,10 +754,10 @@ class GameUI:
                 self.render_text(lines[0], lines[1], lines[2], lines[3])
         
         elif self.screen == 'battle':
-            enemyStamina = [f'Stm: {min(0, int(self.monster[0].get_currentStm()))}']
-            enemyHp = [f'Hp: {min(0, int(self.monster[0].get_currentHp()))}']
-            playerStamina = [f'Stm: {min(0, int(self.character[0].get_currentStm()))}']
-            playerHp = [f'Hp: {min(0, int(self.character[0].get_currentHp()))}']
+            enemyStamina = [f'Stm: {max(0, int(self.monster[0].get_currentStm()))}']
+            enemyHp = [f'Hp: {max(0, int(self.monster[0].get_currentHp()))}']
+            playerStamina = [f'Stm: {max(0, int(self.character[0].get_currentStm()))}']
+            playerHp = [f'Hp: {max(0, int(self.character[0].get_currentHp()))}']
 
             self.render_text(enemyStamina, self.smallFont, 194, (255, 255, 255))
             self.render_text(enemyHp, self.smallFont, 674, (255, 255, 255))
@@ -831,7 +821,7 @@ class GameUI:
                 self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
             else:
                 x, y = self.quadrant_to_coordinates(1697)
-                image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[0][0]} normal.png')
+                image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[0][0][1:]} normal.png')
                 self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
 
             self.render_text([str(self.newEquip[1][1])], self.statsFont, 3292, (255, 255, 255))
