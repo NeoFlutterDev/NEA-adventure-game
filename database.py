@@ -100,6 +100,8 @@ def createDatabase():
     finally:
         con.close()
         #close the connection
+    
+    #create the database, and make sure the all the questions and answer are placed within the database
 
 def table_accounts_insertion(name, password, exp, money, armour, armourModifier, weapon, weaponModifier, kills, deaths):
     accountKey = None
@@ -121,7 +123,7 @@ def table_accounts_insertion(name, password, exp, money, armour, armourModifier,
         data = (name, password, exp, money, armour, armourModifier, weapon, weaponModifier, kills, deaths)
         #enter the data that is to be inserted
         cur.execute(query, data)
-     #execute the parameterised query
+        #execute the parameterised query
     
         con.commit()
         #commit the query
@@ -137,6 +139,7 @@ def table_accounts_insertion(name, password, exp, money, armour, armourModifier,
         #close the connection
 
         return accountKey
+    #create a new account with the given statistics
 
 def load_all_accounts():
     try:
@@ -170,6 +173,7 @@ def load_all_accounts():
     finally:
         con.close()
         #close the connection
+    #load every account from the database
 
 def load_account_attribute(attribute, accountKey):
     try:
@@ -205,6 +209,7 @@ def load_account_attribute(attribute, accountKey):
     finally:
         con.close()
         #close the connection
+    #load a specific attribute of a specific account
 
 def update_account_info(exp, money, armour, armourModifier, weapon, weaponModifier, accountKey):
     try:
@@ -237,6 +242,7 @@ def update_account_info(exp, money, armour, armourModifier, weapon, weaponModifi
     finally:
         con.close()
         #close the connection
+    #update most generic account information for a specific account
 
 def update_account_equipment(type, newEquipment, newMod, accountKey):
     try:
@@ -269,6 +275,7 @@ def update_account_equipment(type, newEquipment, newMod, accountKey):
 
     finally:
         con.close()
+    #update either the armour or weapon attributes of a specific account
 
 def update_account_attribute(attribute, amount, accountKey):
     try:
@@ -303,6 +310,7 @@ def update_account_attribute(attribute, amount, accountKey):
     finally:
         con.close()
         #close the connection
+    #update one specific attribute of a specific account
 
 def update_characterName(characterName, accountKey):
     try:
@@ -335,6 +343,7 @@ def update_characterName(characterName, accountKey):
     finally:
         con.close()
         #close the connection
+    #update a specific account's character name
 
 def delete_account(accountKey):
     try:
@@ -366,6 +375,7 @@ def delete_account(accountKey):
     finally:
         con.close()
         #close the connection
+    #delete a specific account, and the associated weights
 
 def delete_all_accounts():
     try:
@@ -397,6 +407,7 @@ def delete_all_accounts():
     finally:
         con.close()
         #close the connection
+    #delete all accounts in the database, and their associated weights
 
 def load_accounts():
     try:
@@ -425,6 +436,7 @@ def load_accounts():
     finally:
         con.close()
         #close the connection
+    #load all accounts inside of the database
 
 def load_account(accountKey):
     try:
@@ -457,6 +469,7 @@ def load_account(accountKey):
     finally:
         con.close()
         #close the connection
+    #load a specific account
 
 
 def calculate_weight(correct, incorrect):
@@ -539,6 +552,7 @@ def update_question(answer, questionKey, accountKey):
             cur.close()
         if con:
             con.close()
+    #update a questions data for a specific account based on whether it was answered correctly or incorrectly
 
 def weight_insertion(accountKey):
     print(f"Inserting weights for accountKey: {accountKey}")
@@ -571,6 +585,7 @@ def weight_insertion(accountKey):
             cur.close()
         if con:
             con.close()
+    #insert the weights, correct and incorrect answers into the database for a specific account
 
 def pull_question(questionKey):
     try:
@@ -600,7 +615,7 @@ def pull_question(questionKey):
             cur.close()
         if con:
             con.close()
-
+    #pull a question and it's data based on the given questionKey
 
 def get_question(accountKey):
     try:
@@ -641,6 +656,7 @@ def get_question(accountKey):
             cur.close()
         if con:
             con.close()
+    #get a random question and it's answers
 
 def questions_for_communication(accountKey):
     storage = []
@@ -678,15 +694,15 @@ def questions_for_communication(accountKey):
             cur.close()
         if con:
             con.close()
-
+    #pull the correct and incorrect responses for all questions from a specific account
 
 def loop_length(text):
     loopLength = 0
     for char in text:
         loopLength += ord(char)
     return ((loopLength % 50) + 1) * 37
-    '''converts each character in the string to their ascii code
-    sums the ascii codes, then mods them by 50, adds 1, then multiplies by 37'''
+    #converts each character in the string to their ascii code
+    #sums the ascii codes, then mods them by 50, adds 1, then multiplies by 37
 
 def hash_encryption(text):
     hashValue = 0
@@ -697,10 +713,10 @@ def hash_encryption(text):
         hashValue += ord(text[i]) * prime
         hashValue = hashValue % (2**256 - 1)
     return hashValue
-    '''loops this code by the length of the string
-    it XORs the string which is shifted by 3, by the string shifted by 5
-    it then adds on the ascii code of the selected character and multiplies it by a prime number
-    then it mods the string to keep it within a certain range'''
+    #loops this code by the length of the string
+    #it XORs the string which is shifted by 3, by the string shifted by 5
+    #it then adds on the ascii code of the selected character and multiplies it by a prime number
+    #then it mods the string to keep it within a certain range
 
 def base64_encode(hashValue):
     characterSet = string.digits + string.ascii_letters + '+' + '/'
@@ -719,9 +735,9 @@ def base64_encode(hashValue):
         alphanumericString = alphanumericString.zfill(length)
 
     return alphanumericString
-    '''creates a base64 character set, and divides the hashValue by 64 every time, using the remainder as the next base64 character.
-    it then reverses the hash and cuts off digits to ensure a 16 digit hash.
-    in the case of a hash being less than 16 digits (no cases found yet) the remainging slots are filled with 0s'''
+    #creates a base64 character set, and divides the hashValue by 64 every time, using the remainder as the next base64 character.
+    #it then reverses the hash and cuts off digits to ensure a 16 digit hash.
+    #in the case of a hash being less than 16 digits (no cases found yet) the remainging slots are filled with 0s
 
 def hashing_algorithm(text):
     hashValue = hash_encryption(text)
@@ -729,12 +745,7 @@ def hashing_algorithm(text):
     for i in range(loopLength):
         hashValue = hash_encryption(str(hashValue))
     return base64_encode(hashValue)
-    '''hashes the intital text, then gets the loop length based on the new hashValue.
-    then it loops an amount of times based upon loop length, hashing the hashValue that many times.
-    then it encodes the hashValue and returns it'''
-
-
-#print(load_account_attribute('characterName', 41)[0])
-#print(load_account_attribute('encryptedPassword', 41)[0])
-#weight_insertion(4)
-createDatabase()
+    #hashes the intital text, then gets the loop length based on the new hashValue.
+    #then it loops an amount of times based upon loop length, hashing the hashValue that many times
+    #then it encodes the hashValue and returns it'''
+    
