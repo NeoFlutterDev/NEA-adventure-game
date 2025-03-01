@@ -9,6 +9,7 @@ def player_combat(player, monster, buttonPressed):
     monsterAmrMod = float(monster[0].get_armourModifier())
     monsterDodgeValue = int(monster[0].get_monsterDodgeValue())
     monsterMultiplier = float(monster[0].get_multiplier())
+    #get all the needed stats
 
     if buttonPressed == 'normal attack' and playerStm >= 5:
         player[0].update_currentStm(-5)
@@ -16,9 +17,11 @@ def player_combat(player, monster, buttonPressed):
             monster[0].update_currentHp(-(playerAtk * playerWpnMod * monsterAmrMod * (1 / monsterMultiplier)))
         player[0].update_playerDodgeValue(75)
         return [[player[0], 'normal'], [monster[0], monster[1]]]
+    #basic attack, making the monsters health smaller if they do not dodge, medium damage but low stamina cost
     
     elif buttonPressed == 'normal attack' and playerStm < 5:
         return [[player[0], 'normal'], [monster[0], monster[1]]]
+    #not enough stamina so attack fails
     
     elif buttonPressed == 'heavy attack' and playerStm >= 15:
         player[0].update_currentStm(-15)
@@ -26,9 +29,11 @@ def player_combat(player, monster, buttonPressed):
             monster[0].update_currentHp(-(playerAtk * 1.5 * playerWpnMod * monsterAmrMod * (1 / monsterMultiplier)))
         player[0].update_playerDodgeValue(100)
         return [[player[0], 'heavy'], [monster[0], monster[1]]]
+    #heavy attack, making the monsters health smaller if they do not dodge, higher damage but higher stamina cost
     
     elif buttonPressed == 'heavy attack' and playerStm < 15:
         return [[player[0], 'heavy'], [monster[0], monster[1]]]
+    #not enough stamina so attack fails
     
     elif buttonPressed == 'dodge':
         if playerStm + 25 > playerMaxStm:
@@ -38,13 +43,16 @@ def player_combat(player, monster, buttonPressed):
             player[0].update_currentStm(25)
         player[0].update_playerDodgeValue(25)
         return [[player[0], 'dodge'], [monster[0], monster[1]]]
+    #increases player stamina
     
     elif buttonPressed == 'special' and playerStm >= 50:
         player[0].special_atk()
         return [[player[0], 'special'], [monster[0], monster[1]]]
+    #content to add later, ignore for now
     
     elif buttonPressed == 'special' and playerStm < 50:
         return [[player[0], 'special'], [monster[0], monster[1]]]
+    #not enough stamina so attack fails
 
 def monster_combat(player, monster):
     bias = int(monster[0].get_bias())
@@ -57,11 +65,13 @@ def monster_combat(player, monster):
     playerDodgeValue = float(player[0].get_playerDodgeValue())
     #changes the chance, higher bias = more likely to use specials/heavy attacks
     #lower bias = more likely to dodge or attack, monsters with no special will have a bias of -25 or lower
+    #other stats on top of bias
 
     randomSelector = int(random.randint(1, 100)) + bias
     if randomSelector > 75 and monsterStm >= 50:
         monster[0].update_monsterDodgeValue(0)
         return [[player[0], player[1]], [monster[0], 'special']]
+    #special attack, makes the dodge value of the enemy incredibly high
     
     elif randomSelector > 50 and monsterStm >= 15:
         monster[0].update_currentStm(-15)
@@ -69,6 +79,7 @@ def monster_combat(player, monster):
             player[0].update_currentHp(-(monsterAtk * 1.5 * monsterWpnMod * playerAmrMod * monsterMultiplier))
         monster[0].update_monsterDodgeValue(100)
         return [[player[0], player[1]], [monster[0], 'heavy']]
+    #heavy attack, making the players health smaller if they do not dodge, higher damage but higher stamina cost
     
     elif randomSelector < 26 and monsterStm >= 5:
         monster[0].update_currentStm(-15)
@@ -76,6 +87,7 @@ def monster_combat(player, monster):
             player[0].update_currentHp(-(monsterAtk * monsterWpnMod * playerAmrMod * monsterMultiplier))
         monster[0].update_monsterDodgeValue(75)
         return [[player[0], player[1]], [monster[0], 'normal']]
+    #basic attack, making the monsters health smaller if they do not dodge, medium damage but low stamina cost
     
     else:
         player[0].update_currentStm(25)
@@ -83,6 +95,7 @@ def monster_combat(player, monster):
             monster[0].update_currentStm(monsterMaxStm)
         monster[0].update_monsterDodgeValue(25)
         return [[player[0], player[1]], [monster[0], 'dodge']]
+    #increases enemies stamina
 
 class PlayableCharacter:
     def __init__(self, name, exp, armour = None, armourModifier = 1, weapon = 'fist', weaponModifier = 1):
