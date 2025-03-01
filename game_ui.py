@@ -260,8 +260,8 @@ class GameUI:
     def new_weapon(self, newWeapon, rarity):
         self.screen = 'new equip'
         try:
-            oldWeapon = self.character[0].get_weapon()[-5:].strip()
-            oldMod = combat.rarityConverter[self.character[0].get_weapon()[:1]]
+            oldWeapon = self.character[0].get_weapon()
+            oldMod = self.character[0].get_weaponModifier()
         except:
             oldWeapon = 'fist'
             oldMod = 1
@@ -284,8 +284,8 @@ class GameUI:
         self.screen = 'new equip'
         try:
             if self.character[0].get_armour():
-                oldArmour = self.character[0].get_armour().strip()[-11:]
-                oldMod = combat.rarityConverter.get(self.character[0].get_armour()[0], 1)
+                oldArmour = self.character[0].get_armour()
+                oldMod = float(str(2-self.character[0].get_armourModifier())[:4])
             else:
                 oldArmour = 'None'
                 oldMod = 1
@@ -515,7 +515,7 @@ class GameUI:
         self.screen = 'exploration'
         self.render()
         #encounter = random.randint(1, 100)
-        encounter = 80
+        encounter = random.randint(80, 85)
         encounterRandomness = random.randint(1, 100)
         x, y = self.quadrant_to_coordinates(1577)
 
