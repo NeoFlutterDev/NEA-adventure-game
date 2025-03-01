@@ -2,10 +2,13 @@ import pygame
 import student_communication
 import tutorial
 import game_ui
-import time
 import sys
+import database
 
 pygame.init()
+
+database.createDatabase()
+#make sure the database is initialized
 
 screenScale = [pygame.display.Info().current_w / 1920, pygame.display.Info().current_h / 1080]
 fontSizes = {'large': 130, 'small': 60, 'stats':100}
