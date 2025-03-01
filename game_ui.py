@@ -33,6 +33,9 @@ class GameUI:
         self.animationController = animationController
         self.textController = textController
         self.newEquip = [[], []]
+        #define all of the various game "global" variables
+        #only useable when called upon by the instance of GameUI 
+        #making them resistant to the normal disadvantages of global variables.
 
     def initialize_buttons(self):
         self.buttons = {
@@ -145,82 +148,29 @@ class GameUI:
 
     def empty_def(self):
         pass
-
-    def question_checker(self, answer):
-        if answer == 'incorrect':
-            database.update_question('incorrect', self.questionText['questionKey'], self.accountKey)
-            self.questions()
-        else:
-            database.update_question('correct', self.questionText['questionKey'], self.accountKey)
-            self.new_screen(self.buttons['question screen'][4][2][1])
-
-    def start_combat(self, type):
-        self.questions()
-        if self.buttons['battle'][4][2][1] == '':
-            self.buttons['battle'][4][2][1] = self.screen
-        self.buttons['battle'][5][0] = False
-        self.buttons['battle'][6][0] = False
-        self.screen = 'battle'
-        self.monster = [combat.Monster(self.character[0].get_lvl(), type), 'idle']
-    
-    def combat_phase(self, button):
-        self.character, self.monster = combat.player_combat(self.character, self.monster, button)
-        if self.monster[0].get_currentHp() > 0:
-            self.character, self.monster = combat.monster_combat(self.character, self.monster)
-        elif self.monster[0].get_currentHp() < 1:
-            gains = {'grunt':2, 'elite':4, 'boss':8}
-            self.buttons['battle'][5][0] = True
-            self.render()
-            time.sleep(3)
-            database.update_account_attribute('kills', 1, self.accountKey)
-            self.character[0].set_money(self.character[0].get_money() + gains[self.monster[0].get_type()])
-            self.character[0].update_exp(gains[self.monster[0].get_type()])
-            database.update_account_attribute('money', gains[self.monster[0].get_type()], self.accountKey)
-            database.update_account_attribute('exp', gains[self.monster[0].get_type()], self.accountKey)
-            if isinstance(self.buttons['battle'][4][2][1], str):
-                self.new_screen(self.buttons['battle'][4][2][1])
-            else:
-                self.buttons['battle'][4][2][1](self)
-        
-        if self.character[0].get_currentHp() < 1:
-            self.buttons['battle'][6][0] = True
-            self.render()
-            time.sleep(3)
-            database.update_account_attribute('deaths', 1, self.accountKey)
-            if isinstance(self.buttons['battle'][4][2][1], str):
-                self.new_screen(self.buttons['battle'][4][2][1])
-            else:
-                self.buttons['battle'][4][2][1](self)
+        #placeholder subroutine
     
     def initialize_window(self):
         info_object = pygame.display.Info()
         self.window = pygame.display.set_mode((info_object.current_w, info_object.current_h), pygame.FULLSCREEN)
         pygame.display.set_caption('Ancient Discovery')
-
-    #scales sprites based upon the screen size
-    def scale_sprite(self, image):
-        return pygame.transform.scale(image, (
-            int(image.get_width() * self.screenScale[0]),
-            int(image.get_height() * self.screenScale[1])
-        ))
-    
-    def button_blitter(self):
-        button_options = self.buttons[self.screen]
-        for button in button_options:
-            if button[0]:
-                self.window.blit(pygame.image.load(button[3]), self.quadrant_to_coordinates(button[1][0]))
-    #load all buttons on the current screen which are enabled
+        #opens the display and names it
 
     def coordinates_to_quadrant(self, coordinates):
         quadrantX = coordinates[0] / (20 * self.screenScale[0])
         quadrantY = coordinates[1] / (20 * self.screenScale[1])
         return (math.trunc(quadrantY) * 96) + math.trunc(quadrantX) + 1
+        #converts coordinates to quadrants by dividing the x coordinate by 20 and the y coordinate by 20
+        #it gets rid of decimals then mutliplies the y coordinate sum by 96 and adds the x coordinate sum
     
     def quadrant_to_coordinates(self, quadrant):
         quadrant -= 1
         coordinateX = (quadrant % 96) * 20 * self.screenScale[0]
         coordinateY = (quadrant // 96) * 20 * self.screenScale[1]
         return [coordinateX, coordinateY]
+        #turns the quadrant to coordinates, to get the x coordinate it mods by 96 then multiplies by 20
+        #to get the y coordinate it integer divids the quadrant by 96 then multiplies by 20
+        #if the screen is a different resolution then 1920x1080 is edits these coordinates to scale
     
     def quadrant_checker(self, buttonQuadrant1, buttonQuadrant2, pressedQuadrant):
         quadrantX = pressedQuadrant % 96
@@ -228,6 +178,7 @@ class GameUI:
         quadrant1X, quadrant1Y = buttonQuadrant1 % 96, buttonQuadrant1 // 96
         quadrant2X, quadrant2Y = buttonQuadrant2 % 96, buttonQuadrant2 // 96
         return (quadrant1Y <= quadrantY <= quadrant2Y) and (quadrant1X <= quadrantX <= quadrant2X)
+        #checks it the press of the mouse is within the upper left corner and bottom right corner of the button
     
     def search_buttons(self, searchQuadrant):
         buttonOptions = self.buttons.get(self.screen, [])
@@ -235,10 +186,289 @@ class GameUI:
             is_active, (q1, q2), action, sprite = button
             if is_active and self.quadrant_checker(q1, q2, searchQuadrant):
                 return action
-        return self.empty_def #default action if no button is found
+        return self.empty_def
     #find the button pressed based upon the given quadrant and current screen
+
+    def render(self):
+        self.window.fill((0, 0, 0))
+        self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/backdrops/{self.screen}.png')), (0, 0))
+        #blit the screen onto the display
+
+        self.button_blitter()
+        #blit any buttons onto the display
+
+        self.window.blit(self.scale_sprite(pygame.image.load('sprites/buttons/exit.png')), self.quadrant_to_coordinates(95))
+        #blit the exit button onto the screen
+
+        if self.uniqueID == '' and self.characterName != '':
+            self.window.blit(self.scale_sprite(pygame.image.load('sprites/buttons/no connection.png')), self.quadrant_to_coordinates(3))
+        elif self.characterName != '':
+            self.window.blit(self.scale_sprite(pygame.image.load('sprites/buttons/connection.png')), self.quadrant_to_coordinates(3))  
+        #blit the connection button onto the screen if the player has passed the tutorial
+        
+        text = 'Your memory is foggy, what is your name again?'
+
+        if self.screen == 'password creator' or self.screen == 'load account':
+            rectangle = pygame.Rect(150, 370, 1580, 100)
+            pygame.draw.rect(self.window, (180, 180, 180), rectangle)
+            password_text = self.font.render(self.password, True, (255, 255, 255))
+            self.window.blit(password_text, (rectangle.x + 5, rectangle.y + 5))
+        elif self.screen == 'networking':
+            rectangle = pygame.Rect(400, 170, 1450, 50)
+            pygame.draw.rect(self.window, (180, 180, 180), rectangle)
+            password_text = self.smallFont.render(self.networkPin, True, (255, 255, 255))
+            self.window.blit(password_text, (rectangle.x + 5, rectangle.y + 5))
+        elif self.screen == 'tutorial start' and any(threads[2] == text for threads in self.textController.threads):
+            rectangle = pygame.Rect(10, 400, 1450, 50)
+            password_text = self.smallFont.render(self.characterName, True, (255, 255, 255))
+            self.window.blit(password_text, (rectangle.x + 5, rectangle.y + 5))
+        #blit password text if on the password creator, load account or networking screen or the entered name if on the tutorial screen
+
+        elif self.screen in ['combined stats', 'account 1 stats', 'account 2 stats', 'account 3 stats']:
+            textToBlit = self.statsText[self.screen]
+            for lines in textToBlit:
+                self.render_text(lines[0], lines[1], lines[2], lines[3])
+        #blit the player stats onto the display on the statistics menu
+
+        elif self.screen == 'question screen':
+            textToBlit = self.questionText[self.screen]
+            for lines in textToBlit:
+                self.render_text(lines[0], lines[1], lines[2], lines[3])
+        #blit the question onto the display 
+        
+        elif self.screen == 'battle':
+            enemyStamina = [f'Stm: {max(0, int(self.monster[0].get_currentStm()))}']
+            enemyHp = [f'Hp: {max(0, int(self.monster[0].get_currentHp()))}']
+            playerStamina = [f'Stm: {max(0, int(self.character[0].get_currentStm()))}']
+            playerHp = [f'Hp: {max(0, int(self.character[0].get_currentHp()))}']
+            #load monster and player stats, and if they are below 0, set them to 0
+
+            self.render_text(enemyStamina, self.smallFont, 194, (255, 255, 255))
+            self.render_text(enemyHp, self.smallFont, 674, (255, 255, 255))
+            self.render_text(playerStamina, self.smallFont, 2949, (255, 255, 255))
+            self.render_text(playerHp, self.smallFont, 3333, (255, 255, 255))
+            #blit the monster and player stats onto the display
+
+            if (self.monster[0].get_currentHp() / self.monster[0].get_maxHp()) > 0.5:
+                x, y = self.quadrant_to_coordinates(68)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/{self.monster[0].get_type()} slime.png')), (x, y))
+            elif (self.monster[0].get_currentHp() / self.monster[0].get_maxHp()) > 0:
+                x, y = self.quadrant_to_coordinates(68)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/{self.monster[0].get_type()} slime hurt.png')), (x, y))
+            else:
+                x, y = self.quadrant_to_coordinates(68)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/{self.monster[0].get_type()} slime dead.png')), (x, y))
+            #blit the correct monster sprite onto the display based on the monster's hp
+
+            x, y = self.quadrant_to_coordinates(2320)
+            self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/character combat.png')), (x, y))
+
+            if self.character[1] == 'normal':
+                x, y = self.quadrant_to_coordinates(2901)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.character[0].get_weapon()[-5:].strip()} normal.png')), (x, y))
+
+            elif self.character[1] == 'heavy':
+                x, y = self.quadrant_to_coordinates(2901)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.character[0].get_weapon()[-5:].strip()} heavy.png')), (x, y))
+            
+            elif self.character[1] == 'dodge':
+                x, y = self.quadrant_to_coordinates(2901)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/dodge.png')), (x, y))
+            
+            elif self.character[1] == 'special':
+                x, y = self.quadrant_to_coordinates(2901)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.character[0].get_weapon()[-5:].strip()} special.png')), (x, y))
+
+            if self.monster[1] == 'normal':
+                x, y = self.quadrant_to_coordinates(841)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.monster[0].get_type()} normal.png')), (x, y))
+
+            elif self.monster[1] == 'heavy':
+                x, y = self.quadrant_to_coordinates(841)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.monster[0].get_type()} heavy.png')), (x, y))
+
+            elif self.monster[1] == 'dodge':
+                x, y = self.quadrant_to_coordinates(841)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/dodge.png')), (x, y))
+
+            elif self.monster[1] == 'special':
+                x, y = self.quadrant_to_coordinates(841)
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/special.png')), (x, y))
+            #blit the player, as well as the player and monster previous actions onto the display
+        
+        elif self.screen == 'new equip':
+            if self.newEquip[1][0] != 'None':
+                x, y = self.quadrant_to_coordinates(1654)
+                image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[1][0]} normal.png')
+                self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
+
+            x, y = self.quadrant_to_coordinates(1697)
+            image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[0][0]} normal.png')
+            self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
+
+            self.render_text([str(self.newEquip[1][1])], self.statsFont, 3292, (255, 255, 255))
+
+            self.render_text([str(self.newEquip[0][1])], self.statsFont, 3336, (255, 255, 255))
+            #blit the correct sprites and the stats of the old and new weapons/armours
+
+        elif self.screen == 'village1':
+            if self.characterPOS[1] == 'w':
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/character up.png')), (self.characterPOS[0][0], self.characterPOS[0][1]))
+            elif self.characterPOS[1] == 'a':
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/character left.png')), (self.characterPOS[0][0], self.characterPOS[0][1]))
+            elif self.characterPOS[1] == 's':
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/character down.png')), (self.characterPOS[0][0], self.characterPOS[0][1]))
+            else:
+                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/character right.png')), (self.characterPOS[0][0], self.characterPOS[0][1]))
+            #blit the character sprite in the correct location facing in the direction they last travelled
+      
+        pygame.display.update()
+        #refresh the display
     
-    #change to the character select menu and load all the accounts
+    def render_text(self, text, font, startQuadrant, colour):
+        x, y = self.quadrant_to_coordinates(startQuadrant)
+        for line in text:
+            textSurface = font.render(line, True, colour)
+            self.window.blit(textSurface, (x, y))
+            y += font.get_height()
+        #blit the text on the display, if multiples lines are entered it makes sure no text overlaps
+    
+    def scale_sprite(self, image):
+        return pygame.transform.scale(image, (
+            int(image.get_width() * self.screenScale[0]),
+            int(image.get_height() * self.screenScale[1])
+        ))
+        #change the size of the sprite based on the difference in resolution of the player display
+        #in comparison to the regular 1920x1080 display
+    
+    def button_blitter(self):
+        button_options = self.buttons[self.screen]
+        for button in button_options:
+            if button[0]:
+                self.window.blit(pygame.image.load(button[3]), self.quadrant_to_coordinates(button[1][0]))
+        #load all buttons on the current screen which are enabled
+
+    def handle_event(self, event):
+        if event.type == pygame.QUIT:
+            self.quit_game()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            self.handle_mouse_click_event()
+        elif event.type == pygame.KEYDOWN:
+            self.handle_key_press_event(event)
+        #determines the type of event that is happening
+
+    def handle_mouse_click_event(self):
+        mousePos = pygame.mouse.get_pos()
+        mouseQuadrant = self.coordinates_to_quadrant(mousePos)
+        
+        if mouseQuadrant in [95, 96, 191, 192]:
+            self.quit_game()
+        elif mouseQuadrant in [3, 4, 99, 100] and self.screen not in ['networking', 'load account'] and self.characterName != '':
+            self.buttons['networking'][0][2][1] = self.screen
+            self.screen = 'networking'
+        else:
+            self.handle_button_click_event()
+        #determines where the mouse was pressed, whether it pressed one of the two generic buttons or a different one
+    
+    def handle_button_click_event(self):
+        mousePos = pygame.mouse.get_pos()
+        mouseQuadrant = self.coordinates_to_quadrant(mousePos)
+
+        buttonAction = self.search_buttons(mouseQuadrant)
+        if isinstance(buttonAction, list):
+            action, parameter = buttonAction
+            action(parameter)
+        else:
+            buttonAction()
+        #checks if the mouse press was on any enabled buttons on screen, if so activate the button
+    
+    def handle_key_press_event(self, event):
+        screenKeyHandlers = {
+            'password creator': self.handle_password_creator_key,
+            'load account': self.handle_load_account_key,
+            'networking': self.handle_networking_key,
+            'tutorial start': self.handle_tutorial_name,
+            'village1': self.handle_village_movement,
+        }
+        handle = screenKeyHandlers.get(self.screen)
+        if handle:
+            handle(event)
+        #based on the current screen, hand the event over to the dedicated subroutine
+
+    def handle_password_creator_key(self, event):
+        if event.key == pygame.K_BACKSPACE:
+            self.password_text_field_creation('backspace')
+        else:
+            if pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                self.password_text_field_creation(event.unicode.upper())
+            else:
+                self.password_text_field_creation(event.unicode)
+        #if the input was an acceptable character or backspace, give it to the password making subroutine
+        
+    def handle_load_account_key(self, event):
+        if event.key == pygame.K_BACKSPACE:
+            self.password_text_field_checking('backspace')
+        else:
+            if pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                self.password_text_field_checking(event.unicode.upper())
+            else:
+                self.password_text_field_checking(event.unicode)
+        #if the input was an acceptable character or backspace, give it to the password checking subroutine
+
+    def handle_networking_key(self, event):
+        if event.key == pygame.K_BACKSPACE:
+            self.network_pin_enterer('backspace')
+        elif event.unicode.isdigit():
+            self.network_pin_enterer(event.unicode)
+        #if the input was a number or backspace, give it to the network pin subroutine
+    
+    def handle_tutorial_name(self, event):
+        text = 'Your memory is foggy, what is your name again?'
+        if any(threads[2] == text for threads in self.textController.threads) and event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_BACKSPACE:
+                self.tutorial_name_enterer('backspace')
+            elif event.key == pygame.K_RETURN:
+                self.tutorial_name_enterer('enter')
+            elif event.unicode.isprintable():
+                self.tutorial_name_enterer(event.unicode)
+        #if the input was an acceptable character or backspace, give it to the tutorial name subroutine
+
+    def handle_village_movement(self, event):
+        keys = pygame.key.get_pressed()  # Get the current state of all keys
+
+        if keys[pygame.K_w]:
+            self.characterPOS[0][1] = max(0, self.characterPOS[0][1] - 30)
+        
+        if keys[pygame.K_a]:
+            self.characterPOS[0][0] = max(0, self.characterPOS[0][0] - 30)
+        
+        if keys[pygame.K_s]:
+            self.characterPOS[0][1] = min(1030, self.characterPOS[0][1] + 30)
+        
+        if keys[pygame.K_d]:
+            self.characterPOS[0][0] = min(1870, self.characterPOS[0][0] + 30)
+
+        if self.characterPOS[0][0] <= 130 and (self.characterPOS[0][1] >= 380 and self.characterPOS[0][1] <= 610):
+            self.characterPOS = [[900, 1000], 'w']
+            self.dungeon()
+
+        elif (self.characterPOS[0][0] <= 1040 and self.characterPOS[0][0] >= 810) and self.characterPOS[0][1] <= 130:
+            self.characterPOS = [[900, 1000], 'w']
+            self.shop()
+
+        elif self.characterPOS[0][0] >= 1780 and (self.characterPOS[0][1] >= 440 and self.characterPOS[0][1] <= 550):
+            self.characterPOS = [[900, 1000], 'w']
+            self.exploration()
+        #if the input was WASD move the character in the correct direction, if this makes them interact
+        #with any of the village locations, load the associated subroutine
+    
+    def new_screen(self, newScreen):
+        if newScreen == 'start menu':
+            self.statsText = {'combined stats':[], 'account 1 stats':[], 'account 2 stats':[], 'account 3 stats':[]}
+        self.screen = newScreen
+        self.render()
+    #go to the given screen
+
     def start_game(self):
         self.screen = 'character select menu'
         accounts = database.load_accounts()
@@ -249,103 +479,24 @@ class GameUI:
             self.buttons['character select menu'][i+3][2] = [self.load_account, int(accounts[i][0])]
             self.buttons['character select menu'][i+6][0] = False
         self.render()
-    
+        #change to the character select menu and load all the accounts, then re-render the display
+
     def options_start_menu(self):
         self.screen = 'options menu'
         if self.sound:
             self.buttons['options menu'][0][0] = True
         else:
             self.buttons['options menu'][0][0] = False
-
-    def new_weapon(self, newWeapon, rarity):
-        self.screen = 'new equip'
-        try:
-            oldWeapon = self.character[0].get_weapon()
-            oldMod = self.character[0].get_weaponModifier()
-        except:
-            oldWeapon = 'fist'
-            oldMod = 1
-
-        newWeapon = newWeapon[len(rarity):].strip()
-        newMod = combat.rarityConverter[rarity[:1]]
-
-        # Update button actions correctly
-        self.buttons['new equip'][0][2] = [self.equip, f"{oldWeapon} {oldMod}"]
-        self.buttons['new equip'][1][2] = [self.equip, f"{newWeapon} {newMod}"]
-        self.newEquip = [[newWeapon, newMod], [oldWeapon, oldMod]]
-
-        self.equipRun = True
-        while self.equipRun and self.screen == 'new equip':
-            for event in pygame.event.get():
-                self.handle_event(event)
-            self.render()
+        #change to the options screen, and determine which sound button to use 
+        #depending on whether or not sound is currently enabled
     
-    def new_armour(self, newArmour, rarity):
-        self.screen = 'new equip'
-        try:
-            if self.character[0].get_armour():
-                oldArmour = self.character[0].get_armour()
-                oldMod = float(str(2-self.character[0].get_armourModifier())[:4])
-            else:
-                oldArmour = 'None'
-                oldMod = 1
-        except:
-            oldArmour = None
-            oldMod = 1
-
-        newArmour = newArmour[len(rarity):]
-        newMod = combat.rarityConverter[rarity[:1]]
-
-        if oldArmour is None:
-            oldArmour = 'None'
-
-        # Update button actions correctly
-        self.buttons['new equip'][0][2] = [self.equip, f"{oldArmour} {oldMod}"]
-        self.buttons['new equip'][1][2] = [self.equip, f"{newArmour} {newMod}"]
-        self.newEquip = [[newArmour, newMod], [oldArmour, oldMod]]
-
-        self.equipRun = True
-        while self.equipRun and self.screen == 'new equip':
-            for event in pygame.event.get():
-                self.handle_event(event)
-            self.render()
-    
-    def equip(self, stats):
-        self.equipRun = False
-        try:
-            mod = float(stats[-4:])
-            name = stats[:-4].strip()
-        except:
-            mod = 1
-            name = stats[:-1].strip()
-
-        weapons = ['fist', 'bow', 'sword']
-        armors = ['nanoplate', 'titanweave', 'plasmaweave']
-
-        if name in weapons:
-            rarity = combat.reverseWeaponRarityConverter[mod]
-            newWeapon = name
-            self.character[0].set_weapon(newWeapon)
-            self.character[0].set_weaponModifier(mod)
-
-            database.update_account_equipment('weapon', newWeapon, mod, self.accountKey)
-
-        elif name in armors:
-            rarity = combat.reverseArmourRarityConverter[float((str(2-mod))[:4])]
-            newArmour = name
-            self.character[0].set_armour(newArmour)
-            self.character[0].set_armourModifier(float((str(2-mod))[:4]))  
-
-            database.update_account_equipment('armour', newArmour, float((str(2-mod))[:4]), self.accountKey)          
-        
-        self.new_screen('village1')
-
     def sound_off(self):
         self.buttons['options menu'][0][0] = False
         self.buttons['options menu'][1][0] = True
         self.sound = False
 
         self.render()
+        #turns sound off and changes the sound button to the off version
 
     def sound_on(self):
         self.buttons['options menu'][0][0] = True
@@ -353,6 +504,7 @@ class GameUI:
         self.sound = True
         
         self.render()
+        #turns sound on and changes the sound button to the on version
 
     def statistics_start_menu(self):
         self.screen = 'combined stats'
@@ -384,105 +536,101 @@ class GameUI:
                     self.statsText['account 2 stats'].append([['N/A'], self.statsFont, placement[i], (255, 255, 255)])
                     self.statsText['account 3 stats'].append([['N/A'], self.statsFont, placement[i], (255, 255, 255)])
         self.render()
+        #change the screen to the starting stats screen. Then loop through the statsText class variable and place in the correct values 
+        #the correct values depend on how many accounts there are. It goes through all the stats, and also adds the correct locations 
+        #for the values to be blitted to in the placement list
 
-    def questions(self):
-        
-        if self.screen != 'question screen':
-            self.buttons['question screen'][4][2][1] = self.screen
-            self.screen = 'question screen'
-        
-        slots = [1, 2, 3, 4]
-        placement = [296, 2895, 2938, 4431, 4378]
+    def new_weapon(self, newWeapon, rarity):
+        self.screen = 'new equip'
+        try:
+            oldWeapon = self.character[0].get_weapon()
+            oldMod = self.character[0].get_weaponModifier()
+        except:
+            oldWeapon = 'fist'
+            oldMod = 1
 
-        question, questionKey = database.get_question(self.accountKey)
+        newWeapon = newWeapon[len(rarity):].strip()
+        newMod = combat.rarityConverter[rarity[:1]]
 
-        self.questionText['question screen'][0] = [TextController.wrap_text(TextController, question[0], self.smallFont, 1600), self.smallFont, placement[0], (255, 255, 255)]
-        placement.pop(0)
-        self.questionText['questionKey'] = questionKey
+        self.buttons['new equip'][0][2] = [self.equip, f"{oldWeapon} {oldMod}"]
+        self.buttons['new equip'][1][2] = [self.equip, f"{newWeapon} {newMod}"]
+        self.newEquip = [[newWeapon, newMod], [oldWeapon, oldMod]]
 
-        correctSlot = random.randint(0, 3)
-        self.buttons['question screen'][correctSlot][2][1] = 'correct'
-        self.questionText['question screen'][slots[correctSlot]] = [TextController.wrap_text(TextController, question[1], self.smallFont, 600), self.smallFont, placement[correctSlot], (255, 255, 255)]
-        slots.pop(correctSlot)
-        placement.pop(correctSlot)
-
-        incorrect = [question[2], question[3], question[4]]
-
-        for i in range(3):
-            randomSlot = random.randint(0, 2-i)
-            self.questionText['question screen'][slots[randomSlot]] = [TextController.wrap_text(TextController, incorrect[randomSlot], self.smallFont, 600), self.smallFont, placement[i], (255, 255, 255)]
-            slots.pop(randomSlot)
-            incorrect.pop(randomSlot)
-    
-    def bin_account(self, accountKey):
-        database.delete_account(accountKey)
-        for i in range(3):
-            self.buttons['character select menu'][i][0] = False
-            self.buttons['character select menu'][i+3][0] = False
-            self.buttons['character select menu'][i+6][0] = True
-        self.start_game()
-    #delete an account and then reload the screen and accounts
-
-    def load_account(self, accountKey):
-        self.buttons['load account'][0][2] = [self.check_password, accountKey]
-        self.window.fill((0, 0, 0))
-        self.screen = 'load account'
-    
-    def make_save(self): 
-        self.window.fill((0, 0, 0))
-        self.screen = 'password creator'
-        #move to the password screen
-    
-    def new_screen(self, newScreen):
-        if newScreen == 'start menu':
-            self.statsText = {'combined stats':[], 'account 1 stats':[], 'account 2 stats':[], 'account 3 stats':[]}
-        self.screen = newScreen
-        self.render()
-    #return to previous screen
-
-    def dungeon(self):
-        rooms = ['grunt', 'grunt', 'grunt', 'elite', 'elite', 'boss']
-        for i in range(6):
-            self.screen = 'dungeon'
+        self.equipRun = True
+        while self.equipRun and self.screen == 'new equip':
+            for event in pygame.event.get():
+                self.handle_event(event)
             self.render()
-            self.textController.typewriter_text(self, self.font, f'Floor {i+1}', 2058, 2000)
-            image = pygame.image.load(f'sprites/characters/{rooms[i]} slime.png')
-            self.window.blit(self.scale_sprite(image), self.quadrant_to_coordinates(3497))
-            time.sleep(3)
-            self.start_combat(f'{rooms[i]}')
-            while self.screen == 'battle' or self.screen == 'question screen':
-                for event in pygame.event.get():
-                    self.handle_event(event)
-                self.render()
-            if self.character[0].get_currentHp() < 1:
-                break
+        #load the old weapon from the player instance. Then get the new weapon name and mod
+        #place these values into the associated sections in the buttons class variable
+        #then make the screen 'new equip' and keep looping until one of the buttons is pressed
+    
+    def new_armour(self, newArmour, rarity):
+        self.screen = 'new equip'
+        try:
+            if self.character[0].get_armour():
+                oldArmour = self.character[0].get_armour()
+                oldMod = float(str(2-self.character[0].get_armourModifier())[:4])
+            else:
+                oldArmour = 'None'
+                oldMod = 1
+        except:
+            oldArmour = None
+            oldMod = 1
 
-        if self.character[0].get_currentHp() >= 1:
-            self.textController.typewriter_text(self, self.font, f'Treasure Floor', 2051, 2000)
-            image = pygame.image.load(f'sprites/animations/misc/macguffin1.png')
-            self.window.blit(self.scale_sprite(image), self.quadrant_to_coordinates(3497))
-            time.sleep(3)
-            self.textController.stop_all_text()
+        newArmour = newArmour[len(rarity):]
+        newMod = combat.rarityConverter[rarity[:1]]
+
+        if oldArmour is None:
+            oldArmour = 'None'
+
+        self.buttons['new equip'][0][2] = [self.equip, f"{oldArmour} {oldMod}"]
+        self.buttons['new equip'][1][2] = [self.equip, f"{newArmour} {newMod}"]
+        self.newEquip = [[newArmour, newMod], [oldArmour, oldMod]]
+
+        self.equipRun = True
+        while self.equipRun and self.screen == 'new equip':
+            for event in pygame.event.get():
+                self.handle_event(event)
             self.render()
-            text = 'You pick up the mysterious item on the floor. The design and rough sides show that it is clearly part of a larger piece. Maybe exploring more dungeons will unlock more pieces.'
-            self.textController.typewriter_text(self, self.smallFont, text, 2028, 1000)
-            time.sleep(12)
-            self.character[0].update_currentHp(self.character[0].get_maxHp() - self.character[0].get_currentHp())
-            self.character[0].update_currentStm(self.character[0].get_maxStm() - self.character[0].get_currentStm())
-            self.characterPOS = [[900, 1000], 'w']
-            self.screen = 'village1'
-        else:
-            self.dungeon_failure()
+    
+    #load the old armour from the player instance. Then get the new armour name and mod
+    #place these values into the associated sections in the buttons class variable
+    #then make the screen 'new equip' and keep looping until one of the buttons is pressed
 
-    def dungeon_failure(self):
-        text = 'The slime deals the final blow and leaves you dazed on the floor. You wake up several hours later, mysteriously in the village entrance once more.'
-        self.textController.typewriter_text(self, self.smallFont, text, 2028, 1000)
-        time.sleep(10)
-        self.character[0].update_currentHp(self.character[0].get_maxHp() - self.character[0].get_currentHp())
-        self.character[0].update_currentStm(self.character[0].get_maxStm() - self.character[0].get_currentStm())
-        self.characterPOS = [[900, 1000], 'w']
-        self.screen = 'village1'
+    def equip(self, stats):
+        self.equipRun = False
+        try:
+            mod = float(stats[-4:])
+            name = stats[:-4].strip()
+        except:
+            mod = 1
+            name = stats[:-1].strip()
 
+        weapons = ['fist', 'bow', 'sword']
+        armors = ['nanoplate', 'titanweave', 'plasmaweave']
+
+        if name in weapons:
+            rarity = combat.reverseWeaponRarityConverter[mod]
+            newWeapon = name
+            self.character[0].set_weapon(newWeapon)
+            self.character[0].set_weaponModifier(mod)
+
+            database.update_account_equipment('weapon', newWeapon, mod, self.accountKey)
+
+        elif name in armors:
+            rarity = combat.reverseArmourRarityConverter[float((str(2-mod))[:4])]
+            newArmour = name
+            self.character[0].set_armour(newArmour)
+            self.character[0].set_armourModifier(float((str(2-mod))[:4]))  
+
+            database.update_account_equipment('armour', newArmour, float((str(2-mod))[:4]), self.accountKey)          
+        
+        self.new_screen('village1')
+        #stop the loop in the new_weapon or new_armour subroutine
+        #get the mod and weapon name chosen and update the database and character instance appropriately
+        #return the player to the village
+    
     def shop(self):
         for i in range(8):
             if i <= 3:
@@ -494,26 +642,75 @@ class GameUI:
                 self.buttons['shop'][i][2][1] = f'n{item}'
                 self.buttons['shop'][i][3] = f'sprites/animations/combat/{item} normal.png'
         self.screen = 'shop'
+        #populate the shop with four random pieces of armour and 4 random weapons
+        #make sure there is one weapon for each rarity and one armour for each rarity
 
     def shop_armour(self, armour):
         moneyCost = {'n':10, 's':25, 'g':50, 'l':100}
         characterMoney = self.character[0].get_money()
         if characterMoney >= moneyCost[armour[:1]]:
             self.character[0].set_money(characterMoney - moneyCost[armour[:1]])
-            self.new_armour(armour[1:], armour[:1])
+            self.new_armour(armour, armour[:1])
+        #check if the player has enough money
+        #if they do send the armour and armour mod to the new_armour subroutine
     
     def shop_weapon(self, weapon):
         moneyCost = {'n':10, 's':25, 'g':50, 'l':100}
-        characterMoney = self.character[0].get_money()
+        characterMoney = database.load_account_attribute('money', self.accountKey)[0]
         if characterMoney >= moneyCost[weapon[:1]]:
-            self.character[0].set_money(characterMoney - moneyCost[weapon[:1]])
-            self.new_weapon(weapon[1:], weapon[:1])
-
+            database.update_account_attribute('money', -moneyCost[weapon[:1]], self.accountKey)
+            self.new_weapon(weapon, weapon[:1])
+        #check if the player has enough money
+        #if they do send the weapon and weapon mod to the new_weapon subroutine
+    
+    def start_combat(self, type):
+        self.questions()
+        if self.buttons['battle'][4][2][1] == '':
+            self.buttons['battle'][4][2][1] = self.screen
+        self.buttons['battle'][5][0] = False
+        self.buttons['battle'][6][0] = False
+        self.screen = 'battle'
+        self.monster = [combat.Monster(self.character[0].get_lvl(), type), 'idle']
+        #loads the question module, then creates an instance of the desired monster type
+        #makes sure the class variable buttons is correctly formatted and changes the screen to battle
+    
+    def combat_phase(self, button):
+        self.character, self.monster = combat.player_combat(self.character, self.monster, button)
+        if self.monster[0].get_currentHp() > 0:
+            self.character, self.monster = combat.monster_combat(self.character, self.monster)
+        elif self.monster[0].get_currentHp() < 1:
+            gains = {'grunt':2, 'elite':4, 'boss':8}
+            self.buttons['battle'][5][0] = True
+            self.render()
+            time.sleep(3)
+            database.update_account_attribute('kills', 1, self.accountKey)
+            self.character[0].set_money(self.character[0].get_money() + gains[self.monster[0].get_type()])
+            self.character[0].update_exp(gains[self.monster[0].get_type()])
+            database.update_account_attribute('money', gains[self.monster[0].get_type()], self.accountKey)
+            database.update_account_attribute('exp', gains[self.monster[0].get_type()], self.accountKey)
+            if isinstance(self.buttons['battle'][4][2][1], str):
+                self.new_screen(self.buttons['battle'][4][2][1])
+            else:
+                self.buttons['battle'][4][2][1](self)
+        
+        if self.character[0].get_currentHp() < 1:
+            self.buttons['battle'][6][0] = True
+            self.render()
+            time.sleep(3)
+            database.update_account_attribute('deaths', 1, self.accountKey)
+            if isinstance(self.buttons['battle'][4][2][1], str):
+                self.new_screen(self.buttons['battle'][4][2][1])
+            else:
+                self.buttons['battle'][4][2][1](self)
+        #first the player attacks then the monster health is checked, if the monster is still alive it attacks
+        #if the monster is dead instead it gives the player some exp and money based on the type of enemy
+        #and increases the kill count by one, then it returns them to the last area
+        #if the player dies it increases the death count of the player by one and sends them back to the last area
+    
     def exploration(self):
         self.screen = 'exploration'
         self.render()
-        #encounter = random.randint(1, 100)
-        encounter = 80
+        encounter = random.randint(1, 100)
         encounterRandomness = random.randint(1, 100)
         x, y = self.quadrant_to_coordinates(1578)
 
@@ -540,7 +737,6 @@ class GameUI:
             time.sleep(5)
             self.buttons['battle'][4][2][1] == 'village1'
             self.start_combat('boss')
-
 
         elif encounter <= 80:
             weaponType = combat.weapon[random.randint(0, 1)]
@@ -588,7 +784,7 @@ class GameUI:
             self.window.blit(self.scale_sprite(pygame.transform.scale(image, (int(image.get_width() * 2), int(image.get_height() * 2)))), (x, y))
             pygame.display.flip()
             time.sleep(5)
-            self.character[0].set_money(self.character[0].get_money() + amount)
+            database.update_account_attribute('money', amount, self.accountKey)
 
         while self.screen == 'battle' or self.screen == 'new equip' or self.screen == 'question screen':
             for event in pygame.event.get():
@@ -603,11 +799,107 @@ class GameUI:
 
         self.screen = 'village1'
         self.render()
+        #first two random variables are assigned, the first depicting the encounter, the second the details of certain encounters
+        #if the encounter variable is less than or equal to 55 a grunt slime is spawned
+        #if the encounter variable is between 56 and 70 an elite slime is spawned
+        #if the encounter variable is between 71 and 75 a boss slime is spawned
+        #if the encounter variable is between 76 and 80 a weapon is spawned, the rarity based upon the second random variable
+        #then the new equip screen is loaded
+        #if the encounter variable is between 81 and 85 armour is spawned, the rarity based upon the second random variable
+        #then the new equip screen is loaded
+        #if the encounter variable is between 86 and 100 the player gets between 1 and 10 gold
+    
+    def dungeon(self):
+        rooms = ['grunt', 'grunt', 'grunt', 'elite', 'elite', 'boss']
+        for i in range(6):
+            self.screen = 'dungeon'
+            self.render()
+            self.textController.typewriter_text(self, self.font, f'Floor {i+1}', 2058, 2000)
+            image = pygame.image.load(f'sprites/characters/{rooms[i]} slime.png')
+            self.window.blit(self.scale_sprite(image), self.quadrant_to_coordinates(3497))
+            time.sleep(3)
+            self.start_combat(f'{rooms[i]}')
+            while self.screen == 'battle' or self.screen == 'question screen':
+                for event in pygame.event.get():
+                    self.handle_event(event)
+                self.render()
+            if self.character[0].get_currentHp() < 1:
+                break
+
+        if self.character[0].get_currentHp() >= 1:
+            self.textController.typewriter_text(self, self.font, f'Treasure Floor', 2051, 2000)
+            image = pygame.image.load(f'sprites/animations/misc/macguffin1.png')
+            self.window.blit(self.scale_sprite(image), self.quadrant_to_coordinates(3497))
+            time.sleep(3)
+            self.textController.stop_all_text()
+            self.render()
+            text = 'You pick up the mysterious item on the floor. The design and rough sides show that it is clearly part of a larger piece. Maybe exploring more dungeons will unlock more pieces.'
+            self.textController.typewriter_text(self, self.smallFont, text, 2028, 1000)
+            time.sleep(12)
+            self.character[0].update_currentHp(self.character[0].get_maxHp() - self.character[0].get_currentHp())
+            self.character[0].update_currentStm(self.character[0].get_maxStm() - self.character[0].get_currentStm())
+            self.characterPOS = [[900, 1000], 'w']
+            self.screen = 'village1'
+        else:
+            self.dungeon_failure()
+        #loops through the dungeon floors, on every floor it says the floor number and shows the enemy
+        #if at any point the player dies the dungeon failure subroutine is loaded
+        #if the player reaches the last floor and is still alive the treasure floor is revealed
+        #it tells the player about the macguffin, and then exits the dungeon
+
+    def dungeon_failure(self):
+        text = 'The slime deals the final blow and leaves you dazed on the floor. You wake up several hours later, mysteriously in the village entrance once more.'
+        self.textController.typewriter_text(self, self.smallFont, text, 2028, 1000)
+        time.sleep(10)
+        self.character[0].update_currentHp(self.character[0].get_maxHp() - self.character[0].get_currentHp())
+        self.character[0].update_currentStm(self.character[0].get_maxStm() - self.character[0].get_currentStm())
+        self.characterPOS = [[900, 1000], 'w']
+        self.screen = 'village1'
+        #tells the player they have died, then maxxes their stats again and returns them to the village
+    
+    def load_account(self, accountKey):
+        self.buttons['load account'][0][2] = [self.check_password, accountKey]
+        self.window.fill((0, 0, 0))
+        self.screen = 'load account'
+        #loads the account with the associated account key and clears the display
+    
+    def load_save_state(self, accountKey):
+        save = database.load_account(accountKey)[0]
+        name, exp, armour, armourModifier, weapon, weaponModifier = save
+        self.characterName = name
+        self.character[0] = combat.PlayableCharacter(name, exp, armour, armourModifier, weapon, weaponModifier)
+        self.characterPOS = [[900, 1000], 'w']
+        self.screen = 'village1'
+        #loads the account from the database and creates a player instance and places it in the village
+    
+    def make_save(self): 
+        self.window.fill((0, 0, 0))
+        self.screen = 'password creator'
+        #move to the password screen
+    
+    def upload_password(self):
+        hashedPassword = database.hashing_algorithm(self.password)
+        accountKey = database.table_accounts_insertion('Unknown', hashedPassword, 25, 1, None, 1, 'fist', 1, 0, 0)
+        database.weight_insertion(accountKey)
+        self.password = ''
+        self.buttons['password creator'][5][0] = False
+        self.buttons['password creator'][0][0] = True
+        self.start_game()
+        #upload the hashed password to the database and update the weights table
+    
+    def bin_account(self, accountKey):
+        database.delete_account(accountKey)
+        for i in range(3):
+            self.buttons['character select menu'][i][0] = False
+            self.buttons['character select menu'][i+3][0] = False
+            self.buttons['character select menu'][i+6][0] = True
+        self.start_game()
+        #delete the account and then reload the screen and accounts
     
     def password_buttons_false(self):
         for i in range(6):
             self.buttons['password creator'][i][0] = False
-    #return the password criteria buttons to default
+        #return the password criteria buttons to default
     
     def password_text_field_creation(self, key):
         symbols = '[@_!#$%^&*()<>?/\|}{~:]'
@@ -633,7 +925,7 @@ class GameUI:
             self.buttons['password creator'][5][0] = True  #submit password
         
         self.render()
-    #check if the password is viable after appending/deleting a character
+        #check if the password is viable after appending/deleting a character
 
     def password_text_field_checking(self, key):
         self.buttons['load account'][0][0] = True
@@ -646,6 +938,7 @@ class GameUI:
             self.password += key
         
         self.render()
+        #edit the password based on whether or not the key is valid
 
     def check_password(self, accountKey):
         hashedPassword = database.hashing_algorithm(self.password)
@@ -667,24 +960,9 @@ class GameUI:
             self.load_save_state(accountKey)
 
         self.render()
-
-    def load_save_state(self, accountKey):
-        save = database.load_account(accountKey)[0]
-        name, exp, armour, armourModifier, weapon, weaponModifier = save
-        self.characterName = name
-        self.character[0] = combat.PlayableCharacter(name, exp, armour, armourModifier, weapon, weaponModifier)
-        self.characterPOS = [[900, 1000], 'w']
-        self.screen = 'village1'
-
-    def upload_password(self):
-        hashedPassword = database.hashing_algorithm(self.password)
-        accountKey = database.table_accounts_insertion('Unknown', hashedPassword, 25, 1, None, 1, 'fist', 1, 0, 0)
-        database.weight_insertion(accountKey)
-        self.password = ''
-        self.buttons['password creator'][5][0] = False
-        self.buttons['password creator'][0][0] = True
-        self.start_game()
-    #upload the hashed password to the database and update the weights table
+        #run the given password through the hashing algorithm 
+        #and check it against the hashed password stored in the database
+        #if they match load either the tutorial and save based on the account name
     
     def network_pin_enterer(self, key):
         if key == 'backspace':
@@ -694,6 +972,8 @@ class GameUI:
 
         if len(self.networkPin) == 5:
             self.buttons['networking'][1][0] = True
+        #edit the network pin based on whether the key is a backspace or number
+        #if the pin is 5 characters long load the submit button
     
     def tutorial_name_enterer(self, key):
         if key == 'backspace':
@@ -703,244 +983,53 @@ class GameUI:
         elif isinstance(key, str) and len(self.characterName) < 12:
             self.characterName += key
         self.render()
-    
-    def render(self):
-        self.window.fill((0, 0, 0))
-        self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/backdrops/{self.screen}.png')), (0, 0))
 
-        self.button_blitter()
-
-        self.window.blit(self.scale_sprite(pygame.image.load('sprites/buttons/exit.png')), self.quadrant_to_coordinates(95))
-
-        if self.uniqueID == '' and self.characterName != '':
-            self.window.blit(self.scale_sprite(pygame.image.load('sprites/buttons/no connection.png')), self.quadrant_to_coordinates(3))
-        elif self.characterName != '':
-            self.window.blit(self.scale_sprite(pygame.image.load('sprites/buttons/connection.png')), self.quadrant_to_coordinates(3))  
+    def questions(self):       
+        if self.screen != 'question screen':
+            self.buttons['question screen'][4][2][1] = self.screen
+            self.screen = 'question screen'
         
-        text = 'Your memory is foggy, what is your name again?'
+        slots = [1, 2, 3, 4]
+        placement = [296, 2895, 2938, 4431, 4378]
 
-        if self.screen == 'password creator' or self.screen == 'load account':
-            rectangle = pygame.Rect(150, 370, 1580, 100)
-            pygame.draw.rect(self.window, (180, 180, 180), rectangle)
-            password_text = self.font.render(self.password, True, (255, 255, 255))
-            self.window.blit(password_text, (rectangle.x + 5, rectangle.y + 5))
-        elif self.screen == 'networking':
-            rectangle = pygame.Rect(400, 170, 1450, 50)
-            pygame.draw.rect(self.window, (180, 180, 180), rectangle)
-            password_text = self.smallFont.render(self.networkPin, True, (255, 255, 255))
-            self.window.blit(password_text, (rectangle.x + 5, rectangle.y + 5))
-        #draw password text if on the password creator, load account or networking screen
-        elif self.screen == 'tutorial start' and any(threads[2] == text for threads in self.textController.threads):
-            rectangle = pygame.Rect(10, 400, 1450, 50)
-            password_text = self.smallFont.render(self.characterName, True, (255, 255, 255))
-            self.window.blit(password_text, (rectangle.x + 5, rectangle.y + 5))
+        question, questionKey = database.get_question(self.accountKey)
 
-        elif self.screen in ['combined stats', 'account 1 stats', 'account 2 stats', 'account 3 stats']:
-            textToBlit = self.statsText[self.screen]
-            for lines in textToBlit:
-                self.render_text(lines[0], lines[1], lines[2], lines[3])
+        self.questionText['question screen'][0] = [TextController.wrap_text(TextController, question[0], self.smallFont, 1600), self.smallFont, placement[0], (255, 255, 255)]
+        placement.pop(0)
+        self.questionText['questionKey'] = questionKey
 
-        elif self.screen == 'question screen':
-            textToBlit = self.questionText[self.screen]
-            for lines in textToBlit:
-                self.render_text(lines[0], lines[1], lines[2], lines[3])
+        correctSlot = random.randint(0, 3)
+        self.buttons['question screen'][correctSlot][2][1] = 'correct'
+        self.questionText['question screen'][slots[correctSlot]] = [TextController.wrap_text(TextController, question[1], self.smallFont, 600), self.smallFont, placement[correctSlot], (255, 255, 255)]
+        slots.pop(correctSlot)
+        placement.pop(correctSlot)
+
+        incorrect = [question[2], question[3], question[4]]
+
+        for i in range(3):
+            randomSlot = random.randint(0, 2-i)
+            self.questionText['question screen'][slots[randomSlot]] = [TextController.wrap_text(TextController, incorrect[randomSlot], self.smallFont, 600), self.smallFont, placement[i], (255, 255, 255)]
+            slots.pop(randomSlot)
+            incorrect.pop(randomSlot)       
+        #first the buttons and screen are setted up correctly, then the question and question key are chosen from the database
+        #the question is blitted upon the screen and the location of the correct answer is chosen
+        #the other wrong answers are randomly placed in the other slots, and all of the answers are blitted on the screen
         
-        elif self.screen == 'battle':
-            enemyStamina = [f'Stm: {max(0, int(self.monster[0].get_currentStm()))}']
-            enemyHp = [f'Hp: {max(0, int(self.monster[0].get_currentHp()))}']
-            playerStamina = [f'Stm: {max(0, int(self.character[0].get_currentStm()))}']
-            playerHp = [f'Hp: {max(0, int(self.character[0].get_currentHp()))}']
-
-            self.render_text(enemyStamina, self.smallFont, 194, (255, 255, 255))
-            self.render_text(enemyHp, self.smallFont, 674, (255, 255, 255))
-            self.render_text(playerStamina, self.smallFont, 2949, (255, 255, 255))
-            self.render_text(playerHp, self.smallFont, 3333, (255, 255, 255))
-
-            if (self.monster[0].get_currentHp() / self.monster[0].get_maxHp()) > 0.5:
-                x, y = self.quadrant_to_coordinates(68)
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/{self.monster[0].get_type()} slime.png')), (x, y))
-            elif (self.monster[0].get_currentHp() / self.monster[0].get_maxHp()) > 0:
-                x, y = self.quadrant_to_coordinates(68)
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/{self.monster[0].get_type()} slime hurt.png')), (x, y))
-            else:
-                x, y = self.quadrant_to_coordinates(68)
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/{self.monster[0].get_type()} slime dead.png')), (x, y))
-
-            x, y = self.quadrant_to_coordinates(2320)
-            self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/character combat.png')), (x, y))
-
-            if self.character[1] == 'normal':
-                x, y = self.quadrant_to_coordinates(2901)
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.character[0].get_weapon()[-5:].strip()} normal.png')), (x, y))
-
-            elif self.character[1] == 'heavy':
-                x, y = self.quadrant_to_coordinates(2901)
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.character[0].get_weapon()[-5:].strip()} heavy.png')), (x, y))
-            
-            elif self.character[1] == 'dodge':
-                x, y = self.quadrant_to_coordinates(2901)
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/dodge.png')), (x, y))
-            
-            elif self.character[1] == 'special':
-                x, y = self.quadrant_to_coordinates(2901)
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.character[0].get_weapon()[-5:].strip()} special.png')), (x, y))
-
-            if self.monster[1] == 'normal':
-                x, y = self.quadrant_to_coordinates(841)
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.monster[0].get_type()} normal.png')), (x, y))
-
-            elif self.monster[1] == 'heavy':
-                x, y = self.quadrant_to_coordinates(841)
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/{self.monster[0].get_type()} heavy.png')), (x, y))
-
-            elif self.monster[1] == 'dodge':
-                x, y = self.quadrant_to_coordinates(841)
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/dodge.png')), (x, y))
-
-            elif self.monster[1] == 'special':
-                x, y = self.quadrant_to_coordinates(841)
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/animations/combat/special.png')), (x, y))
+    def question_checker(self, answer):
+        if answer == 'incorrect':
+            database.update_question('incorrect', self.questionText['questionKey'], self.accountKey)
+            self.questions()
+        else:
+            database.update_question('correct', self.questionText['questionKey'], self.accountKey)
+            self.new_screen(self.buttons['question screen'][4][2][1])
+        #if the answer is incorrect it loads another question
+        #if the answer is correct it returns the player to the previous screen
+        #in both cases the question weight and incorrect/correct score is changed in the database
         
-        elif self.screen == 'new equip':
-            if self.newEquip[1][0] != 'None':
-                x, y = self.quadrant_to_coordinates(1654)
-                image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[1][0]} normal.png')
-                self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
-
-            x, y = self.quadrant_to_coordinates(1697)
-            image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[0][0]} normal.png')
-            self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
-
-            self.render_text([str(self.newEquip[1][1])], self.statsFont, 3292, (255, 255, 255))
-
-            self.render_text([str(self.newEquip[0][1])], self.statsFont, 3336, (255, 255, 255))
-
-        elif self.screen == 'village1':
-            if self.characterPOS[1] == 'w':
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/character up.png')), (self.characterPOS[0][0], self.characterPOS[0][1]))
-            elif self.characterPOS[1] == 'a':
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/character left.png')), (self.characterPOS[0][0], self.characterPOS[0][1]))
-            elif self.characterPOS[1] == 's':
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/character down.png')), (self.characterPOS[0][0], self.characterPOS[0][1]))
-            else:
-                self.window.blit(self.scale_sprite(pygame.image.load(f'sprites/characters/character right.png')), (self.characterPOS[0][0], self.characterPOS[0][1]))
-      
-        pygame.display.update()
-    
-    def render_text(self, text, font, startQuadrant, colour):
-        x, y = self.quadrant_to_coordinates(startQuadrant)
-        for line in text:
-            textSurface = font.render(line, True, colour)
-            self.window.blit(textSurface, (x, y))
-            y += font.get_height()
-
-    def handle_event(self, event):
-        if event.type == pygame.QUIT:
-            self.quit_game()
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            self.handle_mouse_click_event()
-        elif event.type == pygame.KEYDOWN:
-            self.handle_key_press_event(event)
-
     def quit_game(self):
         pygame.quit()
         sys.exit()
-
-    def handle_mouse_click_event(self):
-        mousePos = pygame.mouse.get_pos()
-        mouseQuadrant = self.coordinates_to_quadrant(mousePos)
-        
-        if mouseQuadrant in [95, 96, 191, 192]:
-            self.quit_game()
-        elif mouseQuadrant in [3, 4, 99, 100] and self.screen not in ['networking', 'load account'] and self.characterName != '':
-            self.buttons['networking'][0][2][1] = self.screen
-            self.screen = 'networking'
-        else:
-            self.handle_button_click_event()
-    
-    def handle_button_click_event(self):
-        mousePos = pygame.mouse.get_pos()
-        mouseQuadrant = self.coordinates_to_quadrant(mousePos)
-
-        buttonAction = self.search_buttons(mouseQuadrant)
-        if isinstance(buttonAction, list):
-            action, parameter = buttonAction
-            action(parameter)
-        else:
-            buttonAction()
-    
-    def handle_key_press_event(self, event):
-        screenKeyHandlers = {
-            'password creator': self.handle_password_creator_key,
-            'load account': self.handle_load_account_key,
-            'networking': self.handle_networking_key,
-            'tutorial start': self.handle_tutorial_name,
-            'village1': self.handle_village_movement,
-        }
-        handle = screenKeyHandlers.get(self.screen)
-        if handle:
-            handle(event)
-
-    def handle_password_creator_key(self, event):
-        if event.key == pygame.K_BACKSPACE:
-            self.password_text_field_creation('backspace')
-        else:
-            if pygame.key.get_mods() & pygame.KMOD_SHIFT:
-                self.password_text_field_creation(event.unicode.upper())
-            else:
-                self.password_text_field_creation(event.unicode)
-        
-    def handle_load_account_key(self, event):
-        if event.key == pygame.K_BACKSPACE:
-            self.password_text_field_checking('backspace')
-        else:
-            if pygame.key.get_mods() & pygame.KMOD_SHIFT:
-                self.password_text_field_checking(event.unicode.upper())
-            else:
-                self.password_text_field_checking(event.unicode)
-
-    def handle_networking_key(self, event):
-        if event.key == pygame.K_BACKSPACE:
-            self.network_pin_enterer('backspace')
-        elif event.unicode.isdigit():
-            self.network_pin_enterer(event.unicode)
-    
-    def handle_tutorial_name(self, event):
-        text = 'Your memory is foggy, what is your name again?'
-        if any(threads[2] == text for threads in self.textController.threads) and event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_BACKSPACE:
-                self.tutorial_name_enterer('backspace')
-            elif event.key == pygame.K_RETURN:
-                self.tutorial_name_enterer('enter')
-            elif event.unicode.isprintable():
-                self.tutorial_name_enterer(event.unicode)
-
-    def handle_village_movement(self, event):
-        keys = pygame.key.get_pressed()  # Get the current state of all keys
-
-        if keys[pygame.K_w]:
-            self.characterPOS[0][1] = max(0, self.characterPOS[0][1] - 30)
-        
-        if keys[pygame.K_a]:
-            self.characterPOS[0][0] = max(0, self.characterPOS[0][0] - 30)
-        
-        if keys[pygame.K_s]:
-            self.characterPOS[0][1] = min(1030, self.characterPOS[0][1] + 30)
-        
-        if keys[pygame.K_d]:
-            self.characterPOS[0][0] = min(1870, self.characterPOS[0][0] + 30)
-
-        if self.characterPOS[0][0] <= 130 and (self.characterPOS[0][1] >= 380 and self.characterPOS[0][1] <= 610):
-            self.characterPOS = [[900, 1000], 'w']
-            self.dungeon()
-
-        elif (self.characterPOS[0][0] <= 1040 and self.characterPOS[0][0] >= 810) and self.characterPOS[0][1] <= 130:
-            self.characterPOS = [[900, 1000], 'w']
-            self.shop()
-
-        elif self.characterPOS[0][0] >= 1780 and (self.characterPOS[0][1] >= 440 and self.characterPOS[0][1] <= 550):
-            self.characterPOS = [[900, 1000], 'w']
-            self.exploration()
+        #shut off pygame and the system
 
     def run(self):
         while self.running:
@@ -948,6 +1037,7 @@ class GameUI:
                 self.handle_event(event)
             self.render()
         self.quit_game()
+        #handles the gameplay loop
 
 class AnimationController():
     def __init__(self):
