@@ -1055,9 +1055,12 @@ class AnimationController():
                     game_ui.window.blit(scaledImage, coords1)
                     pygame.display.update(pygame.rect(coords1, difference))
                     time.sleep(timeDelay)
+            #for each loop it loops through the states and blits them onto the screen in the given quadrants
+            #it then blits within the given area, stopping too much CPU being used
         
         thread = threading.Thread(target=loop_animation_thread, daemon=True)
         thread.start()
+        #create a thread that loops through the animation that happens a given amount of times
 
     def start_continuous_animation(self, timeDelay, name, states, repeats, startQuadrant, endQuadrant, game_ui):
         stopEvent = threading.Event()
@@ -1076,19 +1079,24 @@ class AnimationController():
                         game_ui.window.blit(scaledImage, game_ui.quadrant_to_coordinates(startQuadrant))
                         pygame.display.update(pygame.Rect(coords1, difference))
                         time.sleep(timeDelay)
+                        #for each loop it loops through the states and blits them onto the screen in the given quadrants
+                        #it then blits within the given area, stopping too much CPU being used
 
         thread = threading.Thread(target=animation_thread, daemon=True)
         thread.start()
         self.threads.append((name, stopEvent))
+        #create a thread that loops through the animation that happens until the stopEvent is called in threads
 
     def stop_animation(self, index):
         if -1 < index < len(self.threads):
             stopEvent = self.threads[index][1]
             stopEvent.set()
+        #stops a specific animation based on the index
     
     def stop_all_animations(self):
         for stopEvent in self.threads:
             stopEvent[1].set()
+        #stops all currently going animations
     
 class TextController:
     def __init__(self):
@@ -1131,6 +1139,9 @@ class TextController:
         thread = threading.Thread(target=start_typewriter_text, daemon=True)
         thread.start()  
         self.threads.append((thread, stopEvent, text))
+        #creates a thread that blits the given text onto the screen. It breaks the text into lines
+        #using wrap_text. Then it blits the text character by character, if the stopEvent is called #
+        #it will stop early and delete itself
 
     def wrap_text(self, text, font, maxWidth):
         words = text.split(' ')
@@ -1146,13 +1157,16 @@ class TextController:
                 currentLine = word
         lines.append(currentLine)
 
-        return lines    
+        return lines
+        #goes through the text word by word, and if the total length of a line
+        #breaches the maximum it places words in a new line from that point onwards    
 
     def check_threads(self):
         for i in range(len(self.threads)-1, -1, -1):
             thread, stopEvent, text = self.threads[i]
             if not thread.is_alive():
                 self.threads.pop(i)
+        #checks if the stopEvent has been called
 
     def stop_all_text(self):
         for thread, stopEvent, text in self.threads:
@@ -1162,3 +1176,4 @@ class TextController:
             thread.join()
 
         self.threads.clear()
+        #stops all currently going text threads
