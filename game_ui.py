@@ -515,9 +515,9 @@ class GameUI:
         self.screen = 'exploration'
         self.render()
         #encounter = random.randint(1, 100)
-        encounter = random.randint(80, 85)
+        encounter = 85
         encounterRandomness = random.randint(1, 100)
-        x, y = self.quadrant_to_coordinates(1577)
+        x, y = self.quadrant_to_coordinates(1578)
 
         if encounter <= 55:
             image = pygame.image.load('sprites/characters/grunt slime.png')

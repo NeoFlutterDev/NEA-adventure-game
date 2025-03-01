@@ -246,12 +246,6 @@ def update_account_equipment(type, newEquipment, newMod, accountKey):
         # Enable foreign key constraints
         con.execute("PRAGMA foreign_keys = ON")
 
-        print("UPDATING DATABASE")
-        print(f"Type: {type}")  # Check if type is "weapon" or "armour"
-        print(f"New Equipment: {newEquipment}")
-        print(f"New Modifier: {newMod}")
-        print(f"Account Key: {accountKey}")
-
         # Ensure type is either 'weapon' or 'armour'
         if type not in ["weapon", "armour"]:
             raise ValueError(f"Invalid equipment type: {type}")
@@ -261,13 +255,11 @@ def update_account_equipment(type, newEquipment, newMod, accountKey):
         SET {type} = ?, {type}Modifier = ?
         WHERE accountKey = ?
         '''
-        print("Executing SQL Query:", query)
 
         data = (newEquipment, newMod, accountKey)
         cur.execute(query, data)
 
         con.commit()
-        print("Database updated successfully!")
 
     except sqlite3.Error as e:
         print("Database Error:", e)
