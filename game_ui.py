@@ -168,15 +168,15 @@ class GameUI:
         if self.monster[0].get_currentHp() > 0:
             self.character, self.monster = combat.monster_combat(self.character, self.monster)
         elif self.monster[0].get_currentHp() < 1:
-            gains = {'grunt':random.randint(1,3), 'elite':random.randint(2,6), 'boss':random.randint(5,10)}
+            gains = {'grunt':2, 'elite':4, 'boss':8}
             self.buttons['battle'][5][0] = True
             self.render()
             time.sleep(3)
             database.update_account_attribute('kills', 1, self.accountKey)
             self.character[0].set_money(self.character[0].get_money() + gains[self.monster[0].get_type()])
             self.character[0].update_exp(gains[self.monster[0].get_type()])
-            database.update_account_info(self.character[0].get_exp(), self.character[0].get_money(), self.character[0].get_armour(), 
-                                         self.character[0].get_armourModifier(), self.character[0].get_weapon(), self.character[0].get_weaponModifier(),self.accountKey)
+            database.update_account_attribute('money', gains[self.monster[0].get_type()], self.accountKey)
+            database.update_account_attribute('exp', gains[self.monster[0].get_type()], self.accountKey)
             if isinstance(self.buttons['battle'][4][2][1], str):
                 self.new_screen(self.buttons['battle'][4][2][1])
             else:
