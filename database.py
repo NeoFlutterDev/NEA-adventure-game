@@ -206,7 +206,7 @@ def load_account_attribute(attribute, accountKey):
         con.close()
         #close the connection
 
-def update_account_info(exp, money, weapon, weaponModifier, armour, armourModifier, accountKey):
+def update_account_info(exp, money, armour, armourModifier, weapon, weaponModifier, accountKey):
     try:
         con = sqlite3.connect('storage.db')
         cur = con.cursor()
@@ -222,7 +222,7 @@ def update_account_info(exp, money, weapon, weaponModifier, armour, armourModifi
         '''
         #define the query, with placeholders
 
-        data = (exp, money, weapon, weaponModifier, armour, armourModifier, accountKey)
+        data = (exp, money, armour, armourModifier, weapon, weaponModifier, accountKey)
         #enter data that is to replace the old data
         cur.execute(query, data)
         #execute the parameterised query
@@ -242,33 +242,41 @@ def update_account_equipment(type, newEquipment, newMod, accountKey):
     try:
         con = sqlite3.connect('storage.db')
         cur = con.cursor()
-        #connect to the database
 
         # Enable foreign key constraints
         con.execute("PRAGMA foreign_keys = ON")
+
+        print("UPDATING DATABASE")
+        print(f"Type: {type}")  # Check if type is "weapon" or "armour"
+        print(f"New Equipment: {newEquipment}")
+        print(f"New Modifier: {newMod}")
+        print(f"Account Key: {accountKey}")
+
+        # Ensure type is either 'weapon' or 'armour'
+        if type not in ["weapon", "armour"]:
+            raise ValueError(f"Invalid equipment type: {type}")
 
         query = f'''
         UPDATE accounts
         SET {type} = ?, {type}Modifier = ?
         WHERE accountKey = ?
         '''
-        #define the query, with placeholders
+        print("Executing SQL Query:", query)
 
         data = (newEquipment, newMod, accountKey)
-        #enter data that is to replace the old data
         cur.execute(query, data)
-        #execute the parameterised query
 
         con.commit()
-        #commit the query
+        print("Database updated successfully!")
 
     except sqlite3.Error as e:
-        print('Error:', e)
-        #if any errors occur, print them
+        print("Database Error:", e)
+
+    except ValueError as ve:
+        print("Value Error:", ve)
 
     finally:
         con.close()
-        #close the connection
 
 def update_account_attribute(attribute, amount, accountKey):
     try:

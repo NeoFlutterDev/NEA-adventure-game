@@ -175,8 +175,8 @@ class GameUI:
             database.update_account_attribute('kills', 1, self.accountKey)
             self.character[0].set_money(self.character[0].get_money() + gains[self.monster[0].get_type()])
             self.character[0].update_exp(gains[self.monster[0].get_type()])
-            database.update_account_info(self.character[0].get_exp(), self.character[0].get_money(), self.character[0].get_weapon(), self.character[0].get_weaponModifier(),
-                                    self.character[0].get_armour(), self.character[0].get_armourModifier(), self.accountKey)
+            database.update_account_info(self.character[0].get_exp(), self.character[0].get_money(), self.character[0].get_armour(), 
+                                         self.character[0].get_armourModifier(), self.character[0].get_weapon(), self.character[0].get_weaponModifier(),self.accountKey)
             if isinstance(self.buttons['battle'][4][2][1], str):
                 self.new_screen(self.buttons['battle'][4][2][1])
             else:
@@ -266,7 +266,7 @@ class GameUI:
             oldWeapon = 'fist'
             oldMod = 1
 
-        newWeapon = newWeapon[-5:].strip()
+        newWeapon = newWeapon[len(rarity):].strip()
         newMod = combat.rarityConverter[rarity[:1]]
 
         # Update button actions correctly
@@ -293,8 +293,9 @@ class GameUI:
             oldArmour = None
             oldMod = 1
 
-        newArmour = newArmour[-11:].strip()
+        newArmour = newArmour[len(rarity):]
         newMod = combat.rarityConverter[rarity[:1]]
+
         if oldArmour is None:
             oldArmour = 'None'
 
@@ -327,19 +328,19 @@ class GameUI:
 
         if name in weapons:
             rarity = combat.reverseWeaponRarityConverter[mod]
-            newWeapon = rarity + name
+            newWeapon = name
             self.character[0].set_weapon(newWeapon)
             self.character[0].set_weaponModifier(mod)
 
             database.update_account_equipment('weapon', newWeapon, mod, self.accountKey)
 
         elif name in armors:
-            rarity = combat.reverseArmourRarityConverter[2-mod]
-            newArmour = rarity + name
+            rarity = combat.reverseArmourRarityConverter[float((str(2-mod))[:4])]
+            newArmour = name
             self.character[0].set_armour(newArmour)
-            self.character[0].set_armourModifier(2 - mod)  
+            self.character[0].set_armourModifier(float((str(2-mod))[:4]))  
 
-            database.update_account_equipment('armour', newArmour, mod, self.accountKey)          
+            database.update_account_equipment('armour', newArmour, float((str(2-mod))[:4]), self.accountKey)          
         
         self.new_screen('village1')
 
@@ -514,7 +515,7 @@ class GameUI:
         self.screen = 'exploration'
         self.render()
         #encounter = random.randint(1, 100)
-        encounter = 85
+        encounter = 80
         encounterRandomness = random.randint(1, 100)
         x, y = self.quadrant_to_coordinates(1577)
 
@@ -596,15 +597,8 @@ class GameUI:
                 self.handle_event(event)
             self.render()
 
-        database.update_account_info(
-            self.character[0].get_exp(),
-            self.character[0].get_money(),
-            self.character[0].get_armour(),
-            self.character[0].get_armourModifier(),
-            self.character[0].get_weapon(),
-            self.character[0].get_weaponModifier(),
-            self.accountKey
-        )
+        database.update_account_info(self.character[0].get_exp(), self.character[0].get_money(), self.character[0].get_armour(), 
+                                     self.character[0].get_armourModifier(), self.character[0].get_weapon(), self.character[0].get_weaponModifier(),self.accountKey)
 
         self.character[0].update_currentHp(self.character[0].get_maxHp() - self.character[0].get_currentHp())
         self.character[0].update_currentStm(self.character[0].get_maxStm() - self.character[0].get_currentStm())
@@ -821,7 +815,7 @@ class GameUI:
                 self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
             else:
                 x, y = self.quadrant_to_coordinates(1697)
-                image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[0][0][1:]} normal.png')
+                image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[0][0]} normal.png')
                 self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
 
             self.render_text([str(self.newEquip[1][1])], self.statsFont, 3292, (255, 255, 255))
