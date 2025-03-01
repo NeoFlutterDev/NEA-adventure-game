@@ -217,7 +217,7 @@ def update_account_info(exp, money, armour, armourModifier, weapon, weaponModifi
 
         query = '''
         UPDATE accounts
-        SET exp = ?, money = ?, weapon = ?, weaponModifier = ?, armour = ?, armourModifier = ?
+        SET exp = ?, money = ?, armour = ?, armourModifier = ?, weapon = ?, weaponModifier = ?,
         WHERE accountKey = ?
         '''
         #define the query, with placeholders
