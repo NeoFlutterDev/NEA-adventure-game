@@ -114,6 +114,7 @@ def show_graph():
     ax.legend()
 
     plt.show(block=True)
+    #scrape the question data from all the students and place it into a matplotlib graph
 
 # Server program to manage connections, pygame window, and data display
 def server_program():
@@ -188,7 +189,7 @@ def server_program():
             window.blit(scoreText2, (startX2, yOffset2))
 
         # Render and blit each student's name and online/offline status
-        baseY = 10
+        baseY = 50
         incrementY = 50  # Spacing between student entries
         for studentNumber, data in studentData.items():
             if data:
@@ -200,7 +201,7 @@ def server_program():
                 studentText = f"Student {studentNumber}: Offline"
 
             studentStatus = font.render(studentText, True, (255, 255, 255))
-            window.blit(studentStatus, (30, baseY))
+            window.blit(studentStatus, (0, baseY))
             baseY += incrementY
 
         window.blit(pygame.image.load('sprites/buttons/graph.png'), (1490, 950))

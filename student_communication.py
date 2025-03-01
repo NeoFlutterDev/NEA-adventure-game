@@ -10,6 +10,7 @@ def seconds_since_midnight():
     currentTime = datetime.now(timeZone)
     secondsSinceMidnight = currentTime.hour * 3600 + currentTime.minute * 60 + currentTime.second 
     return secondsSinceMidnight
+    #calculate the current seconds since midnight
 
 def send_heartbeat(uniqueID, port, accountKey):
     port = int(port)
@@ -29,8 +30,8 @@ def send_heartbeat(uniqueID, port, accountKey):
 
 def first_connection(port, studentName, characterName, accountKey):
     host = socket.gethostbyname(socket.gethostname())
-    print(host)
     port = int(port)
+    #get the server information
 
     clientSocket = socket.socket()
     try:
@@ -51,6 +52,7 @@ def first_connection(port, studentName, characterName, accountKey):
     dataJSON = json.dumps(data)
 
     clientSocket.send(dataJSON.encode('utf-8'))
+    #send the JSON data to the server, containing the students name, character name and the current time in seconds since midnight
 
     # Receive unique ID
     uniqueID = clientSocket.recv(1024).decode()
