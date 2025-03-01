@@ -312,16 +312,12 @@ class GameUI:
     
     def equip(self, stats):
         self.equipRun = False
-        print(stats)
         try:
             mod = float(stats[-4:])
             name = stats[:-4].strip()
         except:
             mod = 1
             name = stats[:-1].strip()
-
-        print(mod)
-        print(name)
 
         weapons = ['fist', 'bow', 'sword']
         armors = ['nanoplate', 'titanweave', 'plasmaweave']
@@ -471,6 +467,8 @@ class GameUI:
             text = 'You pick up the mysterious item on the floor. The design and rough sides show that it is clearly part of a larger piece. Maybe exploring more dungeons will unlock more pieces.'
             self.textController.typewriter_text(self, self.smallFont, text, 2028, 1000)
             time.sleep(12)
+            self.character[0].update_currentHp(self.character[0].get_maxHp() - self.character[0].get_currentHp())
+            self.character[0].update_currentStm(self.character[0].get_maxStm() - self.character[0].get_currentStm())
             self.characterPOS = [[900, 1000], 'w']
             self.screen = 'village1'
         else:
@@ -515,7 +513,7 @@ class GameUI:
         self.screen = 'exploration'
         self.render()
         #encounter = random.randint(1, 100)
-        encounter = 85
+        encounter = 80
         encounterRandomness = random.randint(1, 100)
         x, y = self.quadrant_to_coordinates(1578)
 
@@ -809,14 +807,9 @@ class GameUI:
                 image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[1][0]} normal.png')
                 self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
 
-            if self.newEquip[0][0] not in ['fist', 'sword', 'bow', 'nanoplate', 'titanweave', 'plasmaweave']:
-                x, y = self.quadrant_to_coordinates(1697)
-                image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[0][0][1:]} normal.png')
-                self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
-            else:
-                x, y = self.quadrant_to_coordinates(1697)
-                image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[0][0]} normal.png')
-                self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
+            x, y = self.quadrant_to_coordinates(1697)
+            image = pygame.image.load(f'sprites/animations/combat/{self.newEquip[0][0]} normal.png')
+            self.window.blit(self.scale_sprite(pygame.transform.scale(image, (image.get_width() * 2, image.get_height() * 2))), (x, y))
 
             self.render_text([str(self.newEquip[1][1])], self.statsFont, 3292, (255, 255, 255))
 
